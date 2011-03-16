@@ -5,12 +5,21 @@
 		<ol class="list">
 			<var:attr set="class" from=".body.attr" />
 			<var:go through="colors">
-				<li><var:text from="@" /></li>
+				<li>
+					<var:text from="@" />
+					<msg:html from="bar">
+				</li>
 			</var:go>
 		</ol>
 		<ul class="list">
 			<var:go through="people">
-				<li><var:text from="name" /> is <var:text from="age" /></li>
+				<li>
+					<var:text from="name" /> is
+					<msg:text from="foo">
+						<msg:arg><var:text from="age" /></msg:arg>
+						<msg:arg>woot</msg:arg>
+					</msg:text>
+				</li>
 			</var:go>
 		</ul>
 	</var:go>

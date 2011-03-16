@@ -15,7 +15,12 @@ http.createServer( function( req, res ) {
 		},
 	};
 	
-	chameleon.render( 'test.html', context, function( html ) {
+	var messages = {
+		'foo': '$1 and counting... $2!',
+		'bar': '<blink>Bah!</blink>'
+	};
+	
+	chameleon.renderFile( 'test.html', context, messages, function( html ) {
 		res.writeHeader( 200, { 'Content-Type': 'text/html' } );
 		res.end( html );
 	} );
