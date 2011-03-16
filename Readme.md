@@ -1,3 +1,7 @@
 # The Future (of CollabKit)
 
-This respository contains a collection of experimental prototypes.
+This repository contains a collection of experimental prototypes.
+
+## Chameleon
+
+HTML/JSON template library.

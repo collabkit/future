@@ -1,0 +1,17 @@
+<var:go to="body">
+	<h1><var:text from="text" /></h1>
+	<var:html from="html" />
+	<var:go to="lists">
+		<ol class="list">
+			<var:attr set="class" from=".body.attr" />
+			<var:go through="colors">
+				<li><var:text from="@" /></li>
+			</var:go>
+		</ol>
+		<ul class="list">
+			<var:go through="people">
+				<li><var:text from="name" /> is <var:text from="age" /></li>
+			</var:go>
+		</ul>
+	</var:go>
+</var:go>
