@@ -17,6 +17,7 @@ function encodeHtmlText( text ) {
 		.replace( /</g, '&lt;' )
 		.replace( />/g, '&gt;' );
 }
+
 /**
  * Variable replacement using $1, $2, etc. syntax
  * 
@@ -32,6 +33,34 @@ function replaceArguments( text, args ) {
 }
 
 /**
+ * Basic JSON query functionality
+ * 
+ * Syntax is identical to JSON "dot" notation with the following additions
+ * 		@	current object; this is the entire query, not a prefix
+ * 		.	start at root, ignoring current scope; this is a prefix
+ */
+function select( query, root, current ) {
+	if ( typeof query === 'string' && typeof root === 'object' && root !== null ) {
+		var dot = query.indexOf( '.' );
+		if ( typeof current === undefined || dot === 0 ) {
+			current = root;
+		}
+		if ( query.indexOf( '@' ) === 0 ) {
+			return current;
+		}
+		if ( typeof current === 'object' && current !== null ) {
+			parts = query.split( '.' );
+			if ( dot === 0 ) {
+				parts.shift();
+			}
+			// FIXME: Lock this down
+			return eval( 'current.' + parts.join( '.' ) );
+		}
+	}
+	return null;
+}
+
+/**
  * Renders var:* and msg:* tags in an HTML string
  * 
  * @param template String: HTML containing var:* and msg:* tags to render
@@ -42,33 +71,6 @@ function replaceArguments( text, args ) {
 exports.render = function( html, context, messages, callback ) {
 	jsdom.jQueryify( window, 'jquery.js', function() {
 		var $ = window.$;
-		/**
-		 * Basic JSON query functionality
-		 * 
-		 * Syntax is identical to JSON "dot" notation with the following additions
-		 * 		@	current object; this is the entire query, not a prefix
-		 * 		.	start at root, ignoring current scope; this is a prefix
-		 */
-		function select( query, root, current ) {
-			if ( typeof query == 'string' && $.isPlainObject( root ) ) {
-				var dot = query.indexOf( '.' );
-				if ( typeof current === undefined || dot === 0 ) {
-					current = root;
-				}
-				if ( query.indexOf( '@' ) === 0 ) {
-					return current;
-				}
-				if ( $.isPlainObject( current ) ) {
-					parts = query.split( '.' );
-					if ( dot === 0 ) {
-						parts.shift();
-					}
-					// FIXME: Lock this down
-					return eval( 'current.' + parts.join( '.' ) );
-				}
-			}
-			return 'HELLO';
-		}
 		/**
 		 * Recursive transformation of <var:* /> and <msg:* /> elements
 		 * 
