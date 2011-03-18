@@ -34,25 +34,60 @@ function createDocumentFragmentFromHtml( html ) {
 }
 
 /**
- * Trims text nodes down to single spaces at the begining and end, or a single space if empty
+ * Removes unnessecary textnodes and whitespace within textnodes
  * 
- * TODO: Collect a list of inline elements that need to be handled more carefully, and aggressively
- * strip out whitespace when not working adjacent to them.
- * TODO: Protect whitespace in pre and textarea elements.
+ * PRE and TEXTAREA elements are not affected, and inline elements are handled with care as to
+ * ensure that spaces are left where they have meaning.
  * 
  * @param node HTMLElement: Node to clean
  */
+var htmlTextElements = ['A', 'ABBR', 'B', 'BDI', 'BDO', 'BLINK', 'BR', 'CITE', 'CODE', 'DFN', 'EM',
+	'FONT', 'I', 'IMG', 'KBD', 'MARK', 'Q', 'RP', 'RT', 'RUBY', 'S', 'SAMP', 'SMALL', 'SPAN',
+	'STRIKE', 'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR', 'WBR'];
+var htmlWhitespacePreservingElements = ['PRE', 'TEXTAREA'];
 function cleanWhitespace( node ) {
+	var child, l, r;
 	for ( var i = 0; i < node.childNodes.length; i++ ) {
-		var child = node.childNodes[i];
+		child = node.childNodes[i];
 		if ( child.nodeType === 3 ) {
 			if ( /\S/.test( child.nodeValue ) ) {
-				child.nodeValue = child.nodeValue.replace( /^\s+|\s+$/g, ' ' );
+				if ( !child.previousSibling
+						|| ( child.previousSibling.nodeType === 1
+						&& htmlTextElements.indexOf( child.previousSibling.nodeName ) === -1 ) ) {
+					child.nodeValue = child.nodeValue.replace( /^\s+/g, '' );
+				} else {
+					child.nodeValue = child.nodeValue.replace( /^\s+/g, ' ' );
+				}
+				if ( !child.nextSibling
+						|| ( child.nextSibling.nodeType === 1
+						&& htmlTextElements.indexOf( child.nextSibling.nodeName ) === -1 ) ) {
+					child.nodeValue = child.nodeValue.replace( /\s+$/g, '' );
+				} else {
+					child.nodeValue = child.nodeValue.replace( /\s+$/g, ' ' );
+				}
 			} else {
-				child.nodeValue = ' ';
+				l = r = false;
+				if ( child.previousSibling
+						&& child.previousSibling.nodeType === 3
+						&& /\S/.test( child.previousSibling.nodeValue.substr( -1, 1 ) ) ) {
+					l = ( child.nextSibling && child.nextSibling.nodeType === 1 );
+				}
+				if ( child.nextSibling
+						&& child.nextSibling.nodeType === 3
+						&& /\S/.test( child.nextSibling.nodeValue.substr( 0, 1 ) ) ) {
+					r = ( child.previousSibling && child.previousSibling.nodeType === 1 );
+				}
+				if ( l || r ) {
+					child.nodeValue = ' ';
+				} else {
+					node.removeChild( child );
+					i--;
+				}
 			}
 		}
-		if ( child.nodeType == 1 ) {
+		if ( child.nodeType == 1
+				&& child.childNodes.length
+				&& htmlWhitespacePreservingElements.indexOf( child.nodeName ) === -1 ) {
 			cleanWhitespace( child );
 		}
 	}
@@ -270,8 +305,8 @@ exports.render = function( html, context, messages, clean ) {
 	processMsgElements( doc, messages );
 	if ( !!clean ) {
 		cleanWhitespace( doc );
-		doc.normalize();
 	}
+	doc.normalize();
 	return doc.innerHTML;
 };
 
