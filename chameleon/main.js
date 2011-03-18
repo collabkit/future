@@ -3,6 +3,14 @@ var http = require( 'http' ),
 
 http.createServer( function( req, res ) {
 	
+	// Skip favicon request
+	var url = require( 'url' ).parse( req.url );
+	if ( typeof url.pathname === 'string' && url.pathname == '/favicon.ico' ) {
+		res.writeHeader( 500, { 'Content-Type': 'text/html' } );
+		res.end( '500 File Not Found' );
+		return;
+	}
+	
 	var context = {
 		'body': {
 			'text': 'Chameleon Test',
