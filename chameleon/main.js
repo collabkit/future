@@ -28,7 +28,7 @@ http.createServer( function( req, res ) {
 		'bar': '<blink>Bah!</blink>'
 	};
 	
-	chameleon.renderFile( 'test.html', context, messages, function( html ) {
+	chameleon.renderFile( 'test.html', context, messages, true, function( html ) {
 		res.writeHeader( 200, { 'Content-Type': 'text/html' } );
 		res.end( html );
 	} );

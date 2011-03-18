@@ -34,6 +34,31 @@ function createDocumentFragmentFromHtml( html ) {
 }
 
 /**
+ * Trims text nodes down to single spaces at the begining and end, or a single space if empty
+ * 
+ * TODO: Collect a list of inline elements that need to be handled more carefully, and aggressively
+ * strip out whitespace when not working adjacent to them.
+ * TODO: Protect whitespace in pre and textarea elements.
+ * 
+ * @param node HTMLElement: Node to clean
+ */
+function cleanWhitespace( node ) {
+	for ( var i = 0; i < node.childNodes.length; i++ ) {
+		var child = node.childNodes[i];
+		if ( child.nodeType === 3 ) {
+			if ( /\S/.test( child.nodeValue ) ) {
+				child.nodeValue = child.nodeValue.replace( /^\s+|\s+$/g, ' ' );
+			} else {
+				child.nodeValue = ' ';
+			}
+		}
+		if ( child.nodeType == 1 ) {
+			cleanWhitespace( child );
+		}
+	}
+}
+
+/**
  * Variable replacement using $1, $2, etc. syntax
  * 
  * @param text String: Text to replace $1, $2, etc. in
@@ -239,10 +264,14 @@ function processMsgElements( node, messages ) {
  * @param messages Object: List of key/value pairs for msg:* tags
  * @return String: HTML of rendered string
  */
-exports.render = function( html, context, messages ) {
+exports.render = function( html, context, messages, clean ) {
 	var doc = createDocumentFragmentFromHtml( html );
 	processVarElements( doc, context, context );
 	processMsgElements( doc, messages );
+	if ( !!clean ) {
+		cleanWhitespace( doc );
+		doc.normalize();
+	}
 	return doc.innerHTML;
 };
 
@@ -255,12 +284,12 @@ exports.render = function( html, context, messages ) {
  * @param callback Function: Callback to execute when done, taking the rendered HTML as an argument.
  * @throws Error: If file can not be read
  */
-exports.renderFile = function( file, context, messages, callback ) {
+exports.renderFile = function( file, context, messages, clean, callback ) {
 	fs.readFile( file, function( error, data ) {
 		if ( error ) {
 			throw error;
 		}
-		callback( exports.render( data, context, messages ) );
+		callback( exports.render( data, context, messages, clean ) );
 	} );
 }
 
@@ -273,6 +302,6 @@ exports.renderFile = function( file, context, messages, callback ) {
  * @return String: HTML of rendered file
  * @throws Error: If file can not be read
  */
-exports.renderFileSync = function( file, context, messages ) {
-	return exports.render( fs.readFileSync( file ), context, messages );
+exports.renderFileSync = function( file, context, messages, clean ) {
+	return exports.render( fs.readFileSync( file ), context, messages, clean );
 }
