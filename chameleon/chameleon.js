@@ -2,8 +2,21 @@ var fs = require( 'fs' ),
 	util = require( 'util' ),
 	document = require( 'jsdom' ).jsdom();
 
+/*
+ * HTML elements which may appear within a line of text.
+ */
+var htmlTextElements = [
+	'A', 'ABBR', 'B', 'BDI', 'BDO', 'BLINK', 'BR', 'CITE', 'CODE', 'DFN', 'EM', 'FONT', 'I',
+	'IMG', 'KBD', 'MARK', 'Q', 'RP', 'RT', 'RUBY', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE',
+	'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR', 'WBR'
+];
+/*
+ * HTML elements within which whitespace should always be preserved.
+ */
+var htmlWhitespacePreservingElements = ['PRE', 'TEXTAREA'];
+
 /**
- * HTML escaping
+ * Escapes special HTML characters using HTML entities.
  * 
  * @param text String: Text to escape
  * @returns String: Escaped text
@@ -18,7 +31,49 @@ function encodeHtmlText( text ) {
 }
 
 /**
- * Creates a document fragment from an HTML string
+ * Variable replacement using $1, $2, etc. syntax.
+ * 
+ * @param text String: Text to replace $1, $2, etc. in
+ * @param args Array: List of argument values which correspond to $1, $2, etc. in text
+ * @returns String: Text with $1, $2 etc. replaced with values from args
+ */
+function replaceArguments( text, args ) {
+	return text.replace( /\$(\d+)/g, function( string, match ) {
+		var i = parseInt( match, 10 ) - 1;
+		return i in args ? args[i] : '$' + match;
+	} );
+}
+
+/**
+ * Selects a value within an object using JSON "dot" syntax.
+ * 
+ * Syntax is identical to JSON "dot" syntax with the following additions:
+ * 		@	current object; this is the entire query, not a prefix
+ * 		.	start at root, ignoring current scope; this is a prefix
+ */
+function select( query, root, current ) {
+	if ( typeof query === 'string' && typeof root === 'object' && root !== null ) {
+		var dot = query.indexOf( '.' );
+		if ( typeof current === undefined || dot === 0 ) {
+			current = root;
+		}
+		if ( query.indexOf( '@' ) === 0 ) {
+			return current;
+		}
+		if ( typeof current === 'object' && current !== null ) {
+			parts = query.split( '.' );
+			if ( dot === 0 ) {
+				parts.shift();
+			}
+			// FIXME: Lock this down
+			return eval( 'current.' + parts.join( '.' ) );
+		}
+	}
+	return null;
+}
+
+/**
+ * Creates a document fragment from an HTML string.
  * 
  * @param html String: HTML to parse into a document fragment
  * @returns HTMLDocumentFragment: Document fragment containing parsed HTML
@@ -34,7 +89,7 @@ function createDocumentFragmentFromHtml( html ) {
 }
 
 /**
- * Removes HTML comments
+ * Removes HTML comments.
  * 
  * @param node HTMLElmement: Node to remove comments from
  */
@@ -51,17 +106,13 @@ function removeComments( node ) {
 }
 
 /**
- * Removes unnessecary textnodes and whitespace within textnodes
+ * Removes unneeded text nodes as well as unneeded whitespace within text nodes.
  * 
- * PRE and TEXTAREA elements are not affected, and inline elements are handled with care as to
+ * PRE and TEXTAREA elements are not affected, and in-line elements are handled with care as to
  * ensure that spaces are left where they have meaning.
  * 
  * @param node HTMLElement: Node to clean
  */
-var htmlTextElements = ['A', 'ABBR', 'B', 'BDI', 'BDO', 'BLINK', 'BR', 'CITE', 'CODE', 'DFN', 'EM',
-	'FONT', 'I', 'IMG', 'KBD', 'MARK', 'Q', 'RP', 'RT', 'RUBY', 'S', 'SAMP', 'SMALL', 'SPAN',
-	'STRIKE', 'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR', 'WBR'];
-var htmlWhitespacePreservingElements = ['PRE', 'TEXTAREA'];
 function cleanWhitespace( node ) {
 	var child, l, r;
 	for ( var i = 0; i < node.childNodes.length; i++ ) {
@@ -110,49 +161,7 @@ function cleanWhitespace( node ) {
 }
 
 /**
- * Variable replacement using $1, $2, etc. syntax
- * 
- * @param text String: Text to replace $1, $2, etc. in
- * @param args Array: List of argument values which correspond to $1, $2, etc. in text
- * @returns String: Text with $1, $2 etc. replaced with values from args
- */
-function replaceArguments( text, args ) {
-	return text.replace( /\$(\d+)/g, function( string, match ) {
-		var i = parseInt( match, 10 ) - 1;
-		return i in args ? args[i] : '$' + match;
-	} );
-}
-
-/**
- * Basic JSON query functionality
- * 
- * Syntax is identical to JSON "dot" notation with the following additions
- * 		@	current object; this is the entire query, not a prefix
- * 		.	start at root, ignoring current scope; this is a prefix
- */
-function select( query, root, current ) {
-	if ( typeof query === 'string' && typeof root === 'object' && root !== null ) {
-		var dot = query.indexOf( '.' );
-		if ( typeof current === undefined || dot === 0 ) {
-			current = root;
-		}
-		if ( query.indexOf( '@' ) === 0 ) {
-			return current;
-		}
-		if ( typeof current === 'object' && current !== null ) {
-			parts = query.split( '.' );
-			if ( dot === 0 ) {
-				parts.shift();
-			}
-			// FIXME: Lock this down
-			return eval( 'current.' + parts.join( '.' ) );
-		}
-	}
-	return null;
-}
-
-/**
- * Recursive transformation of <tpl:* /> elements
+ * Recursive transformation of <tpl:* /> elements.
  * 
  * Elements can be intermingled with HTML, and will be removed after processing. The
  * following elements will be processed.
@@ -202,7 +211,7 @@ function processTplElements( node, templates ) {
 }
 
 /**
- * Recursive transformation of <var:* /> elements
+ * Recursive transformation of <var:* /> elements.
  * 
  * Elements can be intermingled with HTML, and will be removed after processing. The
  * following elements will be processed.
@@ -311,7 +320,7 @@ function processVarElements( node, root, current ) {
 }
 
 /**
- * Recursive transformation of <msg:* /> elements
+ * Recursive transformation of <msg:* /> elements.
  * 
  * Elements can be intermingled with HTML, and will be removed after processing. The
  * following elements will be processed.
@@ -367,20 +376,28 @@ function processMsgElements( node, messages ) {
 }
 
 /**
- * Renders var:* and msg:* tags in an HTML string
+ * Renders tpl:*, var:* and msg:* elements in an HTML string.
  * 
- * @param template String: HTML containing var:* and msg:* tags to render
- * @param context Object: Structured information for var:* tags
- * @param messages Object: List of key/value pairs for msg:* tags
+ * Rendering happens in 3 complete passes.
+ * 	* Template definition and application
+ * 	* Variable scoping, iteration and output
+ * 	* Message output
+ * 
+ * @param template String: HTML containing var:* and msg:* elements to render
+ * @param context Object: Structured information for var:* elements
+ * @param messages Object: List of key/value pairs for msg:* elements
+ * @param clean Boolean: Remove comments and unneeded whitespace from rendered string (optional)
  * @return String: HTML of rendered string
  */
 exports.render = function( html, context, messages, clean ) {
 	var doc = createDocumentFragmentFromHtml( html );
-	removeComments( doc );
+	if ( clean ) {
+		removeComments( doc );
+	}
 	processTplElements( doc );
 	processVarElements( doc, context );
 	processMsgElements( doc, messages );
-	if ( !!clean ) {
+	if ( clean ) {
 		cleanWhitespace( doc );
 	}
 	doc.normalize();
@@ -388,11 +405,13 @@ exports.render = function( html, context, messages, clean ) {
 };
 
 /**
- * Asynchronously Renders var:* and msg:* tags in an HTML file
+ * Asynchronously renders tpl:*, var:* and msg:* elements in an HTML file.
  * 
- * @param template String: Path to HTML file containing var:* and msg:* tags to render
- * @param context Object: Structured information for var:* tags
- * @param messages Object: List of key/value pairs for msg:* tags
+ * @see chameleon.render
+ * 
+ * @param template String: Path to HTML file containing var:* and msg:* elements to render
+ * @param context Object: Structured information for var:* elements
+ * @param messages Object: List of key/value pairs for msg:* elements
  * @param callback Function: Callback to execute when done, taking the rendered HTML as an argument.
  * @throws Error: If file can not be read
  */
@@ -406,11 +425,13 @@ exports.renderFile = function( file, context, messages, clean, callback ) {
 }
 
 /**
- * Synchronously renders var:* and msg:* tags in an HTML file
+ * Synchronously renders tpl:*, var:* and msg:* elements in an HTML file.
  * 
- * @param template String: Path to HTML file containing var:* and msg:* tags to render
- * @param context Object: Structured information for var:* tags
- * @param messages Object: List of key/value pairs for msg:* tags
+ * @see chameleon.render
+ * 
+ * @param template String: Path to HTML file containing var:* and msg:* elements to render
+ * @param context Object: Structured information for var:* elements
+ * @param messages Object: List of key/value pairs for msg:* elements
  * @return String: HTML of rendered file
  * @throws Error: If file can not be read
  */
