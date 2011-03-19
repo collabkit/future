@@ -1,3 +1,11 @@
+<!-- Templates -->
+
+<tpl:define template="test">
+	<li>Hello <var:text from="@" />! <msg:html from="bar" />...</li>
+</tpl:define>
+
+<!-- Content -->
+
 <var:go to="body">
 	<h1><var:text from="text" /></h1>
 	<var:html from="html" />
@@ -5,10 +13,7 @@
 		<ol class="list">
 			<var:attr set="class" from=".body.attr" />
 			<var:go through="colors">
-				<li>
-					<var:text from="@" />
-					<msg:html from="bar">
-				</li>
+				<tpl:apply template="test" />
 			</var:go>
 		</ol>
 		<ul class="list">

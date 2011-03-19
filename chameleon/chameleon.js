@@ -34,6 +34,23 @@ function createDocumentFragmentFromHtml( html ) {
 }
 
 /**
+ * Removes HTML comments
+ * 
+ * @param node HTMLElmement: Node to remove comments from
+ */
+function removeComments( node ) {
+	for ( var i = 0; i < node.childNodes.length; i++ ) {
+		child = node.childNodes[i];
+		if ( child.nodeType === 8 ) {
+			node.removeChild( child );
+			i--;
+		} else if ( child.nodeType === 1 ) {
+			removeComments( child );
+		}
+	}
+}
+
+/**
  * Removes unnessecary textnodes and whitespace within textnodes
  * 
  * PRE and TEXTAREA elements are not affected, and inline elements are handled with care as to
@@ -84,8 +101,7 @@ function cleanWhitespace( node ) {
 					i--;
 				}
 			}
-		}
-		if ( child.nodeType == 1
+		} else if ( child.nodeType == 1
 				&& child.childNodes.length
 				&& htmlWhitespacePreservingElements.indexOf( child.nodeName ) === -1 ) {
 			cleanWhitespace( child );
@@ -136,6 +152,56 @@ function select( query, root, current ) {
 }
 
 /**
+ * Recursive transformation of <tpl:* /> elements
+ * 
+ * Elements can be intermingled with HTML, and will be removed after processing. The
+ * following elements will be processed.
+ * 
+ * 	* Template definition
+ * 		<tpl:define template="[name]">
+ * 			<p>Template contents</p>
+ * 		</tpl:define>
+ * 
+ * 	* Template application
+ * 		<tpl:apply template="[name]" />
+ * 
+ * @param node HTMLElement: Node to process
+ */
+function processTplElements( node, templates ) {
+	if ( typeof templates === 'undefined' ) {
+		templates = {};
+	}
+	for ( var i = 0; i < node.childNodes.length; i++ ) {
+		var child = node.childNodes[i];
+		switch ( child.nodeName ) {
+			case 'TPL:DEFINE':
+				if ( child.hasAttribute( 'template' ) ) {
+					var name = child.getAttribute( 'template' );
+					templates[name] = child.cloneNode( true );
+				}
+				node.removeChild( child );
+				break;
+			case 'TPL:APPLY':
+				if ( child.hasAttribute( 'template' ) ) {
+					var name = child.getAttribute( 'template' );
+					var copy = templates[name].cloneNode( true );
+					while ( copy.firstChild ) {
+						node.insertBefore( copy.firstChild, child );
+					}
+				}
+				node.removeChild( child );
+				break;
+			default:
+				if ( child.childNodes.length ) {
+					// Continue walking
+					processTplElements( child, templates );
+				}
+				break;
+		}
+	}
+}
+
+/**
  * Recursive transformation of <var:* /> elements
  * 
  * Elements can be intermingled with HTML, and will be removed after processing. The
@@ -171,9 +237,18 @@ function select( query, root, current ) {
  * @param current Object: Portion of the data structure this node is scoped to
  */
 function processVarElements( node, root, current ) {
+	if ( typeof current === 'undefined' ) {
+		current = root;
+	}
 	for ( var i = 0; i < node.childNodes.length; i++ ) {
 		var child = node.childNodes[i];
 		switch ( child.nodeName ) {
+			case 'VAR:DEFINE':
+				
+				break;
+			case 'VAR:APPLY':
+				
+				break;
 			case 'VAR:GO':
 				// Variable scoping
 				if ( child.hasAttribute( 'to' ) ) {
@@ -301,7 +376,9 @@ function processMsgElements( node, messages ) {
  */
 exports.render = function( html, context, messages, clean ) {
 	var doc = createDocumentFragmentFromHtml( html );
-	processVarElements( doc, context, context );
+	removeComments( doc );
+	processTplElements( doc );
+	processVarElements( doc, context );
 	processMsgElements( doc, messages );
 	if ( !!clean ) {
 		cleanWhitespace( doc );
