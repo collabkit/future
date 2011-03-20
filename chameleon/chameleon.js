@@ -2,17 +2,13 @@ var fs = require( 'fs' ),
 	util = require( 'util' ),
 	document = require( 'jsdom' ).jsdom();
 
-/*
- * HTML elements which may appear within a line of text.
- */
+// HTML elements which may appear within a line of text.
 var htmlTextElements = [
 	'A', 'ABBR', 'B', 'BDI', 'BDO', 'BLINK', 'BR', 'CITE', 'CODE', 'DFN', 'EM', 'FONT', 'I',
 	'IMG', 'KBD', 'MARK', 'Q', 'RP', 'RT', 'RUBY', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE',
 	'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR', 'WBR'
 ];
-/*
- * HTML elements within which whitespace should always be preserved.
- */
+// HTML elements within which whitespace should always be preserved.
 var htmlWhitespacePreservingElements = ['PRE', 'TEXTAREA'];
 
 /**
@@ -48,8 +44,8 @@ function replaceArguments( text, args ) {
  * Selects a value within an object using JSON "dot" syntax.
  * 
  * Syntax is identical to JSON "dot" syntax with the following additions:
- * 		@	current object; this is the entire query, not a prefix
- * 		.	start at root, ignoring current scope; this is a prefix
+ *   @ current object; this is the entire query, not a prefix
+ *   . start at root, ignoring current scope; this is a prefix
  */
 function select( query, root, current ) {
 	if ( typeof query === 'string' && typeof root === 'object' && root !== null ) {
@@ -166,13 +162,13 @@ function cleanWhitespace( node ) {
  * Elements can be intermingled with HTML, and will be removed after processing. The
  * following elements will be processed.
  * 
- * 	* Template definition
- * 		<tpl:define template="[name]">
- * 			<p>Template contents</p>
- * 		</tpl:define>
+ * * Template definition
+ *   <tpl:define template="[name]">
+ *       <p>Template contents</p>
+ *   </tpl:define>
  * 
- * 	* Template application
- * 		<tpl:apply template="[name]" />
+ * * Template application
+ *   <tpl:apply template="[name]" />
  * 
  * @param node HTMLElement: Node to process
  */
@@ -216,30 +212,30 @@ function processTplElements( node, templates ) {
  * Elements can be intermingled with HTML, and will be removed after processing. The
  * following elements will be processed.
  * 
- * 	* Variable scoping
- * 		<var:go to="[query]">
- * 			<!-- elements here inherit the scope of [query] -->
- * 		</var:go>
+ * * Variable scoping
+ *   <var:go to="[query]">
+ *       <!-- elements here inherit the scope of [query] -->
+ *   </var:go>
  * 
- * 	* Variable iteration
- * 		<var:go through="[query]">
- * 			<!-- elements here are repeated for each array element in [query] -->
- * 			<!-- elements here inherit the scope of [query] -->
- * 		</var:go>
+ * * Variable iteration
+ *   <var:go through="[query]">
+ *       <!-- elements here are repeated for each array element in [query] -->
+ *       <!-- elements here inherit the scope of [query] -->
+ *   </var:go>
  * 
- * 	* Variable text (HTML escaped)
- * 		<var:text from="[query]" />
+ * * Variable text (HTML escaped)
+ *   <var:text from="[query]" />
  * 
- * 	* Variable HTML (raw)
- * 		<var:html from="[query]" />
+ * * Variable HTML (raw)
+ *   <var:html from="[query]" />
  * 
- * 	* Variable attributes
- * 		<div class="a">
- * 			<var:attr set="id" from="[query]" />
- * 			<!-- attributes here will be set to the parent element -->
- * 			<var:attr set="class" from="[query]" />
- * 			<!-- duplicate attributes are appended with a space delimiter -->
- * 		</div>
+ * * Variable attributes
+ *   <div class="a">
+ *       <var:attr set="id" from="[query]" />
+ *       <!-- attributes here will be set to the parent element -->
+ *       <var:attr set="class" from="[query]" />
+ *       <!-- duplicate attributes are appended with a space delimiter -->
+ *   </div>
  * 
  * @param node HTMLElement: Node to process
  * @param root Object: Data structure to render variables from
@@ -252,12 +248,6 @@ function processVarElements( node, root, current ) {
 	for ( var i = 0; i < node.childNodes.length; i++ ) {
 		var child = node.childNodes[i];
 		switch ( child.nodeName ) {
-			case 'VAR:DEFINE':
-				
-				break;
-			case 'VAR:APPLY':
-				
-				break;
 			case 'VAR:GO':
 				// Variable scoping
 				if ( child.hasAttribute( 'to' ) ) {
@@ -325,17 +315,17 @@ function processVarElements( node, root, current ) {
  * Elements can be intermingled with HTML, and will be removed after processing. The
  * following elements will be processed.
  * 
- * 	* Message text
- * 		<msg:text from="[key]" />
+ * * Message text
+ *   <msg:text from="[key]" />
  * 
- * 	* Message HTML
- * 		<msg:html from="[key]" />
+ * * Message HTML
+ *   <msg:html from="[key]" />
  * 
- * 	* Message arguments (corresponding to $1, $2, etc.)
- * 		<msg:text from="key">
- * 			<msg:arg>text</msg:arg>
- * 			<msg:arg><var:text from="[query]" /></msg:arg>
- * 		</msg:text>
+ * * Message arguments (corresponding to $1, $2, etc.)
+ *   <msg:text from="key">
+ *       <msg:arg>text</msg:arg>
+ *       <msg:arg><var:text from="[query]" /></msg:arg>
+ *   </msg:text>
  * 
  * @param node HTMLElement: Node to process
  * @param messages Object: List of key/value pairs, each a message key and it's localized text
@@ -379,9 +369,9 @@ function processMsgElements( node, messages ) {
  * Renders tpl:*, var:* and msg:* elements in an HTML string.
  * 
  * Rendering happens in 3 complete passes.
- * 	* Template definition and application
- * 	* Variable scoping, iteration and output
- * 	* Message output
+ * * Template definition and application
+ * * Variable scoping, iteration and output
+ * * Message output
  * 
  * @param template String: HTML containing var:* and msg:* elements to render
  * @param context Object: Structured information for var:* elements
