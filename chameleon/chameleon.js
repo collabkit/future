@@ -46,6 +46,11 @@ function replaceArguments( text, args ) {
  * Syntax is identical to JSON "dot" syntax with the following additions:
  *   @ current object; this is the entire query, not a prefix
  *   . start at root, ignoring current scope; this is a prefix
+ * 
+ * @param query String: Selection query
+ * @param root Object: Root object to select from
+ * @param current Object: Scoped object to select from, a descendant of root
+ * @returns Mixed: Value of selection, null if selection is invalid
  */
 function select( query, root, current ) {
 	if ( typeof query === 'string' && typeof root === 'object' && root !== null ) {
