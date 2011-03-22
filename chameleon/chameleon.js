@@ -134,6 +134,7 @@ function cleanWhitespace( node ) {
 				} else {
 					child.nodeValue = child.nodeValue.replace( /\s+$/g, ' ' );
 				}
+				child.nodeValue = child.nodeValue.replace( /(\S)(\s+)(\S)/g, '$1 $3' );
 			} else {
 				l = r = false;
 				if ( child.previousSibling
