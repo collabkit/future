@@ -1,5 +1,6 @@
 var http = require( 'http' ),
-	chameleon = require( './chameleon' );
+	chameleon = require( '../../lib/chameleon' ),
+	lang = require( '../../lib/localizr' ).create( 'en' );
 
 http.createServer( function( req, res ) {
 	
@@ -11,6 +12,13 @@ http.createServer( function( req, res ) {
 		return;
 	}
 	
+	// Test messages
+	lang.set( {
+		'foo': '$1 and counting... $2!',
+		'bar': '<blink>Bah!</blink>'
+	} );
+	
+	// Test context
 	var context = {
 		'body': {
 			'text': 'Chameleon Test',
@@ -23,15 +31,22 @@ http.createServer( function( req, res ) {
 		},
 	};
 	
-	var messages = {
-		'foo': '$1 and counting... $2!',
-		'bar': '<blink>Bah!</blink>'
-	};
+	try {
+		chameleon.renderFile(
+			'test.html',
+			context,
+			function( k, a ) { return lang.get( k, a ) },
+			true,
+			function( html ) {
+				res.writeHeader( 200, { 'Content-Type': 'text/html' } );
+				res.end( html );
+			}
+		);
+	} catch ( e ) {
+		res.writeHeader( 500, { 'Content-Type': 'text/plain' } );
+		res.end( e.name + ': ' + e.message );
+	}
 	
-	chameleon.renderFile( 'test.html', context, messages, true, function( html ) {
-		res.writeHeader( 200, { 'Content-Type': 'text/html' } );
-		res.end( html );
-	} );
 } ).listen( 8124 );
 
 console.log( 'Server running on port 8124' );
