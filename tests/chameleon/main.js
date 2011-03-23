@@ -33,7 +33,7 @@ http.createServer( function( req, res ) {
 	
 	try {
 		chameleon.renderFile(
-			'test.html',
+			'template.html',
 			context,
 			function( k, a ) { return lang.get( k, a ) },
 			true,
