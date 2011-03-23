@@ -7,7 +7,7 @@ This repository contains a collection of experimental prototypes.
 Template processor for full/partial HTML pages.
 
 * Define and apply templates within a file
-* Render HTML using an plain object as a context
+* Render HTML using a plain object as a context
     * Scoping, like JavaScript's with statement but less evil
     * Iteration, somewhat like XSL's <xsl:for-each>...</xsl:for-each>
     * Output, escaped or raw, sort of like XSL's <xsl:value-of />
