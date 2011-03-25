@@ -15,7 +15,8 @@ http.createServer( function( req, res ) {
 	// Test messages
 	lang.set( {
 		'foo': '$1 and counting... $2!',
-		'bar': '<blink>Bah!</blink>'
+		'bar': '<blink>Bah!</blink>',
+		'baz': 'buzzzzz'
 	} );
 	
 	// Test context
@@ -28,7 +29,7 @@ http.createServer( function( req, res ) {
 				'colors': ['red', 'green', 'blue'],
 				'people': [{ 'name': 'joe', 'age': 12 }, { 'name': 'sally', 'age': 15 }]
 			}
-		},
+		}
 	};
 	
 	try {
