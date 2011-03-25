@@ -1,10 +1,18 @@
 # Chameleon
 
-This is a processor that takes HTML annotated with additional elements, a JavaScript object and a callback function for message rendering and outputs rendered HTML content. it supports templates, variables and messages for i18n/L10n.
+Chameleon is an HTML processor that can take an annotated HTML template, a JavaScript object and a callback function for message rendering and outputs rendered HTML content.
 
 ## Templates
 
 The first pass during processing is template definition and application.
+
+    <!-- Defines the "hello" template -->
+    <tpl:define template="hello">
+    	<p>Hello <var:text from="name" /></p>
+    </tpl:define>
+    
+    <!-- Applies the "hello" template -->
+    <tpl:apply template="hello" />
 
 ### Definition
 
@@ -15,6 +23,19 @@ The first pass during processing is template definition and application.
 * `<tpl:apply template="[name]" />`<br />Stored elements for this template will be injected.
 
 ## Variables
+
+    <!-- Changes the scope to .library -->
+    <var:go to="library">
+        <!-- Outputs .library.name as a heading -->
+        <h1><var:text from="name" /></h1>
+        <ul>
+            <!-- Iterates over each book in .library.books -->
+	        <var:go through="books">
+                <!-- Outputs .library.books[].title as a list item -->
+	            <li><var:text from="title" /></li>
+	        </var:go>
+        <ul>
+    </var:go>
 
 The second pass during processing is variable scoping, iteration and output. Variables are identified by queries, which are similar to accessing objects in JavaScript with the addition of two special cases. If a query is prefixed with `.` then it is always run against the root data object. If a query is only `@` than it selects the current object.
 
@@ -40,6 +61,11 @@ Output can be either escaped, raw or set as the value of an attribute on the par
 ## Messages
 
 The final pass during processing is message output. Messages are identified by keys, which depending on your message system may be a canonical text or a generic key to identify the message.
+
+    <!-- Outputs the "greeting" message, passing "John" as a parameter -->
+    <msg:text from="greeting">
+        <msg:arg>John</msg:arg>
+    </msg:text>
 
 ### Output
 
