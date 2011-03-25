@@ -1,6 +1,6 @@
 # Chameleon
 
-Chameleon is an HTML processor that can take an annotated HTML page or partial, a JavaScript object and a callback function for message rendering and output finished HTML content. It's designed to be portable to the client, currently relying on JSDom, but potentially using any web browser's DOM implementation. Rendered HTML can be "cleaned", removing all non-critical whitespace and comments while still preserving HTML elements that are whitespace sensitive, like `textarea` and `pre`, as well as conditional comments used by Internet Explorer.
+Chameleon is an HTML processor that can take an annotated HTML page or partial, a JavaScript object and a callback function for message rendering and output finished HTML content. It's designed to be portable to the client, currently relying on JSDom, but potentially using any web browser's DOM implementation. Rendered HTML can be "cleaned", removing all non-functional whitespace and comments while still preserving HTML elements that are whitespace sensitive, like `textarea` and `pre`, as well as conditional comments used by Internet Explorer.
 
 ## Rendering pages
 
@@ -8,13 +8,21 @@ String or files can be rendered, in the latter case optionally asynchronously.
 
     var chameleon = require( './lib/chameleon' );
     // From string
-    res.send( chameleon.render( '<h1><var:text from="foo"/></h1>', context, msgCallback, true ) );
+    res.send( chameleon.render( '<h1><var:text from="foo"/></h1>', { /* options */ } ) );
     // From file, synchronous
-    res.send( chameleon.renderFileSync( 'page.html', context, msgCallback, true ) );
+    res.send( chameleon.renderFileSync( 'page.html', { /* options */ } ) );
     // From file, asynchronous
-    chameleon.renderFile( 'page.html', context, msgCallback, true, function( html ) {
+    chameleon.renderFile( 'page.html', { /* options */ }, function( html ) {
         res.send( html );
     } );
+
+### Rendering options 
+
+The options passed to a render call may contain:
+
+* `context` A JavaScript object from which var:* elements will query
+* `msg` A callback function which will be called when rendering for msg:* elements, taking a message key string and arguments array
+* `clean` Boolean value for cleaning non-functional whitespace and comments.
 
 ## Creating pages
 
