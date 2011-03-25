@@ -1,6 +1,6 @@
 # Chameleon
 
-Chameleon is an HTML processor that can render finished HTML content from a specially annotated full or partial HTML page, a JavaScript "context" object and a message callback. It's designed to be portable to the client, currently relying on JSDom, but potentially using any web browser's DOM implementation. Rendered HTML can be "cleaned", removing all non-functional whitespace and comments while still preserving HTML elements that are whitespace sensitive, like `textarea` and `pre`, as well as conditional comments used by Internet Explorer.
+Chameleon is an HTML processor that can render finished HTML content from a specially annotated full or partial HTML page, a JavaScript "context" object and a message callback. It's designed to be portable to the client, currently relying on JSDom, but potentially using any web browser's DOM implementation. Rendered HTML can be "cleaned", removing most non-functional whitespace and comments while still preserving HTML elements that are whitespace sensitive, like `textarea` and `pre`, as well as conditional comments used by Internet Explorer.
 
 ## Rendering pages
 
@@ -22,7 +22,7 @@ The options passed to a render call may contain:
 
 * `context` A JavaScript object from which var:* elements will query
 * `msg` A callback function which will be called when rendering for msg:* elements, taking a message key string and arguments array
-* `clean` Boolean value for cleaning non-functional whitespace and comments.
+* `clean` Boolean value for cleaning most non-functional whitespace and comments.
 
 ### Context objects
 
