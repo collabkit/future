@@ -1,10 +1,10 @@
 # Chameleon
 
-Chameleon is an HTML processor that can take an annotated HTML page or partial, a JavaScript object and a callback function for message rendering and output finished HTML content. It's designed to be portable to the client, currently relying on JSDom, but potentially using any web browser's DOM implementation. Rendered HTML can be "cleaned", removing all non-functional whitespace and comments while still preserving HTML elements that are whitespace sensitive, like `textarea` and `pre`, as well as conditional comments used by Internet Explorer.
+Chameleon is an HTML processor that can render finished HTML content from a specially annotated full or partial HTML page, a JavaScript "context" object and a message callback. It's designed to be portable to the client, currently relying on JSDom, but potentially using any web browser's DOM implementation. Rendered HTML can be "cleaned", removing all non-functional whitespace and comments while still preserving HTML elements that are whitespace sensitive, like `textarea` and `pre`, as well as conditional comments used by Internet Explorer.
 
 ## Rendering pages
 
-String or files can be rendered, in the latter case optionally asynchronously.
+Either strings of HTML data or HTML files can be rendered. When rendering files, synchronous rendering is optional.
 
     var chameleon = require( './lib/chameleon' );
     // From string
@@ -23,6 +23,18 @@ The options passed to a render call may contain:
 * `context` A JavaScript object from which var:* elements will query
 * `msg` A callback function which will be called when rendering for msg:* elements, taking a message key string and arguments array
 * `clean` Boolean value for cleaning non-functional whitespace and comments.
+
+### Context objects
+
+A context object is a simple JavaScript object containing strings, numbers, arrays and other objects. These members are selected using queries which look just like JavaScripts regular object notation, with a couple of special cases.
+
+### Message callbacks
+
+Any i18n/L10n system can be used by providing a wrapper function as a callback for message rendering. The function will be given two parameters, a string containing the message key and an array of arguments and should return the rendered message.
+
+    function msgCallback( key, args ) {
+        return myLocalizationSystem.get( key, args );
+    }
 
 ## Creating pages
 
