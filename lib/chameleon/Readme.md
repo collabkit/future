@@ -1,6 +1,6 @@
 # Chameleon
 
-Chameleon is an HTML processor that can take an annotated HTML page or partial, a JavaScript object and a callback function for message rendering and output finished HTML content. It's designed to be portable to the client, currently relying on JSDom, but potentially using any web browser's DOM implementation. Rendered HTML can be cleaned of unused whitespace and comments while preserving whitespace sensitive elements like textarea and pre as well as conditional comments used by Internet Explorer.
+Chameleon is an HTML processor that can take an annotated HTML page or partial, a JavaScript object and a callback function for message rendering and output finished HTML content. It's designed to be portable to the client, currently relying on JSDom, but potentially using any web browser's DOM implementation. Rendered HTML can be "cleaned", removing all non-critical whitespace and comments while still preserving HTML elements that are whitespace sensitive, like `textarea` and `pre`, as well as conditional comments used by Internet Explorer.
 
 ## Rendering pages
 
