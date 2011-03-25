@@ -1,8 +1,26 @@
 # Chameleon
 
-Chameleon is an HTML processor that can take an annotated HTML template, a JavaScript object and a callback function for message rendering and output finished HTML content. It's designed to be portable to the client, currently relying on JSDom, but potentially using any web browser's DOM implementation. Rendered HTML can be cleaned of unused whitespace and comments while preserving whitespace sensitive elements like textarea and pre as well as conditional comments used by Internet Explorer.
+Chameleon is an HTML processor that can take an annotated HTML page or partial, a JavaScript object and a callback function for message rendering and output finished HTML content. It's designed to be portable to the client, currently relying on JSDom, but potentially using any web browser's DOM implementation. Rendered HTML can be cleaned of unused whitespace and comments while preserving whitespace sensitive elements like textarea and pre as well as conditional comments used by Internet Explorer.
 
-## Templates
+## Rendering pages
+
+String or files can be rendered, in the latter case optionally asynchronously.
+
+    var chameleon = require( './lib/chameleon' );
+    // From string
+    res.send( chameleon.render( '<h1><var:text from="foo"/></h1>', context, msgCallback, true ) );
+    // From file, synchronous
+    res.send( chameleon.renderFileSync( 'page.html', context, msgCallback, true ) );
+    // From file, asynchronous
+    chameleon.renderFile( 'page.html', context, msgCallback, true, function( html ) {
+        res.send( html );
+    } );
+
+## Creating pages
+
+Full or partial HTML pages can be rendered. Rendering is a process of replacing special XML elements within an HTML page with text and HTML based on the data input, called the context, and message rendering provided by the message callback.
+
+### Templates
 
 The first pass during processing is template definition and application.
 
@@ -14,15 +32,15 @@ The first pass during processing is template definition and application.
     <!-- Applies the "hello" template -->
     <tpl:apply template="hello" />
 
-### Definition
+#### Definition
 
 * `<tpl:define template="[name]"></tpl:define>`<br />Child elements will be stored, unevaluated, for later application.
 
-### Application
+#### Application
 
 * `<tpl:apply template="[name]" />`<br />Stored elements for this template will be injected.
 
-## Variables
+### Variables
 
     <!-- Changes the scope to .library -->
     <var:go to="library">
@@ -39,17 +57,17 @@ The first pass during processing is template definition and application.
 
 The second pass during processing is variable scoping, iteration and output. Variables are identified by queries, which are similar to accessing objects in JavaScript with the addition of two special cases. If a query is prefixed with `.` then it is always run against the root data object. If a query is only `@` than it selects the current object.
 
-### Scope
+#### Scope
 
 Object structures can be scoped, similar to how the with() statement works in JavaScript.
 
 * `<var:go to="[query]"></var:go>`<br />Queries made by child elements will be based on the results of this query
 
-### Iteration
+#### Iteration
 
 * `<var:go through="[query]"></var:go>`<br />Child elements will be rendered once for each element in the array selected by this query, and queries made by child elements will be based on the value of the current iteration.
 
-### Output
+#### Output
 
 Output can be either escaped, raw or set as the value of an attribute on the parent element. In the case of attribute output, if the parent element already has an attribute of the same name, the existing value will be replaced unless the `append` flag is set, in which case it will be appended using a single space delimiter.
 
@@ -58,7 +76,7 @@ Output can be either escaped, raw or set as the value of an attribute on the par
 * `<var:attr set="[attr]" from="[query]" />`<br />Variable text will be set as parent element attribute
 * `<var:attr set="[attr]" from="[query]" append />`<br />Parent attributes will be appended if existent
 
-## Messages
+### Messages
 
 The final pass during processing is message output. Messages are identified by keys, which depending on your message system may be a canonical text or a generic key to identify the message.
 
@@ -67,7 +85,7 @@ The final pass during processing is message output. Messages are identified by k
         <msg:arg>John</msg:arg>
     </msg:text>
 
-### Output
+#### Output
 
 See variable documentation for more information about the different kinds of output, as they work identically.
 
@@ -76,7 +94,7 @@ See variable documentation for more information about the different kinds of out
 * `<msg:attr set="[attr]" from="[key]" />`<br />Message text will be set as parent element attribute
 * `<msg:attr set="[attr]" from="[key]" append />`<br />Parent attributes will be appended if existent
 
-### Arguments
+#### Arguments
 
 Any of the message output elements may contain one or more child `<msg:arg />` elements. The HTML contents of these elements will be passed as arguments into the message when rendering it.
 
