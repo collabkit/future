@@ -19,26 +19,24 @@ http.createServer( function( req, res ) {
 		'baz': 'buzzzzz'
 	} );
 	
-	// Test context
-	var context = {
-		'body': {
-			'text': 'Chameleon Test',
-			'html': '<strong>Strength</strong> and <em>emphasis</em>.',
-			'attr': 'colors',
-			'lists': {
-				'colors': ['red', 'green', 'blue'],
-				'people': [{ 'name': 'joe', 'age': 12 }, { 'name': 'sally', 'age': 15 }]
-			}
-		}
-	};
-	
 	try {
 		chameleon.renderFile(
 			'template.html',
-			context,
-			function( k, a ) { return lang.get( k, a ) },
-			true,
-			function( html ) {
+			{
+				'var': {
+					'body': {
+						'text': 'Chameleon Test',
+						'html': '<strong>Strength</strong> and <em>emphasis</em>.',
+						'attr': 'colors',
+						'lists': {
+							'colors': ['red', 'green', 'blue'],
+							'people': [{ 'name': 'joe', 'age': 12 }, { 'name': 'sally', 'age': 15 }]
+						}
+					}
+				},
+				'msg': function( k, a ) { return lang.get( k, a ) },
+				'clean': true,
+			}, function( html ) {
 				res.writeHeader( 200, { 'Content-Type': 'text/html' } );
 				res.end( html );
 			}
