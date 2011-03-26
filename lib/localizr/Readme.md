@@ -2,5 +2,10 @@
 
 Message system for i18n/L10n.
 
-* Set/get messages per-language
-* Apply arguments to messages with $1, $2, etc.
+    var lang = require( './lib/localizr' ).createLanguage( 'en' );
+    
+    lang.setMessages( {
+    	'greeting': 'Hello $1.',
+    } );
+    
+    var greetingText = lang.getMessage( 'greeting', ['John'] );
