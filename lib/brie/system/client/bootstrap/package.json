@@ -1,0 +1,7 @@
+{
+	"name" : "bootstrap",
+	"description" : "Client-side support for CommonJS.",
+	"author" : "Trevor Parscal <trevorparscal@gmail.com>",
+	"main" : "./main.js",
+	"bootstrap" : true
+}

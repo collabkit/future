@@ -1,0 +1,6 @@
+{
+	"name" : "collabkit-core",
+	"description" : "Core library for both client and server.",
+	"author" : "Trevor Parscal <trevorparscal@gmail.com>",
+	"main" : "./main.js"
+}

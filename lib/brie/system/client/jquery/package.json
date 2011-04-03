@@ -1,0 +1,6 @@
+{
+	"name" : "jquery",
+	"description" : "jQuery",
+	"main" : "./jquery.js",
+	"exports" : ["jQuery"]
+}
