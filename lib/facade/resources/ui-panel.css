@@ -1,0 +1,54 @@
+.ui-panel {
+	position: relative;
+	overflow: hidden;
+	height: 100%;
+	width: 100%;
+}
+.ui-panel-content {
+	position: absolute;
+	top: 0;
+	padding: 0.2em 1.2em 0.2em 0.2em;
+}
+.ui-panel-bar {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 1em;
+	background-color: #ffffff;
+	box-shadow: inset -0.5em 0 1em #dddddd, inset 0 0 0.125em #333333;
+	-moz-box-shadow: inset -0.5em 0 1em #dddddd, inset 0 0 0.125em #333333;
+	-webkit-box-shadow: inset -0.5em 0 1em #dddddd, inset 0 0 0.125em #333333;
+}
+.ui-panel-trough {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0.5em;
+	bottom: 0.5em;
+	background-color: #ffffff;
+	border-radius: 1em;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-shadow: inset 0.5em 0 1em #cccccc, inset 0.125em 0 0.25em #999999;
+	-moz-box-shadow: inset 0.5em 0 1em #cccccc, inset 0.125em 0 0.25em #999999;
+	-webkit-box-shadow: inset 0.5em 0 1em #cccccc, inset 0.125em 0 0.25em #999999;
+}
+.ui-panel-handle {
+	position: absolute;
+	background-color: #99ccee;
+	border: solid 1px #336699;
+	border-radius: 1em;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+.ui-panel-trough .ui-panel-handle {
+	box-shadow: inset -0.5em 0 0.5em #6699cc, inset 0 0 0.25em #6699cc;
+	-moz-box-shadow: inset -0.5em 0 0.5em #6699cc, inset 0 0 0.25em #6699cc;
+	-webkit-box-shadow: inset -0.5em 0 0.5em #6699cc, inset 0 0 0.25em #6699cc;
+}
+.ui-panel-trough .ui-panel-handle {
+	width: 100%;
+}
