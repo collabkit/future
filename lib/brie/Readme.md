@@ -92,3 +92,16 @@ Allows users to construct documents using a variety of blocks, such as text, ima
 
 Allows users to organize documents and links to resources in the system or anywhere on the web,
 together with other users.
+
+# Testing
+
+## Media
+
+The stub Media provider currently simply saves data into local memory. You can upload a file via HTTP PUT like so:
+
+  curl -X PUT -H 'Content-Type: image/png' \
+    --data-binary @/Users/brion/Pictures/1708.png \
+    http://lazarus.local:8124/:media/new
+
+which should return an HTTP 303 and a short HTML response body pointing to the fetch URL.
+
