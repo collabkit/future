@@ -3,42 +3,19 @@
 <html>
 	<head>
 		<title>Facade</title>
-		<link rel="stylesheet" href="resources/ui-app.css" />
+		<link rel="stylesheet" href="resources/ui-window.css" />
+		<link rel="stylesheet" href="resources/ui-screen.css" />
 		<link rel="stylesheet" href="resources/ui-panel.css" />
 	</head>
-
 	<body>
-		<div class="ui-app">
-			<div class="ui-app-body">
-				<span>[body]</span>
-				<p>0...</p>
-				<p>1...</p>
-				<p>2...</p>
-				<p>3...</p>
-				<p>4...</p>
-				<p>5...</p>
-				<p>6...</p>
-				<p>7...</p>
-				<p>8...</p>
-				<p>9...</p>
-			</div>
-			<div class="ui-app-foot">
-				<span>[foot]</span>
-			</div>
-			<div class="ui-app-head">
-				<span>[head]</span>
-				<!-- maybe a menu here -->
-			</div>
-			<div class="ui-app-overlays">
-				<!-- overlay content (menus, dialogs, tool-tips, etc. here -->
-			</div>
-		</div>
+		<noscript>JavaScript is required to use this application.</noscript>
 		<script src="resources/jquery.js"></script>
 		<script src="resources/jquery.mousewheel.js"></script>
-		<script src="resources/ui-app.js"></script>
+		<script src="resources/ui.js"></script>
+		<script src="resources/ui-window.js"></script>
+		<script src="resources/ui-screen.js"></script>
 		<script src="resources/ui-panel.js"></script>
-		<script>
-			$( '.ui-app-body' ).ui( 'panel', { /* options */ } )
-		</script>
+		<script src="resources/ui-group.js"></script>
+		<script src="resources/app.js"></script>
 	</body>
 </html>
