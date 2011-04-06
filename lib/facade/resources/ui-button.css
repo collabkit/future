@@ -1,0 +1,29 @@
+.ui-button {
+	margin: 0.5em;
+	padding: 0.75em 1em;
+	cursor: pointer;
+	font-size: 0.8em;
+	color: #333333;
+	text-shadow: 0 1px 1px #ffffff;
+	border: solid 1px #c7e0ef;
+	border-radius: 1em;
+	-moz-border-radius: 0.5em;
+	background-color: #eaf6fd;
+	box-shadow: inset 0 1.5em 3em #ffffff;
+	-moz-box-shadow: inset 0 1.5em 3em #ffffff;
+	-webkit-box-shadow: inset 0 1.5em 3em #ffffff;
+}
+
+.ui-button:before {
+	content: "\262F\0A0";
+}
+
+.ui-button:hover {
+	border-color: #a7c0cf;
+}
+
+.ui-button:active {
+	box-shadow: inset 0 -0.5em 2em #f9fdff;
+	-moz-box-shadow: inset 0 -0.5em 2em #f9fdff;
+	-webkit-box-shadow: inset 0 -0.5em 2em #f9fdff;
+}
