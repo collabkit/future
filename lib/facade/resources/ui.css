@@ -142,14 +142,11 @@ pre, code, kbd, tt {
 	-moz-box-sizing: border-box;
 	-webkit-box-sizing: border-box;
 	top: 0;
-	left: 0;
-	right: 0;
-	height: 5em;
-	border-bottom: solid 1px #bbbbbb;
-	background-color: #eaf6fd;
-	box-shadow: inset 0 0 2em 4em #f9fdff;
-	-moz-box-shadow: inset 0 2em 4em #f9fdff;
-	-webkit-box-shadow: inset 0 2em 4em #f9fdff;
+	bottom: 0;
+	height: 3em;
+	width: 1000px;
+	left: 50%;
+	margin-left: -500px;
 }
 
 /* ui.Sections */
@@ -160,15 +157,21 @@ pre, code, kbd, tt {
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	-webkit-box-sizing: border-box;
-	top: 5em;
+	top: 3em;
 	bottom: 0;
-	left: -1em;
-	right: -1em;
-	padding: 0 1em;
-	background-color: white;
-	box-shadow: inset 0 0 1em #dddddd, inset 0 0 0.125em #999999;
-	-moz-box-shadow: inset 0 0 1em #dddddd, inset 0 0 0.125em #999999;
-	-webkit-box-shadow: inset 0 0 1em #dddddd, inset 0 0 0.125em #999999;
+	width: 1000px;
+	left: 50%;
+	margin-left: -500px;
+	border: solid 1px #b9e6f7;
+	border-top-left-radius: 1em;
+	border-top-right-radius: 1em;
+	-moz-border-radius-topleft: 1em;
+	-moz-border-radius-topright: 1em;
+	border-bottom-width: 0;
+	background-color: #e8f7fc;
+	box-shadow: 0 0 20em #dae8f3, 0 0 10em #dae8f3, inset 0 3em 6em #ffffff;
+	-moz-box-shadow: 0 0 20em #dae8f3, 0 0 10em #dae8f3, inset 0 3em 6em #ffffff;
+	-webkit-box-shadow: 0 0 20em #dae8f3, 0 0 10em #dae8f3, inset 0 3em 6em #ffffff;
 }
 
 .ui-sections > section {
@@ -183,11 +186,16 @@ pre, code, kbd, tt {
 	overflow-y: scroll;
 	height: 100%;
 	width: 100%;
+	background-color: white;
 }
 .ui-panel-content {
 	position: absolute;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
 	top: 0;
 	padding: 0.2em 1.2em 0.2em 0.2em;
+	width: 100%;
 }
 
 /* ui.Group */
