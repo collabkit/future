@@ -5,15 +5,16 @@
 	overflow: hidden;
 	top: 0;
 	bottom: 0;
-	height: 3em;
+	height: 4em;
 	width: 1000px;
 	left: 50%;
 	margin-left: -500px;
 }
 
-.app-header h1 {
+.app-header img {
 	padding: 0;
-	margin: 0.25em;
+	margin: -0.5em -0.25em;
+	height: 5em;
 }
 
 /* Sections */
@@ -21,7 +22,7 @@
 .app-sections {
 	position: absolute;
 	overflow: hidden;
-	top: 3em;
+	top: 4em;
 	bottom: 0;
 	width: 1000px;
 	left: 50%;
