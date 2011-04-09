@@ -216,10 +216,12 @@ pre, code, kbd, tt {
 }
 
 .ui-group-vertical .ui-group-member {
+	position: relative;
 	display: block;
 }
 
 .ui-group-horizontal .ui-group-member {
+	position: relative;
 	display: inline-block;
 }
 
