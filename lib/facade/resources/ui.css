@@ -155,16 +155,17 @@ pre, code, kbd, tt {
 
 /* ui.Group */
 
-.ui-group > .ui-group-member {
+.ui-group > .ui-group-item {
 	position: relative;
 }
 
-.ui-group-vertical > .ui-group-member {
+.ui-group-vertical > .ui-group-item {
 	display: block;
 }
 
-.ui-group-horizontal > .ui-group-member {
+.ui-group-horizontal > .ui-group-item {
 	display: inline-block;
+	float: left;
 }
 
 /* ui.Button */
@@ -195,6 +196,18 @@ pre, code, kbd, tt {
 	box-shadow: inset 0 -0.5em 2em #f9fdff;
 	-moz-box-shadow: inset 0 -0.5em 2em #f9fdff;
 	-webkit-box-shadow: inset 0 -0.5em 2em #f9fdff;
+}
+
+.ui-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.ui-list-item {
+	margin: 0;
+	padding: 0.125em 0.5em;
+	list-style: none;
+	background-color: #ffffff;
 }
 
 /* This code would be good for a toolbar group or something similar
