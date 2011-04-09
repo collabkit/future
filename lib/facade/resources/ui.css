@@ -81,6 +81,9 @@
 
 * {
 	font-family: 'Droid Sans';
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
 }
 
 html,
@@ -145,9 +148,6 @@ pre, code, kbd, tt {
 }
 .ui-panel-content {
 	position: absolute;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
 	top: 0;
 	padding: 0.2em 1.2em 0.2em 0.2em;
 	width: 100%;

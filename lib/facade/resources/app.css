@@ -3,9 +3,6 @@
 .app-header {
 	position: absolute;
 	overflow: hidden;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
 	top: 0;
 	bottom: 0;
 	height: 3em;
@@ -19,9 +16,6 @@
 .app-sections {
 	position: absolute;
 	overflow: hidden;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
 	top: 3em;
 	bottom: 0;
 	width: 1000px;
@@ -34,11 +28,25 @@
 	-moz-border-radius-topright: 1em;
 	border-bottom-width: 0;
 	background-color: #e8f7fc;
+	/*
+	 * THIS IS SUPER SLOW IN SAFARI!
 	box-shadow: 0 0 20em #dae8f3, 0 0 10em #dae8f3, inset 0 3em 6em #ffffff;
 	-moz-box-shadow: 0 0 20em #dae8f3, 0 0 10em #dae8f3, inset 0 3em 6em #ffffff;
 	-webkit-box-shadow: 0 0 20em #dae8f3, 0 0 10em #dae8f3, inset 0 3em 6em #ffffff;
+	*/
 }
 
 .app-sections > section {
 	height: 100%;
+}
+
+/* Content */
+
+.app-content {
+	border-top: solid 1px #ddedf4;
+}
+
+/* Toolbar */
+.app-toolbar {
+	padding: 0.5em;
 }
