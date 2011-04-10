@@ -198,16 +198,43 @@ pre, code, kbd, tt {
 	-webkit-box-shadow: inset 0 -0.5em 2em #f9fdff;
 }
 
+/* ui.List */
+
 .ui-list {
+	display: block;
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 .ui-list-item {
+	display: block;
 	margin: 0;
-	padding: 0.125em 0.5em;
+	padding: 0;
 	list-style: none;
-	background-color: #ffffff;
+}
+
+/* ui.DropDown */
+
+.ui-dropdown-open {
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	-moz-border-radius-bottomleft: 0;
+	-moz-border-radius-bottomright: 0;
+}
+.ui-dropdown-list {
+	position: relative;
+	border: solid 1px #c7e0ef;
+	margin-top: -1px;
+}
+.ui-dropdown-list .ui-button {
+	display: block;
+	width: 100%;
+	text-align: left;
+	margin: 0;
+	padding: 0.25em 0.5em;
+	border: none;
+	border-radius: 0;
+	-moz-border-radius: 0;
 }
 
 /* This code would be good for a toolbar group or something similar
