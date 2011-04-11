@@ -1,0 +1,6 @@
+{
+	"name" : "collabkit-events",
+	"description" : "A browser version of EventEmitter.",
+	"author" : "Trevor Parscal <trevorparscal@gmail.com>",
+	"main" : "./main.js"
+}
