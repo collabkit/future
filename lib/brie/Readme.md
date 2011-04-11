@@ -66,7 +66,8 @@ Allows users to organize documents and links to resources in the system or anywh
 
 ## Media
 
-The stub Media provider currently simply saves data into local memory. You can upload a file via HTTP PUT like so:
+The stub Media provider currently saves data into an unreferenced commit in a local git repository.
+You can upload a file via HTTP PUT like so:
 
   curl -X PUT -H 'Content-Type: image/png' \
     --data-binary @/Users/brion/Pictures/1708.png \
