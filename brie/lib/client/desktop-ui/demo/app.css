@@ -46,19 +46,6 @@
 	height: 100%;
 }
 
-/* Overlays */
-
-.app-overlays {
-	position: absolute;
-	top: 0;
-	left: 0;
-	overflow: visible;
-}
-
-.app-overlays > .ui-group-item {
-	display: none;
-}
-
 /* Content */
 
 .app-content {

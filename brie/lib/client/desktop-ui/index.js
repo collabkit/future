@@ -276,11 +276,10 @@ Class( ui, 'DropDown', {
 	'is': ui.Button,
 	'has': {
 		'list': null,
+		'$overlay': '<div class="ui-dropdown-list"></div>',
 		'_options': {
-			'list': null,
-			'overlays': null
-		},
-		'_overlay': null
+			'list': null
+		}
 	},
 	'can': {
 		'initialize': function( options ) {
@@ -292,29 +291,24 @@ Class( ui, 'DropDown', {
 			} else {
 				this.list = new ui.List();
 			}
-			this.list.$.addClass( 'ui-dropdown-list' );
-			if ( !( this._options.overlays instanceof ui.Group ) ) {
-				throw 'Missing overlays option error.';
-			}
-			this._overlay = this._options.overlays.add( this.list );
+			$( 'body' ).append( this.$overlay = $( this.$overlay ).append( this.list.$ ) );
 			this.$.click( this._showMenu );
 		},
 		'_showMenu': function() {
-			var offset = this.$.offset();
-			this.list.$.parent()
-				.css( {
-					'top': offset.top + this.$.outerHeight(),
-					'left': offset.left,
-					'min-width': this.$.outerWidth(),
-					'display': 'block'
-				} );
 			this.$.addClass( 'ui-dropdown-open' );
-			$( document ).one( 'click', this._hideMenu )
+			$( document ).one( 'click', this._hideMenu );
+			var offset = this.$.offset();
+			this.$overlay.css( {
+				'top': offset.top + this.$.outerHeight(),
+				'left': offset.left,
+				'min-width': this.$.outerWidth(),
+				'display': 'block'
+			} );
 			return false;
 		},
 		'_hideMenu': function() {
 			this.$.removeClass( 'ui-dropdown-open' );
-			this.list.$.parent().hide();
+			this.$overlay.hide();
 		}
 	}
 } );

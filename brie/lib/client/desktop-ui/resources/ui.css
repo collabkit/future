@@ -232,7 +232,8 @@ pre, code, kbd, tt {
 	-webkit-box-shadow: inset 0 -0.5em 2em #f9fdff;
 }
 .ui-dropdown-list {
-	position: relative;
+	position: absolute;
+	display: none;
 	border: solid 1px #c7e0ef;
 	margin-top: -1px;
 	box-shadow: 0 0.5em 1em rgba(51,102,255,0.25);

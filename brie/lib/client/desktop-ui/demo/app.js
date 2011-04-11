@@ -7,10 +7,6 @@ var sections = new ui.Group( {
 	'element': 'section',
 	'classes': ['app-sections']
 } );
-var overlays = new ui.Group( {
-	'element': 'div',
-	'classes': ['app-overlays']
-} );
 $( 'body' ).append( sections.$, header.$, overlays.$ );
 
 // Group with buttons in the header
@@ -24,6 +20,7 @@ sections.add(
 	'toolbar',
 	new ui.Group( {
 		'classes': ['app-toolbar'],
+		'orientation': 'horizontal',
 		'items': {
 			'one': new ui.Button( { 'text': 'One' } ),
 			'two': new ui.Button( { 'text': 'Two' } ),
@@ -37,11 +34,9 @@ sections.add(
 						'four': new ui.Button( { 'text': 'Four' } ),
 						'five': new ui.Button( { 'text': 'Five' } ),
 					}
-				} ),
-				'overlays': overlays
+				} )
 			} )
-		},
-		'orientation': 'horizontal'
+		}
 	} ),
 	'5em'
 );
