@@ -10,10 +10,7 @@ var sections = new ui.Group( {
 $( 'body' ).append( sections.$, header.$ );
 
 // Group with buttons in the header
-header.add(
-	'logo',
-	new ui.Html( '<img src="graphics/collabkit-logo.svg" class="app-logo" />' )
-);
+header.add( 'logo', new ui.Html( '<img src="graphics/collabkit-logo.svg" class="app-logo" />' ) );
 
 // Panel with test content as one of the sections
 sections.add(
