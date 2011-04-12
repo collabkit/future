@@ -215,60 +215,31 @@ Class( ui, 'List', {
 		'_options': {
 			'items': null,
 			'classes': []
-		},
-		'_items': {},
-		'_autoId': 0
+		}
 	},
 	'can': {
 		'initialize': function( options ) {
 			$.extend( this._options, options || {} );
 			this.$ = $( this.$ ).addClass( this._options.classes.join( ' ' ) );
-			if ( typeOf( this._options.items ) === 'object' ) {
-				for ( key in this._options.items ) {
-					this.add( key, this._options.items[key] );
+			if ( typeOf( this._options.items ) === 'array' ) {
+				for ( var i = 0; i < this._options.items.length; i++ ) {
+					if ( typeOf( this._options.items[i] ) === 'object' ) {
+						this.$.append( this._create( this._options.items[i] ) );
+					}
 				}
 			}
 		},
-		/**
-		 * Adds an item to the group.
-		 * 
-		 * @param key String: Name to access item by later on (optional, one will be generated if
-		 * a key is not specified)
-		 * @param item Object: Item to add
-		 * @return String: Key, useful when one has been generated for you
-		 */
-		'add': function( key, item ) {
-			if ( arguments.length === 1 && typeOf( key ) === 'object' ) {
-				item = key;
-				// Auto-assign key, avoiding duplicates
-				do {
-					key = '__item-' + this._autoId++;
-				} while ( !( key in this._items ) );
-			}
-			this._items[key] = item;
-			this.$.append( $( '<li class="ui-list-item"></li>' ).append( item.$ ) );
-			return key;
+		'append': function( item ) {
+			this.$.append( this._create( item ) );
 		},
-		/**
-		 * Removes an item from the group.
-		 * 
-		 * @param key String: Name to item to remove
-		 */
-		'remove': function( key ) {
-			if ( key in this._items ) {
-				this._items[key].$.parent().remove();
-				delete this._items[key];
-			}
+		'prepend': function( item ) {
+			this.$.prepend( this._create( item ) );
 		},
-		/**
-		 * Gets an item by name.
-		 * 
-		 * @param key String: Name of item to get
-		 * @return Object: Item object or null if no item exists by that name
-		 */
-		'item': function( key ) {
-			return key in this._items ? this._items[key] : null;
-		},
+		'_create': function( item ) {
+			return $( '<li class="ui-list-item"></li>' )
+				.text( 'text' in item ? item.text : '' )
+				.addClass( 'classes' in item ? item.classes.join( ' ' ) : '' );
+		}
 	}
 } );
 

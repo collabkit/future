@@ -7,7 +7,7 @@ var sections = new ui.Group( {
 	'element': 'section',
 	'classes': ['app-sections']
 } );
-$( 'body' ).append( sections.$, header.$, overlays.$ );
+$( 'body' ).append( sections.$, header.$ );
 
 // Group with buttons in the header
 header.add(
@@ -27,19 +27,20 @@ sections.add(
 			'three': new ui.DropDown( {
 				'text': 'Three',
 				'list': new ui.List( {
-					'items': {
-						'one': new ui.Button( { 'text': 'One' } ),
-						'two': new ui.Button( { 'text': 'Two - this is a longer menu item' } ),
-						'three': new ui.Button( { 'text': 'Three' } ),
-						'four': new ui.Button( { 'text': 'Four' } ),
-						'five': new ui.Button( { 'text': 'Five' } ),
-					}
+					'items': [
+						{ 'text': 'One' },
+						{ 'text': 'Two - this is a longer menu item' },
+						{ 'text': 'Three' },
+						{ 'text': 'Four' },
+						{ 'text': 'Five' },
+					]
 				} )
 			} )
 		}
 	} ),
 	'5em'
 );
+
 sections.add(
 	'content',
 	new ui.Panel( {
