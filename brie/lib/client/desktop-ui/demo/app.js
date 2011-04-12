@@ -19,19 +19,31 @@ sections.add(
 		'classes': ['app-toolbar'],
 		'orientation': 'horizontal',
 		'items': {
-			'one': new ui.Button( { 'text': 'One' } ),
-			'two': new ui.Button( { 'text': 'Two' } ),
+			'one': new ui.Button( { 'text': 'One', 'press': function() {
+				console.log( 'button 1' );
+			} } ),
+			'two': new ui.Button( { 'text': 'Two', 'press': function() {
+				console.log( 'button 2' );
+			} } ),
 			'three': new ui.DropDown( {
 				'text': 'Three',
 				'menu': new ui.Menu( {
 					'items': [
-						{ 'text': 'One' },
-						{ 'text': 'Two - this is a longer menu item' },
+						{ 'text': 'One', 'select': function() {
+							console.log( 'menu item 1' );
+						} },
+						{ 'text': 'Two - this is a longer menu item', 'select': function() {
+							console.log( 'menu item 2' );
+						} },
 					    { 'classes': ['ui-menu-divider'] },
-						{ 'text': 'Three' },
-						{ 'text': 'Four' },
+						{ 'text': 'Three', 'select': function() {
+							console.log( 'menu item 3' );
+						} },
+						{ 'text': 'Four', 'select': function() {
+							console.log( 'menu item 4' );
+						} },
 						{ 'text': 'Five', 'select': function() {
-							console.log( '55555' );
+							console.log( 'menu item 5' );
 						} },
 					]
 				} )

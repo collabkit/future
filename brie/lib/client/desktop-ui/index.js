@@ -193,7 +193,8 @@ Class( ui, 'Button', {
 		'_options': {
 			'text': null,
 			'html': null,
-			'classes': []
+			'classes': [],
+			'press': null
 		}
 	},
 	'can': {
@@ -204,6 +205,9 @@ Class( ui, 'Button', {
 				this.$.text( this._options.text );
 			} else if ( typeOf( this._options.html ) === 'string' ) {
 				this.$.html( this._options.html );
+			}
+			if ( typeOf( this._options.press ) === 'function' ) {
+				this.$.click( this._options.press );
 			}
 		}
 	}
@@ -244,7 +248,13 @@ Class( ui, 'Menu', {
 				$item.addClass( item.classes.join( ' ' ) );
 			}
 			if ( typeOf( item.select ) === 'function' ) {
-				$item.click( item.select );
+				$item.click( function( event ) {
+					$item.addClass( 'ui-menu-item-flash' );
+					setTimeout( function() {
+						$item.removeClass( 'ui-menu-item-flash' );
+					}, 75 );
+					return item.select( event );
+				} );
 			}
 			return $item;
 		}
@@ -252,10 +262,13 @@ Class( ui, 'Menu', {
 } );
 
 Class( ui, 'DropDown', {
-	'is': ui.Button,
 	'has': {
-		'menu': null,
+		'$': '<button class="ui-dropdown"></button>',
 		'$overlay': '<div class="ui-dropdown-menu"></div>',
+		'text': null,
+		'html': null,
+		'classes': [],
+		'menu': null,
 		'_options': {
 			'menu': null
 		}
@@ -263,8 +276,18 @@ Class( ui, 'DropDown', {
 	'can': {
 		'initialize': function( options ) {
 			$.extend( this._options, options || {} );
-			this.__use( ui.Button, 'initialize' )();
-			this.$.addClass( 'ui-dropdown' );
+			this.$ = $( this.$ );
+			// Text or HTML
+			if ( typeOf( this._options.text ) === 'string' ) {
+				this.$.text( this._options.text );
+			} else if ( typeOf( this._options.html ) === 'string' ) {
+				this.$.html( this._options.html );
+			}
+			// Classes
+			if ( typeOf( this._options.classes ) === 'array' ) {
+				this.$.addClass( item.classes.join( ' ' ) );
+			}
+			// Menu
 			if ( this._options.menu instanceof ui.Menu ) {
 				this.menu = this._options.menu;
 			} else {
@@ -295,7 +318,10 @@ Class( ui, 'DropDown', {
 		},
 		'_hideMenu': function() {
 			this.$.removeClass( 'ui-dropdown-open' );
-			this.$overlay.fadeOut( 100 );
+			var $overlay = this.$overlay;
+			setTimeout( function() {
+				$overlay.fadeOut( 100 );
+			}, 50 );
 		}
 	}
 } );
