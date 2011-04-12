@@ -317,11 +317,11 @@ Class( ui, 'DropDown', {
 			return false;
 		},
 		'_hideMenu': function() {
-			this.$.removeClass( 'ui-dropdown-open' );
-			var $overlay = this.$overlay;
+			var that = this;
 			setTimeout( function() {
-				$overlay.fadeOut( 100 );
-			}, 50 );
+				that.$.removeClass( 'ui-dropdown-open' );
+				that.$overlay.fadeOut( 100 );
+			}, 75 );
 		}
 	}
 } );

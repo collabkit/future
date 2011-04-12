@@ -179,17 +179,17 @@ pre, code, kbd, tt {
 	line-height: 1.5em;
 	color: #333333;
 	text-shadow: 0 1px 1px #ffffff;
-	border: solid 1px #c7e0ef;
+	border: solid 1px #b0d6ea;
 	border-radius: 0.75em;
 	-moz-border-radius: 0.75em;
-	background-color: #eaf6fd;
+	background-color: #ebf8fd;
 	box-shadow: inset 0 1.5em 3em #ffffff;
 	-moz-box-shadow: inset 0 1.5em 3em #ffffff;
 	-webkit-box-shadow: inset 0 1.5em 3em #ffffff;
 }
 
 .ui-button:hover {
-	border-color: #a7c0cf;
+	border-color: #b9e6f7;
 }
 
 .ui-button:active {
@@ -230,15 +230,19 @@ pre, code, kbd, tt {
 }
 
 .ui-menu-item:hover {
-	background-color: #3399FF;
+	background-color: #3399da;
+	background-image: -webkit-linear-gradient(#3399da 0%, #006ab4 100%);
+	background-image: -moz-linear-gradient(#3399da 0%, #006ab4 100%);
+	background-image: -o-linear-gradient(#3399da 0%, #006ab4 100%);
+	-ms-filter: progid:DXImageTransform.Microsoft.gradient(
+		gradientType=1, startColor=#3399da00, endColoStr=#006ab444
+	);
 	color: #ffffff;
-	box-shadow: inset 0 -0.5em 2em #0066FF;
-	-moz-box-shadow: inset 0 -0.5em 2em #0066FF;
-	-webkit-box-shadow: inset 0 -0.5em 2em #0066FF;
 }
 
 .ui-menu-item.ui-menu-item-flash {
 	background-color: transparent;
+	background-image: none;
 	color: #333333;
 	box-shadow: none;
 	-moz-box-shadow: none;
@@ -252,6 +256,7 @@ pre, code, kbd, tt {
 	padding: 0;
 	cursor: default;
 	background-color: #dddddd;
+	background-image: none;
 	box-shadow: none;
 	-moz-box-shadow: none;
 	-webkit-box-shadow: none;
@@ -278,22 +283,15 @@ pre, code, kbd, tt {
 	font-family: "Arial", sans-serif;
 }
 .ui-dropdown-open {
-	/* webkit */
 	background-image: -webkit-linear-gradient(
-		rgba(51, 204, 255, 0) 0%,
-		rgba(51, 204, 255, 0.25) 100%
+		rgba(51, 204, 255, 0) 0%, rgba(51, 204, 255, 0.25) 100%
 	); 
-	/* mozilla */
 	background-image: -moz-linear-gradient(
-		rgba(51, 204, 255, 0) 0%,
-		rgba(51, 204, 255, 0.25) 100%
+		rgba(51, 204, 255, 0) 0%, rgba(51, 204, 255, 0.25) 100%
 	);
-	/* opera */
 	background-image: -o-linear-gradient(
-		rgba(51, 204, 255, 0) 0%,
-		rgba(51, 204, 255, 0.25) 100%
+		rgba(51, 204, 255, 0) 0%, rgba(51, 204, 255, 0.25) 100%
 	);
-	/* ie */
 	-ms-filter: progid:DXImageTransform.Microsoft.gradient(
 		gradientType=1, startColor=#33ccff00, endColoStr=#33ccff44
 	);
