@@ -209,9 +209,9 @@ Class( ui, 'Button', {
 	}
 } );
 
-Class( ui, 'List', {
+Class( ui, 'Menu', {
 	'has': {
-		'$': '<ui class="ui-list"></ul>',
+		'$': '<ui class="ui-menu"></ul>',
 		'_options': {
 			'items': null,
 			'classes': []
@@ -236,7 +236,7 @@ Class( ui, 'List', {
 			this.$.prepend( this._create( item ) );
 		},
 		'_create': function( item ) {
-			var $item = $( '<li class="ui-list-item"></li>' );
+			var $item = $( '<li class="ui-menu-item"></li>' );
 			if ( typeOf( item.text ) === 'string' ) {
 				$item.text( item.text );
 			}
@@ -254,10 +254,10 @@ Class( ui, 'List', {
 Class( ui, 'DropDown', {
 	'is': ui.Button,
 	'has': {
-		'list': null,
-		'$overlay': '<div class="ui-dropdown-list"></div>',
+		'menu': null,
+		'$overlay': '<div class="ui-dropdown-menu"></div>',
 		'_options': {
-			'list': null
+			'menu': null
 		}
 	},
 	'can': {
@@ -265,12 +265,12 @@ Class( ui, 'DropDown', {
 			$.extend( this._options, options || {} );
 			this.__use( ui.Button, 'initialize' )();
 			this.$.addClass( 'ui-dropdown' );
-			if ( this._options.list instanceof ui.List ) {
-				this.list = this._options.list;
+			if ( this._options.menu instanceof ui.Menu ) {
+				this.menu = this._options.menu;
 			} else {
-				this.list = new ui.List();
+				this.menu = new ui.Menu();
 			}
-			$( 'body' ).append( this.$overlay = $( this.$overlay ).append( this.list.$ ) );
+			$( 'body' ).append( this.$overlay = $( this.$overlay ).append( this.menu.$ ) );
 			this.$.click( this._toggleMenu );
 		},
 		'_toggleMenu': function() {

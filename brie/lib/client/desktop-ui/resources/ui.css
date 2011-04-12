@@ -200,17 +200,50 @@ pre, code, kbd, tt {
 
 /* ui.List */
 
-.ui-list {
+.ui-menu {
 	display: block;
-	margin: 0;
-	padding: 0;
+	margin: -1px 0 0 0;
+	padding: 0.25em 0;
 	list-style: none;
+	background-color: rgba(255,255,255,0.9);
+	border: solid 1px #c7e0ef;
+	border-bottom-left-radius: 0.25em;
+	border-bottom-right-radius: 0.25em;
+	-moz-border-radius-bottomleft: 0.25em;
+	-moz-border-radius-bottomright: 0.25em;
+	box-shadow: 0 0.5em 1em rgba(51,102,255,0.25);
+	-moz-box-shadow: 0 0.5em 1em rgba(51,102,255,0.25);
+	-webkit-box-shadow: 0 0.5em 1em rgba(51,102,255,0.25);
 }
-.ui-list-item {
+.ui-menu-item {
 	display: block;
+	width: 100%;
 	margin: 0;
-	padding: 0;
+	padding: 0.25em 0.5em;
 	list-style: none;
+	cursor: pointer;
+	background-color: transparent;
+	font-size: 0.8em;
+	line-height: 1.5em;
+	color: #333333;
+}
+.ui-menu-item:hover {
+	background-color: #3399FF;
+	color: #ffffff;
+	box-shadow: inset 0 -0.5em 2em #0066FF;
+	-moz-box-shadow: inset 0 -0.5em 2em #0066FF;
+	-webkit-box-shadow: inset 0 -0.5em 2em #0066FF;
+}
+.ui-menu-divider,
+.ui-menu-divider:hover {
+	height: 1px;
+	margin: 0.25em 0;
+	padding: 0;
+	cursor: default;
+	background-color: #dddddd;
+	box-shadow: none;
+	-moz-box-shadow: none;
+	-webkit-box-shadow: none;
 }
 
 /* ui.DropDown */
@@ -231,57 +264,10 @@ pre, code, kbd, tt {
 	-moz-box-shadow: inset 0 -0.5em 2em #f9fdff;
 	-webkit-box-shadow: inset 0 -0.5em 2em #f9fdff;
 }
-.ui-dropdown-list {
+.ui-dropdown-menu {
 	position: absolute;
 	display: none;
-	background-color: #ffffff;
-	padding: 0.25em 0;
-	border: solid 1px #c7e0ef;
-	border-bottom-left-radius: 0.25em;
-	border-bottom-right-radius: 0.25em;
-	-moz-border-radius-bottomleft: 0.25em;
-	-moz-border-radius-bottomright: 0.25em;
-	margin-top: -1px;
-	box-shadow: 0 0.5em 1em rgba(51,102,255,0.25);
-	-moz-box-shadow: 0 0.5em 1em rgba(51,102,255,0.25);
-	-webkit-box-shadow: 0 0.5em 1em rgba(51,102,255,0.25);
 }
-.ui-dropdown-list .ui-list-item {
-	display: block;
-	width: 100%;
-	margin: 0;
-	padding: 0.25em 0.5em;
-	cursor: pointer;
-	border: none;
-	border-radius: 0;
-	-moz-border-radius: 0;
-	box-shadow: none;
-	-moz-box-shadow: none;
-	-webkit-box-shadow: none;
-	text-align: left;
-	font-size: 0.8em;
-	line-height: 1.5em;
-	color: #333333;
-}
-.ui-dropdown-list .ui-list-item:hover {
-	background-color: #3399FF;
-	color: #ffffff;
-	box-shadow: inset 0 -0.5em 2em #0066FF;
-	-moz-box-shadow: inset 0 -0.5em 2em #0066FF;
-	-webkit-box-shadow: inset 0 -0.5em 2em #0066FF;
-}
-.ui-dropdown-list .ui-dropdown-list-divider,
-.ui-dropdown-list .ui-dropdown-list-divider:hover {
-	height: 1px;
-	padding: 0;
-	margin: 0.25em 0;
-	background-color: #dddddd;
-	box-shadow: none;
-	-moz-box-shadow: none;
-	-webkit-box-shadow: none;
-	cursor: default;
-}
-
 
 /* This code would be good for a toolbar group or something similar
 display: inline-block;

@@ -26,11 +26,11 @@ sections.add(
 			'two': new ui.Button( { 'text': 'Two' } ),
 			'three': new ui.DropDown( {
 				'text': 'Three',
-				'list': new ui.List( {
+				'menu': new ui.Menu( {
 					'items': [
 						{ 'text': 'One' },
 						{ 'text': 'Two - this is a longer menu item' },
-					    { 'classes': ['ui-dropdown-list-divider'] },
+					    { 'classes': ['ui-menu-divider'] },
 						{ 'text': 'Three' },
 						{ 'text': 'Four' },
 						{ 'text': 'Five', 'select': function() {
