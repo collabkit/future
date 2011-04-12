@@ -4,11 +4,8 @@
 	position: absolute;
 	overflow: hidden;
 	top: 0;
-	bottom: 0;
 	height: 4em;
 	width: 1000px;
-	left: 50%;
-	margin-left: -500px;
 }
 
 .app-logo {
@@ -25,8 +22,6 @@
 	top: 4em;
 	bottom: 0;
 	width: 1000px;
-	left: 50%;
-	margin-left: -500px;
 	border: solid 1px #b9e6f7;
 	border-top-left-radius: 1em;
 	border-top-right-radius: 1em;
