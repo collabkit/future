@@ -30,9 +30,12 @@ sections.add(
 					'items': [
 						{ 'text': 'One' },
 						{ 'text': 'Two - this is a longer menu item' },
+					    { 'classes': ['ui-dropdown-list-divider'] },
 						{ 'text': 'Three' },
 						{ 'text': 'Four' },
-						{ 'text': 'Five' },
+						{ 'text': 'Five', 'select': function() {
+							console.log( '55555' );
+						} },
 					]
 				} )
 			} )

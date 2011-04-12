@@ -236,9 +236,17 @@ Class( ui, 'List', {
 			this.$.prepend( this._create( item ) );
 		},
 		'_create': function( item ) {
-			return $( '<li class="ui-list-item"></li>' )
-				.text( 'text' in item ? item.text : '' )
-				.addClass( 'classes' in item ? item.classes.join( ' ' ) : '' );
+			var $item = $( '<li class="ui-list-item"></li>' );
+			if ( typeOf( item.text ) === 'string' ) {
+				$item.text( item.text );
+			}
+			if ( typeOf( item.classes ) === 'array' ) {
+				$item.addClass( item.classes.join( ' ' ) );
+			}
+			if ( typeOf( item.select ) === 'function' ) {
+				$item.click( item.select );
+			}
+			return $item;
 		}
 	}
 } );
@@ -263,7 +271,15 @@ Class( ui, 'DropDown', {
 				this.list = new ui.List();
 			}
 			$( 'body' ).append( this.$overlay = $( this.$overlay ).append( this.list.$ ) );
-			this.$.click( this._showMenu );
+			this.$.click( this._toggleMenu );
+		},
+		'_toggleMenu': function() {
+			if ( this.$.hasClass( 'ui-dropdown-open' ) ) {
+				this._hideMenu();
+			} else {
+				this._showMenu();
+			}
+			return false;
 		},
 		'_showMenu': function() {
 			this.$.addClass( 'ui-dropdown-open' );
@@ -279,7 +295,7 @@ Class( ui, 'DropDown', {
 		},
 		'_hideMenu': function() {
 			this.$.removeClass( 'ui-dropdown-open' );
-			this.$overlay.hide();
+			this.$overlay.fadeOut( 100 );
 		}
 	}
 } );

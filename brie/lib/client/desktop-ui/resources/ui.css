@@ -270,6 +270,18 @@ pre, code, kbd, tt {
 	-moz-box-shadow: inset 0 -0.5em 2em #0066FF;
 	-webkit-box-shadow: inset 0 -0.5em 2em #0066FF;
 }
+.ui-dropdown-list .ui-dropdown-list-divider,
+.ui-dropdown-list .ui-dropdown-list-divider:hover {
+	height: 1px;
+	padding: 0;
+	margin: 0.25em 0;
+	background-color: #dddddd;
+	box-shadow: none;
+	-moz-box-shadow: none;
+	-webkit-box-shadow: none;
+	cursor: default;
+}
+
 
 /* This code would be good for a toolbar group or something similar
 display: inline-block;
