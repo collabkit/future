@@ -84,6 +84,7 @@
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	-webkit-box-sizing: border-box;
+	font-size: 100%;
 }
 
 html,
@@ -92,6 +93,7 @@ body {
 	height: 100%;
 	margin: 0 auto;
 	padding: 0;
+	font-size: 100%;
 }
 
 h1 {
@@ -135,6 +137,22 @@ pre, code, kbd, tt {
 	font-family: 'Droid Sans Mono';
 }
 
+input::-webkit-input-placeholder {
+	color: #999999 !important;
+}
+
+input:-moz-placeholder {
+	color: #999999 !important;
+}
+
+:focus {
+	outline: none;
+}
+
+::-moz-focus-inner {
+	border: 0;
+}
+
 /* ui.Panel */
 
 .ui-panel {
@@ -173,10 +191,10 @@ pre, code, kbd, tt {
 .ui-button {
 	display: inline-block;
 	margin: 0.25em;
-	padding: 0.33em 0.66em;
-	cursor: pointer;
+	padding: 0.5em 1em;
 	font-size: 0.8em;
 	line-height: 1.5em;
+	cursor: pointer;
 	color: #333333;
 	text-shadow: 0 1px 1px #ffffff;
 	border: solid 1px #b0d6ea;
@@ -220,24 +238,38 @@ pre, code, kbd, tt {
 	display: block;
 	width: 100%;
 	margin: 0;
-	padding: 0.25em 1em;
+	padding: 0.5em 1em;
+	font-size: 0.8em;
+	line-height: 1.5em;
 	list-style: none;
 	cursor: pointer;
 	background-color: transparent;
-	font-size: 0.8em;
-	line-height: 1.5em;
 	color: #333333;
 }
 
 .ui-menu-command:hover {
 	background-color: #3399da;
-	background-image: -webkit-linear-gradient(#3399da 0%, #006ab4 100%);
-	background-image: -moz-linear-gradient(#3399da 0%, #006ab4 100%);
-	background-image: -o-linear-gradient(#3399da 0%, #006ab4 100%);
-	-ms-filter: progid:DXImageTransform.Microsoft.gradient(
-		gradientType=1, startColor=#3399da00, endColoStr=#006ab444
-	);
 	color: #ffffff;
+	/* Safari 5.1+ and Chrome 10+ */
+	background-image: -webkit-linear-gradient(
+		#3399da 0%, #006ab4 100%
+	);
+	/* Safari 4+ and Chrome 1+ */
+	background-image: -webkit-gradient(
+		linear, 0% 0%, 0% 100%, from(#3399da), to(#006ab4)
+	);
+	/* Firefox 3.6+ */
+	background-image: -moz-linear-gradient(
+		#3399da 0%, #006ab4 100%
+	);
+	/* Opera 11.10+ */
+	background-image: -o-linear-gradient(
+		#3399da 0%, #006ab4 100%
+	);
+	/* Internet Explort 8+ */
+	-ms-filter: progid:DXImageTransform.Microsoft.gradient(
+		gradientType=1, startColor=#3399da, endColoStr=#006ab4
+	);
 }
 
 .ui-menu-command.ui-menu-command-flash {
@@ -271,10 +303,11 @@ pre, code, kbd, tt {
 .ui-dropdown {
 	display: inline-block;
 	margin: 0.25em;
-	padding: 0.33em 0.66em;
+	padding: 0.66em;
+	font-size: 0.8em;
+	line-height: 1.5em;
 	border: none;
 	cursor: pointer;
-	font-size: 0.8em;
 	line-height: 1.5em;
 	color: #333333;
 	text-shadow: 0 1px 1px #ffffff;
@@ -289,15 +322,23 @@ pre, code, kbd, tt {
 }
 
 .ui-dropdown-open {
+	/* Safari 5.1+ and Chrome 10+ */
 	background-image: -webkit-linear-gradient(
 		rgba(51, 204, 255, 0) 0%, rgba(51, 204, 255, 0.25) 100%
-	); 
+	);
+	/* Safari 4+ and Chrome 1+ */
+	background-image: -webkit-gradient(
+		linear, 0% 0%, 0% 100%, from(rgba(51, 204, 255, 0)), to(rgba(51, 204, 255, 0.25))
+	);
+	/* Firefox 3.6+ */
 	background-image: -moz-linear-gradient(
 		rgba(51, 204, 255, 0) 0%, rgba(51, 204, 255, 0.25) 100%
 	);
+	/* Opera 11.10+ */
 	background-image: -o-linear-gradient(
 		rgba(51, 204, 255, 0) 0%, rgba(51, 204, 255, 0.25) 100%
 	);
+	/* Internet Explort 8+ */
 	-ms-filter: progid:DXImageTransform.Microsoft.gradient(
 		gradientType=1, startColor=#33ccff00, endColoStr=#33ccff44
 	);
@@ -316,9 +357,9 @@ pre, code, kbd, tt {
 
 .ui-search input {
 	width: 100%;
-	padding: 0.5em 0.5em 0.5em 2em;
-	font-size: 0.8em;
+	padding: 0.66em 0.66em 0.66em 2.5em;
 	color: #333333;
+	font-size: 0.8em;
 	border: solid 1px #b0d6ea;
 	border-radius: 0.125em;
 	-moz-border-radius: 0.125em;
@@ -330,8 +371,4 @@ pre, code, kbd, tt {
 	background-size: auto 100%;
 	background-position: left center;
 	background-repeat: no-repeat;
-}
-
-.ui-search input:focus {
-	outline: 0;
 }

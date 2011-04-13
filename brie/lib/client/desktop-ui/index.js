@@ -201,12 +201,18 @@ Class( ui, 'Button', {
 	'can': {
 		'initialize': function( options ) {
 			$.extend( this._options, options || {} );
-			this.$ = $( this.$ ).addClass( this._options.classes.join( ' ' ) );
+			this.$ = $( this.$ );
+			// Text and HTML
 			if ( typeOf( this._options.text ) === 'string' ) {
 				this.$.text( this._options.text );
 			} else if ( typeOf( this._options.html ) === 'string' ) {
 				this.$.html( this._options.html );
 			}
+			// Classes
+			if ( typeOf( this._options.classes ) === 'array' ) {
+				this.$.addClass( this._options.classes.join( ' ' ) );
+			}
+			// Press
 			if ( typeOf( this._options.press ) === 'function' ) {
 				var that = this;
 				this.$.click( function( event ) {
