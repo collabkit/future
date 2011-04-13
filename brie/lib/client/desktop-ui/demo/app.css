@@ -11,7 +11,18 @@
 .app-logo {
 	padding: 0;
 	margin: 0.5em;
-	height: 3em;
+	height: 2.5em;
+	width: 10em;
+}
+
+.app-search {
+	margin: 1.125em;
+	width: 15em;
+}
+
+.app-user-menu {
+	margin: 1.125em 0.25em;
+	float: right;
 }
 
 /* Sections */

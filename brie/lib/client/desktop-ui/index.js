@@ -168,11 +168,12 @@ Class( ui, 'Group', {
 					if ( key in this._sizes ) {
 						if ( this._sizes[key] === 'fill' ) {
 							$fills = $fills.add( $parent );
+							continue;
 						} else {
 							$parent.css( this._orientation.metric, this._sizes[key] )
-							filled += $parent[this._orientation.query]();
 						}
 					}
+					filled += $parent[this._orientation.query]();
 				}
 				$fills.css( this._orientation.metric, ( total - filled ) / $fills.length );
 			} else {
@@ -207,7 +208,10 @@ Class( ui, 'Button', {
 				this.$.html( this._options.html );
 			}
 			if ( typeOf( this._options.press ) === 'function' ) {
-				this.$.click( this._options.press );
+				var that = this;
+				this.$.click( function( event ) {
+					that._options.press.call( that, event );
+				} );
 			}
 		}
 	}
@@ -227,9 +231,7 @@ Class( ui, 'Menu', {
 			this.$ = $( this.$ ).addClass( this._options.classes.join( ' ' ) );
 			if ( typeOf( this._options.items ) === 'array' ) {
 				for ( var i = 0; i < this._options.items.length; i++ ) {
-					if ( typeOf( this._options.items[i] ) === 'object' ) {
-						this.$.append( this._create( this._options.items[i] ) );
-					}
+					this.append( this._options.items[i] );
 				}
 			}
 		},
@@ -240,21 +242,32 @@ Class( ui, 'Menu', {
 			this.$.prepend( this._create( item ) );
 		},
 		'_create': function( item ) {
-			var $item = $( '<li class="ui-menu-item"></li>' );
-			if ( typeOf( item.text ) === 'string' ) {
-				$item.text( item.text );
+			if ( typeOf( item ) !== 'object' ) {
+				throw 'Invalid menu item. Object expected.';
 			}
-			if ( typeOf( item.classes ) === 'array' ) {
-				$item.addClass( item.classes.join( ' ' ) );
-			}
-			if ( typeOf( item.select ) === 'function' ) {
-				$item.click( function( event ) {
-					$item.addClass( 'ui-menu-item-flash' );
-					setTimeout( function() {
-						$item.removeClass( 'ui-menu-item-flash' );
-					}, 75 );
-					return item.select( event );
-				} );
+			var $item = $( '<li></li>' );
+			if ( '$' in item ) {
+				$item.append( item.$ ).addClass( 'ui-menu-widget' );
+			} else {
+				$item.addClass( 'ui-menu-command' );
+				if ( typeOf( item.text ) === 'string' ) {
+					$item.text( item.text );
+				} else if ( typeOf( item.html ) === 'string' ) {
+					$item.html( item.html );
+				}
+				if ( typeOf( item.classes ) === 'array' ) {
+					$item.addClass( item.classes.join( ' ' ) );
+				}
+				if ( typeOf( item.select ) === 'function' ) {
+					var that = this;
+					$item.click( function( event ) {
+						$item.addClass( 'ui-menu-command-flash' );
+						setTimeout( function() {
+							$item.removeClass( 'ui-menu-command-flash' );
+						}, 75 );
+						return item.select.call( that, event );
+					} );
+				}
 			}
 			return $item;
 		}
@@ -270,7 +283,8 @@ Class( ui, 'DropDown', {
 		'classes': [],
 		'menu': null,
 		'_options': {
-			'menu': null
+			'menu': null,
+			'align': 'left'
 		}
 	},
 	'can': {
@@ -285,7 +299,7 @@ Class( ui, 'DropDown', {
 			}
 			// Classes
 			if ( typeOf( this._options.classes ) === 'array' ) {
-				this.$.addClass( item.classes.join( ' ' ) );
+				this.$.addClass( this._options.classes.join( ' ' ) );
 			}
 			// Menu
 			if ( this._options.menu instanceof ui.Menu ) {
@@ -306,14 +320,25 @@ Class( ui, 'DropDown', {
 		},
 		'_showMenu': function() {
 			this.$.addClass( 'ui-dropdown-open' );
-			$( document ).one( 'click', this._hideMenu );
+			var that = this;
+			var autoHide = function( event ) {
+				if ( $( event.target ).closest( '.ui-dropdown-menu' ).length === 0 ) {
+					that._hideMenu();
+					$( document ).unbind( 'click', autoHide );
+				}
+			}
+			$( document ).bind( 'click', autoHide );
 			var offset = this.$.offset();
 			this.$overlay.css( {
 				'top': offset.top + this.$.outerHeight(),
-				'left': offset.left,
 				'min-width': this.$.outerWidth(),
 				'display': 'block'
 			} );
+			if ( this._options.align === 'right' ) {
+				this.$overlay.css( 'left', offset.left + this.$.outerWidth() - this.menu.$.outerWidth() );
+			} else {
+				this.$overlay.css( 'left', offset.left );
+			}
 			return false;
 		},
 		'_hideMenu': function() {
@@ -322,6 +347,31 @@ Class( ui, 'DropDown', {
 				that.$.removeClass( 'ui-dropdown-open' );
 				that.$overlay.fadeOut( 100 );
 			}, 75 );
+		}
+	}
+} );
+
+Class( ui, 'Search', {
+	'has': {
+		'$': '<div class="ui-search"></div>',
+		'$input': '<input type="text" />',
+		'_options': {
+			'placeholder': null,
+			'classes': []
+		}
+	},
+	'can': {
+		'initialize': function( options ) {
+			$.extend( this._options, options || {} );
+			this.$ = $( this.$ ).append( this.$input = $( this.$input ) );
+			// Placeholder text
+			if ( typeOf( this._options.placeholder ) === 'string' ) {
+				this.$input.attr( 'placeholder', this._options.placeholder );
+			}
+			// Classes
+			if ( typeOf( this._options.classes ) === 'array' ) {
+				this.$.addClass( this._options.classes.join( ' ' ) );
+			}
 		}
 	}
 } );
