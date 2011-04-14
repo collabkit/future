@@ -376,3 +376,9 @@ input:-moz-placeholder {
 	background-position: left center;
 	background-repeat: no-repeat;
 }
+
+.ui-search input:focus {
+	box-shadow: 0 0 0.5em #3399da;
+	-moz-box-shadow: 0 0 0.5em #3399da;
+	-webkit-box-shadow: 0 0 0.5em #3399da;
+}
