@@ -1,6 +1,7 @@
 var util = require( 'util' ),
 	events = require( 'events' ),
-	fs = require( 'fs' );
+	fs = require( 'fs' ),
+	static = require('node-static');
 
 var mimetypes = {
 	'.js': 'text/javascript',
@@ -31,29 +32,12 @@ function ResourceProvider( service ) {
 			res.end( 'Invalid thingy.\n' );
 			return;
 		}
-		// @fixme validate the target
-		var path = './lib/client/' + target;
-		fs.stat(path, function(err, stats) {
-			// There really should be a preexisting easy way to say 'pass through to this filesystem subtree'
-			if (stats && stats.isFile()) {
-				var ext = require( 'path' ).extname( path );
-				res.writeHead( 200, {
-					// @fixme support other file types
-					'Content-Type': ext in mimetypes ? mimetypes[ext] : 'text/plain',
-					'Content-Length': '' + stats.size
-				});
-				if (req.method == 'HEAD') {
-					res.end();
-				} else {
-					var stream = fs.createReadStream(path);
-					stream.pipe(res);
-				}
-			} else {
-				console.log(err);
-				res.writeHead( 404, { 'Content-Type': 'text/plain' } );
-				res.end('ResourceProvider: resource not found.');
+		var ext = require( 'path' ).extname( target );
+		( new ( require( 'node-static' ).Server )( './lib/client/', {
+			'headers': {
+				'Content-Type': ext in mimetypes ? mimetypes[ext] : 'text/plain'
 			}
-		});
+		} ) ).serveFile( target, 200, {}, req, res );
 	} );
 }
 util.inherits( ResourceProvider, events.EventEmitter );
