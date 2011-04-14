@@ -12,7 +12,7 @@ function PageProvider( service ) {
 			res.end( 'Can only GET page resources.\n' );
 			return;
 		}
-		var target = 'boilerplate/index';
+		var target = 'demo/index';
 		if ( typeof req.parsedUrl.target === 'string' ) {
 			target = req.parsedUrl.target;
 		}

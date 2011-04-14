@@ -2,6 +2,19 @@ var util = require( 'util' ),
 	events = require( 'events' ),
 	fs = require( 'fs' );
 
+var mimetypes = {
+	'.js': 'text/javascript',
+	'.css': 'text/css',
+	'.eot': 'application/vnd.ms-fontobject',
+	'.ttf': 'font/ttf',
+	'.otf': 'font/otf',
+	'.woff': 'application/x-font-woff',
+	'.svg': 'image/svg+xml',
+	'.png': 'image/png',
+	'.gif': 'image/gif',
+	'.jpg': 'image/jpeg'
+};
+
 function ResourceProvider( service ) {
 	events.EventEmitter.call( this );
 	service.mount( 'resource' );
@@ -23,9 +36,10 @@ function ResourceProvider( service ) {
 		fs.stat(path, function(err, stats) {
 			// There really should be a preexisting easy way to say 'pass through to this filesystem subtree'
 			if (stats && stats.isFile()) {
+				var ext = require( 'path' ).extname( path );
 				res.writeHead( 200, {
 					// @fixme support other file types
-					'Content-Type': 'text/javascript',
+					'Content-Type': ext in mimetypes ? mimetypes[ext] : 'text/plain',
 					'Content-Length': '' + stats.size
 				});
 				if (req.method == 'HEAD') {
