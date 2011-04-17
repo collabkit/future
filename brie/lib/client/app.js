@@ -9,6 +9,23 @@ exports.create = function() {
 };
 */
 
+/*
+ * Only Firefox implements XMLHttpRequest.sendAsBinary
+ * 
+ * @see http://code.google.com/p/chromium/issues/detail?id=35705
+ * FIXME: Move this to a shim we load on non-firefox clients
+ */
+if ( !XMLHttpRequest.prototype.sendAsBinary ) {
+	XMLHttpRequest.prototype.sendAsBinary = function( datastr ) {
+	    function byteValue( x ) {
+	        return x.charCodeAt( 0 ) & 0xff;
+	    }
+	    var ords = Array.prototype.map.call( datastr, byteValue );
+	    var ui8a = new Uint8Array( ords );
+	    this.send( ui8a.buffer );
+	};
+}
+
 $('#media-chooser').change(function(event) {
 	// This version requires FileAPI: Firefox 3.5+ and Chrome ok
 	var files = this.files;
