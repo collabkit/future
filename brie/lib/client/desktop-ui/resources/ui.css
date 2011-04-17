@@ -376,7 +376,7 @@ input:-moz-placeholder {
 	box-shadow: inset 0 1.5em 3em #ebf8fd;
 	-moz-box-shadow: inset 0 1em 2em #ebf8fd;
 	-webkit-box-shadow: inset 0 1em 2em #ebf8fd;
-	background-image: url(search-icon.svg);
+	background-image: url(icons/search.svg);
 	background-size: auto 100%;
 	background-position: left center;
 	background-repeat: no-repeat;
