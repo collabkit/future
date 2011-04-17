@@ -191,11 +191,8 @@ input:-moz-placeholder {
 .ui-button {
 	display: inline-block;
 	margin: 0.25em;
-	padding: 0.5em 1em;
-	font-size: 0.8em;
-	line-height: 1.5em;
+	padding: 0.5em 0.75em;
 	cursor: pointer;
-	color: #333333;
 	border: solid 1px #b0d6ea;
 	border-radius: 0.75em;
 	-moz-border-radius: 0.75em;
@@ -205,13 +202,21 @@ input:-moz-placeholder {
 	-webkit-box-shadow: inset 0 1.5em 3em #ffffff;
 }
 
+.ui-button span {
+	font-size: 0.8em;
+	color: #333333;
+}
+
 .ui-button:hover {
-	color: #ffffff;
 	border-color: #3399da;
 	background-color: #006ab4;
 	box-shadow: inset 0 1.5em 3em #3399da;
 	-moz-box-shadow: inset 0 1.5em 3em #3399da;
 	-webkit-box-shadow: inset 0 1.5em 3em #3399da;
+}
+
+.ui-button:hover span {
+	color: #ffffff;
 }
 
 .ui-button:active {
@@ -378,7 +383,7 @@ input:-moz-placeholder {
 }
 
 .ui-search input:focus {
-	box-shadow: 0 0 0.5em #3399da;
-	-moz-box-shadow: 0 0 0.5em #3399da;
-	-webkit-box-shadow: 0 0 0.5em #3399da;
+	box-shadow: inset 0 1.5em 3em #ebf8fd, 0 0 0.75em rgba(51,153,218,0.25);
+	-moz-box-shadow: inset 0 1em 2em #ebf8fd, 0 0 0.75em rgba(51,153,218,0.25);
+	-webkit-box-shadow: inset 0 1em 2em #ebf8fd, 0 0 0.75em rgba(51,153,218,0.25);
 }
