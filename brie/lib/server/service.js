@@ -25,7 +25,7 @@ function Service( options ) {
 	/* Members */
 	
 	this.server = server;
-	this.store = require( './store.js' ).create();
+	this.store = require( './collabkitstore.js' ).create();
 	
 	/* Methods */
 	

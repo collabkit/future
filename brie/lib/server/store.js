@@ -104,11 +104,21 @@ var makeBlob = function() {
  *
  * @param {String} id
  * @param {function(data, err)} callback
- * @param {String} format: optional 'buffer', 'string', 'json', 'xml', or 'auto'
+ * @param {String} format: optional 'buffer', 'string', 'json', 'xml', 'id', 'stream', or 'auto' (chooses from json, xml, or buffer)
  * @throws exception if no valid blob file entry
  */
 Store.prototype.getBlob = function(id, callback, format) {
+	if ( format == 'id' ) {
+		// High-level caller only needs the id. Return immediately.
+		callback( id, null );
+		return;
+	}
 	var stream = this.streamBlob(id);
+	if ( format == 'stream' ) {
+		// High-level caller is taking the raw stream; fire it off!
+		callback( stream, null );
+		return;
+	}
 	var buffer = new Buffer(0);
 	stream.on('data', function(chunk) {
 		var next = new Buffer(buffer.length + chunk.length);
@@ -440,6 +450,8 @@ function Commit(store, id, props) {
 	}
 }
 
+util.inherits(Commit, StoreObject);
+
 /**
  * Asynchronously fetch a subtree node from this directory via a callback.
  *
@@ -448,8 +460,6 @@ function Commit(store, id, props) {
 Commit.prototype.getTree = function(callback) {
 	this.store.getTree(this.tree, callback);
 };
-
-util.inherits(Commit, StoreObject);
 
 /**
  * A git tree is a node in a linked file tree structure. Each individual

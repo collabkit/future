@@ -126,13 +126,15 @@ CollabKitObject.prototype.isDirty = function() {
  */
 CollabKitObject.prototype.getFile = function(path, callback, format) {
 	var cko = this, store = this.store;
-	store.getTree( this.version, function( tree, err ) {
-		if ( err ) {
-			callback( null, err );
-			return;
-		}
-		tree.getBlob( path, callback, format );
-	})
+	store.getCommit( this.version, function( commit, err ) {
+		commit.getTree( function( tree, err ) {
+			if ( err ) {
+				callback( null, err );
+				return;
+			}
+			tree.getBlob( path, callback, format );
+		});
+	});
 };
 
 /**
