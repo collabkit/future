@@ -190,7 +190,8 @@ Class( ui, 'Group', {
 
 Class( ui, 'Button', {
 	'has': {
-		'$': '<button class="ui-button"></button>',
+		'$': '<div class="ui-button"></div>',
+		'$label': '<span class="ui-button-label"></span>',
 		'_options': {
 			'text': null,
 			'html': null,
@@ -201,12 +202,12 @@ Class( ui, 'Button', {
 	'can': {
 		'initialize': function( options ) {
 			$.extend( this._options, options || {} );
-			this.$ = $( this.$ );
+			this.$ = $( this.$ ).append( this.$label = $( this.$label ) );
 			// Text and HTML
 			if ( typeOf( this._options.text ) === 'string' ) {
-				this.$.text( this._options.text );
+				this.$label.text( this._options.text );
 			} else if ( typeOf( this._options.html ) === 'string' ) {
-				this.$.html( this._options.html );
+				this.$label.html( this._options.html );
 			}
 			// Classes
 			if ( typeOf( this._options.classes ) === 'array' ) {
