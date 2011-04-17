@@ -1,5 +1,23 @@
+var options = {
+    port: 8124
+};
+var args = require( 'argsparser' ).parse();
+if ( '--port' in args ) {
+    var port = parseInt( args['--port'] );
+    if ( port && port > 0 && port < 65536 ) {
+        options.port = port;
+    } else {
+        throw 'Invalid listening port ' + port;
+    }
+}
+if ( '--help' in args ) {
+    console.log('--port <number> (default 8124)\n\tSet HTTP server listening port');
+    console.log('--help\n\tshow this help and exit');
+    process.exit(0);
+}
+
 // Create service
-var service = require( './lib/server/service' ).create( { 'port': 8124 } );
+var service = require( './lib/server/service' ).create( options );
 // Attach providers
 var providers = {
 	'page': require( './lib/server/providers/page' ).create( service ),
