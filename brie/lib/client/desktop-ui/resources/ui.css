@@ -366,7 +366,7 @@ input:-moz-placeholder {
 
 .ui-search input {
 	width: 100%;
-	padding: 0.66em 0.66em 0.66em 2.5em;
+	padding: 0.5em 0.5em 0.5em 2em;
 	color: #333333;
 	font-size: 0.8em;
 	border: solid 1px #b0d6ea;
@@ -377,8 +377,8 @@ input:-moz-placeholder {
 	-moz-box-shadow: inset 0 1em 2em #ebf8fd;
 	-webkit-box-shadow: inset 0 1em 2em #ebf8fd;
 	background-image: url(icons/search.svg);
-	background-size: auto 100%;
-	background-position: left center;
+	background-size: auto 90%;
+	background-position: 0.25em 0.125em;
 	background-repeat: no-repeat;
 }
 
