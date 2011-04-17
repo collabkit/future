@@ -159,7 +159,7 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 						res.end('Internal error saving file commit.');
 						return;
 					}
-					var targetUrl = 'http://localhost:8124/:media/' + commitId;
+					var targetUrl = '/:media/' + commitId;
 					// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
 					res.writeHead( 200, {
 						'Content-Type': 'text/html',
