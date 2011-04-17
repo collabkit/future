@@ -106,6 +106,34 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 	var filename = 'image.' + types[contentType];
 
 	var store = this.store;
+	var obj = store.createObject({
+		type: 'application/x-collabkit-photo',
+		photo: {
+			type: contentType,
+			src: filename
+			// todo: put width, height, other metadata in here!
+			// means we need to understand the image file format
+			// and read it in before we create the data. :D
+		}
+	});
+	obj.addFile(filename, req, 'stream');
+	obj.commit({}, function(committed, err) {
+		if (err) {
+			console.log('Media upload failure: ' + err);
+			res.writeHead( 500, {'Content-Type': 'text/plain'});
+			res.end('Internal error saving media file.');
+			return;
+		}
+		var targetUrl = 'http://localhost:8124/:media/' + committed.version;
+
+		// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
+		res.writeHead( 200, {
+			'Content-Type': 'text/html',
+			'Location': targetUrl
+		} );
+		res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
+	});
+	/*
 	store.createBlobFromStream(req, function( imgBlobId, err ) {
 		if (err) {
 			console.log('Media upload blob save failure: ' + err);
@@ -162,6 +190,7 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 			});
 		});
 	});
+	*/
 };
 
 exports.MediaProvider = MediaProvider;

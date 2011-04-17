@@ -144,8 +144,14 @@ Store.prototype.getBlob = function(id, callback, format) {
  * @param {function(commit, err)} callback
  */
 Store.prototype.getCommit = function(id, callback) {
+	if (typeof id !== 'string') {
+		throw 'Invalid id to Store.getCommit';
+	}
 	var store = this;
 	this.readGitString(['cat-file', 'commit', id], function(str, err) {
+		if (typeof id !== 'string') {
+			throw 'Invalid id to Store.getCommit, caught later?!';
+		}
 		if (str === null) {
 			// error!
 			console.log('getTree fail: ' + err);
@@ -185,6 +191,7 @@ Store.prototype.getCommit = function(id, callback) {
 					}
 				}
 			});
+			console.log('Loading commit from:', id, props);
 			var commit = new Commit(store, id, props);
 			callback(commit, null);
 		}
@@ -257,10 +264,14 @@ Store.prototype.createBlobFromStream = function(stream, callback) {
  *
  * @param {mixed} data
  * @param {function(id, err)} callback
- * @param {string} format one of 'buffer', 'string', 'json', 'xml', 'auto'
+ * @param {string} format one of 'buffer', 'string', 'json', 'xml', 'stream', 'auto'
  */
 Store.prototype.createBlob = function(data, callback, format) {
-	this.writeGitStream(['hash-object', '-w', '--stdin'], callback).end(makeBlob(data));
+	if (format == 'stream') {
+		this.createBlobFromStream(data, callback);
+	} else {
+		this.writeGitStream(['hash-object', '-w', '--stdin'], callback).end(makeBlob(data));
+	}
 };
 
 /**
@@ -458,7 +469,12 @@ util.inherits(Commit, StoreObject);
  * @param {function(tree, err)} callback
  */
 Commit.prototype.getTree = function(callback) {
-	this.store.getTree(this.tree, callback);
+	if (this.tree) {
+		this.store.getTree(this.tree, callback);
+	} else {
+		console.log('wtf?', JSON.stringify(this));
+		callback(null, 'Commit lists no tree id.');
+	}
 };
 
 /**

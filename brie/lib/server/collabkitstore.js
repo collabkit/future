@@ -22,6 +22,9 @@ util.inherits( CollabKitStore, Store );
  * @param {function(obj, err)} callback
  */
 CollabKitStore.prototype.getObject = function(id, callback) {
+	if (typeof id !== 'string') {
+		throw 'Invalid id passed to CollabKitStore.getObject';
+	}
 	var store = this;
 	store.getCommit( id, function(commit, err) {
 		if ( err ) {
@@ -57,8 +60,8 @@ CollabKitStore.prototype.getObject = function(id, callback) {
  *
  * @return {CollabKitObject}
  */
-CollabKitStore.prototype.create = function(data, files) {
-	var cko = new CollabKitObject(this, data);
+CollabKitStore.prototype.createObject = function(data, files) {
+	var cko = new CollabKitObject(this, null, data);
 	if ( data ) {
 		grout.mix( cko.data, data );
 	}
@@ -103,7 +106,7 @@ CollabKitObject.prototype.fork = function() {
 	if ( this.isDirty() ) {
 		throw "Can't fork a dirty object; needs committed history.";
 	}
-	var cko = this.store.create(this.version, this.data, [this.version]); // clone the data...
+	var cko = this.store.createObject(this.version, this.data, [this.version]); // clone the data...
 	return cko;
 };
 
@@ -171,19 +174,18 @@ CollabKitObject.prototype.removeFile = function(path) {
  * @todo support for removals
  */
 CollabKitObject.prototype.commit = function(params, callback) {
-	var store = this.store;
+	var orig = this, store = this.store, files = this._files;
 	var data = JSON.stringify( this.data );
-	if (data != this._origData ) {
-		this.addFile( 'data.json', data, 'string' );
-	}
+	this.addFile( 'data.json', data, 'string' );
 
 	var saveNewTree = function( tree ) {
-		var entries = grout.mix( {}, tree.children );
+		var entries = tree ? tree.children.slice() : [];
 		var i = 0;
 		var nextEntry = function() {
-			if ( i >= this.files.length ) {
+			if ( i >= files.length ) {
 				// We've finished all the file updates.
 				// Save this version of the file tree!
+				console.log('Saving tree for entries:', entries);
 				store.createTree( entries, function( treeId, err ) {
 					if ( err ) {
 						callback( null, err );
@@ -192,7 +194,7 @@ CollabKitObject.prototype.commit = function(params, callback) {
 					// We have updated the tree! woooo
 					store.createCommit(grout.mix({
 						tree: treeId,
-						parents: this.parents,
+						parents: orig.parents,
 						desc: 'commit via object'
 					}, params), function(commitId, err) {
 						if ( err ) {
@@ -201,21 +203,22 @@ CollabKitObject.prototype.commit = function(params, callback) {
 						}
 						// Commit is saved. Yay!
 						// Build a fresh, non-dirty object and pass that to the callback.
-						var cko = CollabKitObject.create( commitId, this.data, this.parents );
+						console.log('Saved commit: ' + commitId);
+						var cko = new CollabKitObject( store, commitId, orig.data, orig.parents );
 						callback( cko, null );
 					});
 				});
 			} else {
 				// Still pumping updated blobs into the store...
-				var file = this.files[i];
+				var file = files[i];
 				store.createBlob( file.data, function( id, err ) {
 					if ( err ) {
 						callback( null, err );
 						return;
 					}
-					var entry = tree.findFile( file.path );
+					var entry = tree ? tree.findFile( file.path ) : null;
 					if ( entry ) {
-						entry.id = id;
+						entry = grout.mix(entry, {id: id});
 					} else {
 						entry = {
 							mode: '100644',
@@ -224,6 +227,7 @@ CollabKitObject.prototype.commit = function(params, callback) {
 							name: file.path
 						}
 					}
+					entries.push(entry);
 					i++;
 					nextEntry(); // tail recursion ftw
 				}, file.format );
@@ -232,11 +236,21 @@ CollabKitObject.prototype.commit = function(params, callback) {
 		nextEntry(0);
 	}
 	if ( this.version ) {
-		this.getTree( function( tree, err ) {
-			saveNewTree( tree );
+		this.store.getCommit( this.version, function(commit, err) {
+			if (err) {
+				callback(null, err);
+				return;
+			}
+			commit.getTree( function( tree, err ) {
+				if (err) {
+					callback(null, err);
+					return;
+				}
+				saveNewTree( tree );
+			});
 		});
 	} else {
-		saveNewTree( [] );
+		saveNewTree();
 	}
 };
 
