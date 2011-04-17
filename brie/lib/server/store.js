@@ -1,7 +1,7 @@
 var util = require('util');
 
 /**
- * Versioned object store, wrapping git or git-style commit trees.
+ * Low-level versioned object store, wrapping git or git-style commit trees.
  *
  * @returns {Store}
  */
