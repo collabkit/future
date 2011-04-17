@@ -1,3 +1,22 @@
+# Requirements and setup
+
+System requirements:
+* node.js: 0.4.5 or later -- http://nodejs.org/
+* npm: node package manager -- http://npmjs.org/
+
+Required npm modules:
+* faye
+* argsparser
+* node-static
+
+To start the embedded web server:
+
+  node main.js
+
+By default this will respond on port 8124, eg http://localhost:8124/
+The index will show a demo of the page and media services.
+
+
 # System architecture
 
 This system is primarily organized into applications, called apps, and services. Each app targets a specific kind of user experience, such as a desktop computer or a mobile phone. A service targets a specific kind of data representation and communication protocol, such as a web page or data API.
@@ -75,3 +94,4 @@ You can upload a file via HTTP PUT like so:
 
 which should return an HTTP 303 and a short HTML response body pointing to the fetch URL.
 
+A web-based demo of this is provided in the default index page.
