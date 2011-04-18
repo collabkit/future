@@ -43,6 +43,7 @@ CollabKitStore.prototype.getObject = function(id, callback) {
 					return;
 				}
 				var cko = new CollabKitObject(store, commit.id, data, commit.parents);
+				cko._dirty = false;
 				callback(cko);
 			}, 'json');
 		});
@@ -66,6 +67,10 @@ CollabKitStore.prototype.createObject = function(data, files) {
 		grout.mix( cko.data, data );
 	}
 	if ( files ) {
+		if (typeof files !== 'array') {
+			console.log('non-array', files);
+			throw 'non-array files passed to createObject';
+		}
 		files.forEach( function( i, entry ) {
 			cko.addFile( entry.path, entry.data, entry.format );
 		} );
@@ -106,7 +111,7 @@ CollabKitObject.prototype.fork = function() {
 	if ( this.isDirty() ) {
 		throw "Can't fork a dirty object; needs committed history.";
 	}
-	var cko = this.store.createObject(this.version, this.data, [this.version]); // clone the data...
+	var cko = new CollabKitObject(this.store, this.version, this.data, [this.version]); // clone the data...
 	return cko;
 };
 
@@ -179,7 +184,16 @@ CollabKitObject.prototype.commit = function(params, callback) {
 	this.addFile( 'data.json', data, 'string' );
 
 	var saveNewTree = function( tree ) {
-		var entries = tree ? tree.children.slice() : [];
+		if (tree) {
+			console.log('tree', tree);
+			console.log('tree.children', tree.children);
+		}
+		var entries = [];
+		if (tree) {
+			for (var fn in tree.children) {
+				entries.push(tree.children[fn]);
+			}
+		}
 		var i = 0;
 		var nextEntry = function() {
 			if ( i >= files.length ) {

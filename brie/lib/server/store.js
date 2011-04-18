@@ -219,15 +219,17 @@ Store.prototype.getTree = function(id, callback) {
 		} else {
 			var entries = {};
 			str.split('\n').forEach(function(line) {
-				var bits = line.split("\t");
-				var meta = bits[0].split(' ');
-				var name = bits[1];
-				entries[name] = {
-					mode: meta[1],
-					type: meta[1],
-					id: meta[2],
-					name: name
-				};
+				if (line) {
+					var bits = line.split("\t");
+					var meta = bits[0].split(' ');
+					var name = bits[1];
+					entries[name] = {
+						mode: meta[0],
+						type: meta[1],
+						id: meta[2],
+						name: name
+					};
+				}
 			});
 			var tree = new Tree(store, id, entries);
 			callback(tree, null);

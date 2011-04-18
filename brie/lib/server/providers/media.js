@@ -167,11 +167,11 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 				store.getObject( id, function( obj, err ) {
 					if ( err ) {
 						res.writeHead( 500, {'Content-Type': 'text/plain'});
-						res.end('Internal error retrieving media library.');
+						res.end('Internal error retrieving media library: ' + err);
 						return;
 					}
 					var library = obj.fork();
-					library.data.items.push(committed.version);
+					library.data.library.items.push(committed.version);
 					library.commit({}, onComplete);
 				});
 			}
