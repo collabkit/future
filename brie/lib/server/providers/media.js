@@ -108,6 +108,9 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 	var store = this.store;
 	var obj = store.createObject({
 		type: 'application/x-collabkit-photo',
+		meta: {
+			title: filename
+		},
 		photo: {
 			type: contentType,
 			src: filename
@@ -126,12 +129,53 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 		}
 		var targetUrl = '/:media/' + committed.version;
 
-		// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
-		res.writeHead( 200, {
-			'Content-Type': 'text/html',
-			'Location': targetUrl
-		} );
-		res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
+		// But we're not done yet. Add this new image to our media library...
+		// @fixme encapsulate this
+		var oldLibraryId = null;
+		// Success! Prepare the return...
+		var onComplete = function( library, err ) {
+			if ( err ) {
+				res.writeHead( 500, {'Content-Type': 'text/plain'});
+				res.end('Internal error updating media library.');
+				return;
+			}
+			store.updateBranchRef('refs/heads/collabkit-library', library.version, oldLibraryId, function(str, err) {
+				if ( err ) {
+					res.writeHead( 500, {'Content-Type': 'text/plain'});
+					res.end('Internal error updating media library branch ref.');
+					return;
+				}
+				// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
+				res.writeHead( 200, {
+					'Content-Type': 'text/html',
+					'Location': targetUrl
+				} );
+				res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
+			});
+		};
+		store.getBranchRef( 'refs/heads/collabkit-library', function( id, err ) {
+			if ( !id ) {
+				var library = store.createObject({
+					type: 'application/x-collabkit-library',
+					library: {
+						items: [committed.version]
+					}
+				});
+				library.commit({}, onComplete);
+			} else {
+				oldLibraryId = id;
+				store.getObject( id, function( obj, err ) {
+					if ( err ) {
+						res.writeHead( 500, {'Content-Type': 'text/plain'});
+						res.end('Internal error retrieving media library.');
+						return;
+					}
+					var library = obj.fork();
+					library.data.items.push(committed.version);
+					library.commit({}, onComplete);
+				});
+			}
+		});
 	});
 };
 

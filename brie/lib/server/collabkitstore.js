@@ -216,7 +216,10 @@ CollabKitObject.prototype.commit = function(params, callback) {
 						callback( null, err );
 						return;
 					}
-					var entry = tree ? tree.findFile( file.path ) : null;
+					var entry = null
+					if ( tree && tree.hasFile ) {
+						entry = tree.findFile( file.path, 'blob' );
+					}
 					if ( entry ) {
 						entry = grout.mix(entry, {id: id});
 					} else {

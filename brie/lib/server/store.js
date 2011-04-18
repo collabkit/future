@@ -17,6 +17,9 @@ function Store( options ) {
  * @return {Stream}
  */
 Store.prototype.streamBlob = function(id) {
+	if (!id) {
+		throw "Invalid blob id for streamBlob: " + id;
+	}
 	return this.readGitStream(['cat-file', 'blob', id]);
 }
 
@@ -154,7 +157,6 @@ Store.prototype.getCommit = function(id, callback) {
 		}
 		if (str === null) {
 			// error!
-			console.log('getTree fail: ' + err);
 			callback(null, err);
 		} else {
 			/*
@@ -329,6 +331,38 @@ Store.prototype.createCommit = function(props, callback) {
 };
 
 /**
+ * Dereference a branch thingy. (Warning: may be scary or unsafe for arbitrary input)
+ *
+ * @param {string} ref: path to ref to update, eg 'refs/heads/foobar'
+ * @param {function(id, err)} callback
+ */
+Store.prototype.getBranchRef = function(ref, callback) {
+	this.readGitString(['show-ref', ref], function(str, err) {
+		if ( err ) {
+			callback( null, err );
+		} else {
+			// '0035ad602c9e5e89dfd465fb301a77692255ffab refs/remotes/origin/HEAD'
+			var bits = str.split(' ');
+			var id = bits[0];
+			callback( id, null );
+		}
+	});
+};
+
+/**
+ * Update a branch reference. (Warning: may be scary or unsafe for arbitrary input)
+ *
+ * @param {string} ref: path to ref to update, eg 'refs/heads/foobar'
+ * @param {string} newid: new commit ID to update to
+ * @param {string} oldid: previous commit ID; will error out if current isn't this
+ * @param {function(str, err)} callback
+ */
+Store.prototype.updateBranchRef = function(ref, newid, oldid, callback) {
+	oldid = oldid || '';
+	this.readGitString(['update-ref', ref, newid, oldid], callback);
+};
+
+/**
  * Call a git command and return the child process wrapper.
  *
  * If process exits with an error, the stderr output is returned
@@ -343,10 +377,10 @@ Store.prototype.callGit = function(args) {
 	var opts = {};
 	if ('path' in this.options) {
 		opts.cwd = this.options.path;
-		console.log('git repo', opts.cwd);
 	} else {
 		console.log('Warning: no git repo path given.');
 	}
+	console.log('git', args);
 	var proc = require('child_process').spawn('git', args, opts);
 	var err = '';
 	proc.stderr.setEncoding('utf8');
