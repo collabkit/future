@@ -284,7 +284,8 @@ Class( ui, 'DropDown', {
 		'text': null,
 		'html': null,
 		'classes': [],
-		'menu': null
+		'menu': null,
+		'align': null
 	},
 	'can': {
 		'initialize': function( options ) {
@@ -293,6 +294,7 @@ Class( ui, 'DropDown', {
 				'align': 'left'
 			}, options || {} );
 			this.$ = $( this.$ );
+			this.align = options.align;
 			// Text or HTML
 			if ( typeOf( options.text ) === 'string' ) {
 				this.$.text( options.text );
@@ -336,7 +338,7 @@ Class( ui, 'DropDown', {
 				'min-width': this.$.outerWidth(),
 				'display': 'block'
 			} );
-			if ( options.align === 'right' ) {
+			if ( this.align === 'right' ) {
 				this.$overlay.css( 'left', offset.left + this.$.outerWidth() - this.menu.$.outerWidth() );
 			} else {
 				this.$overlay.css( 'left', offset.left );
