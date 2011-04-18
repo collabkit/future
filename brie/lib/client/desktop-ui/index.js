@@ -3,19 +3,18 @@ var ui = {};
 Class( ui, 'Panel', {
 	'has': {
 		'$': '<div class="ui-panel"></div>',
-		'$content': '<div class="ui-panel-content"></div>',
-		'_options': {
-			'html': null,
-			'classes': []
-		}
+		'$content': '<div class="ui-panel-content"></div>'
 	},
 	'can': {
 		'initialize': function( options ) {
-			$.extend( this._options, options || {} );
+			options = $.extend( {
+				'html': null,
+				'classes': []
+			}, options || {} );
 			this.$ = $( this.$ ).append( this.$content = $( this.$content ) )
-				.addClass( this._options.classes.join( ' ' ) );
-			if ( typeOf( this._options.html ) === 'string' ) {
-				this.$content.html( this._options.html );
+				.addClass( options.classes.join( ' ' ) );
+			if ( typeOf( options.html ) === 'string' ) {
+				this.$content.html( options.html );
 			}
 		}
 	}
@@ -24,13 +23,6 @@ Class( ui, 'Panel', {
 Class( ui, 'Group', {
 	'has': {
 		'$': null,
-		'_options': {
-			'element': 'div',
-			'classes': [],
-			'items': null,
-			'sizes': null,
-			'orientation': 'vertical'
-		},
 		'_items': {},
 		'_sizes': {},
 		'_dynamic': 0,
@@ -51,17 +43,23 @@ Class( ui, 'Group', {
 	},
 	'can': {
 		'initialize': function( options ) {
-			$.extend( this._options, options || {} );
-			this.$ = $( '<' + this._options.element + '></' + this._options.element + '>' )
-				.addClass( this._options.classes.concat( ['ui-group'] ).join( ' ' ) );
-			if ( typeOf( this._options.items ) === 'object' ) {
-				for ( key in this._options.items ) {
-					this.add( key, this._options.items[key],
-						typeOf( this._options.sizes ) === 'object' && key in this._options.sizes
-							? this._options.sizes[key] : undefined );
+			options = $.extend( {
+				'element': 'div',
+				'classes': [],
+				'items': null,
+				'sizes': null,
+				'orientation': 'vertical'
+			}, options || {} );
+			this.$ = $( '<' + options.element + '></' + options.element + '>' )
+				.addClass( options.classes.concat( ['ui-group'] ).join( ' ' ) );
+			if ( typeOf( options.items ) === 'object' ) {
+				for ( key in options.items ) {
+					this.add( key, options.items[key],
+						typeOf( options.sizes ) === 'object' && key in options.sizes
+							? options.sizes[key] : undefined );
 				}
 			}
-			this.orient( this._options.orientation );
+			this.orient( options.orientation );
 			this.reflow();
 		},
 		/**
@@ -191,33 +189,32 @@ Class( ui, 'Group', {
 Class( ui, 'Button', {
 	'has': {
 		'$': '<div class="ui-button"></div>',
-		'$label': '<span class="ui-button-label"></span>',
-		'_options': {
-			'text': null,
-			'html': null,
-			'classes': [],
-			'press': null
-		}
+		'$label': '<span class="ui-button-label"></span>'
 	},
 	'can': {
 		'initialize': function( options ) {
-			$.extend( this._options, options || {} );
+			options = $.extend( {
+				'text': null,
+				'html': null,
+				'classes': [],
+				'press': null
+			}, options || {} );
 			this.$ = $( this.$ ).append( this.$label = $( this.$label ) );
 			// Text and HTML
-			if ( typeOf( this._options.text ) === 'string' ) {
-				this.$label.text( this._options.text );
-			} else if ( typeOf( this._options.html ) === 'string' ) {
-				this.$label.html( this._options.html );
+			if ( typeOf( options.text ) === 'string' ) {
+				this.$label.text( options.text );
+			} else if ( typeOf( options.html ) === 'string' ) {
+				this.$label.html( options.html );
 			}
 			// Classes
-			if ( typeOf( this._options.classes ) === 'array' ) {
-				this.$.addClass( this._options.classes.join( ' ' ) );
+			if ( typeOf( options.classes ) === 'array' ) {
+				this.$.addClass( options.classes.join( ' ' ) );
 			}
 			// Press
-			if ( typeOf( this._options.press ) === 'function' ) {
+			if ( typeOf( options.press ) === 'function' ) {
 				var that = this;
 				this.$.click( function( event ) {
-					that._options.press.call( that, event );
+					options.press.call( that, event );
 				} );
 			}
 		}
@@ -226,19 +223,18 @@ Class( ui, 'Button', {
 
 Class( ui, 'Menu', {
 	'has': {
-		'$': '<ui class="ui-menu"></ul>',
-		'_options': {
-			'items': null,
-			'classes': []
-		}
+		'$': '<ui class="ui-menu"></ul>'
 	},
 	'can': {
 		'initialize': function( options ) {
-			$.extend( this._options, options || {} );
-			this.$ = $( this.$ ).addClass( this._options.classes.join( ' ' ) );
-			if ( typeOf( this._options.items ) === 'array' ) {
-				for ( var i = 0; i < this._options.items.length; i++ ) {
-					this.append( this._options.items[i] );
+			options = $.extend( {
+				'items': null,
+				'classes': []
+			}, options || {} );
+			this.$ = $( this.$ ).addClass( options.classes.join( ' ' ) );
+			if ( typeOf( options.items ) === 'array' ) {
+				for ( var i = 0; i < options.items.length; i++ ) {
+					this.append( options.items[i] );
 				}
 			}
 		},
@@ -288,29 +284,28 @@ Class( ui, 'DropDown', {
 		'text': null,
 		'html': null,
 		'classes': [],
-		'menu': null,
-		'_options': {
-			'menu': null,
-			'align': 'left'
-		}
+		'menu': null
 	},
 	'can': {
 		'initialize': function( options ) {
-			$.extend( this._options, options || {} );
+			options = $.extend( {
+				'menu': null,
+				'align': 'left'
+			}, options || {} );
 			this.$ = $( this.$ );
 			// Text or HTML
-			if ( typeOf( this._options.text ) === 'string' ) {
-				this.$.text( this._options.text );
-			} else if ( typeOf( this._options.html ) === 'string' ) {
-				this.$.html( this._options.html );
+			if ( typeOf( options.text ) === 'string' ) {
+				this.$.text( options.text );
+			} else if ( typeOf( options.html ) === 'string' ) {
+				this.$.html( options.html );
 			}
 			// Classes
-			if ( typeOf( this._options.classes ) === 'array' ) {
-				this.$.addClass( this._options.classes.join( ' ' ) );
+			if ( typeOf( options.classes ) === 'array' ) {
+				this.$.addClass( options.classes.join( ' ' ) );
 			}
 			// Menu
-			if ( this._options.menu instanceof ui.Menu ) {
-				this.menu = this._options.menu;
+			if ( options.menu instanceof ui.Menu ) {
+				this.menu = options.menu;
 			} else {
 				this.menu = new ui.Menu();
 			}
@@ -341,7 +336,7 @@ Class( ui, 'DropDown', {
 				'min-width': this.$.outerWidth(),
 				'display': 'block'
 			} );
-			if ( this._options.align === 'right' ) {
+			if ( options.align === 'right' ) {
 				this.$overlay.css( 'left', offset.left + this.$.outerWidth() - this.menu.$.outerWidth() );
 			} else {
 				this.$overlay.css( 'left', offset.left );
@@ -362,22 +357,21 @@ Class( ui, 'Search', {
 	'has': {
 		'$': '<div class="ui-search"></div>',
 		'$input': '<input type="text" />',
-		'_options': {
-			'placeholder': null,
-			'classes': []
-		}
 	},
 	'can': {
 		'initialize': function( options ) {
-			$.extend( this._options, options || {} );
+			options = $.extend( {
+				'placeholder': null,
+				'classes': []
+			}, options || {} );
 			this.$ = $( this.$ ).append( this.$input = $( this.$input ) );
 			// Placeholder text
-			if ( typeOf( this._options.placeholder ) === 'string' ) {
-				this.$input.attr( 'placeholder', this._options.placeholder );
+			if ( typeOf( options.placeholder ) === 'string' ) {
+				this.$input.attr( 'placeholder', options.placeholder );
 			}
 			// Classes
-			if ( typeOf( this._options.classes ) === 'array' ) {
-				this.$.addClass( this._options.classes.join( ' ' ) );
+			if ( typeOf( options.classes ) === 'array' ) {
+				this.$.addClass( options.classes.join( ' ' ) );
 			}
 		}
 	}
