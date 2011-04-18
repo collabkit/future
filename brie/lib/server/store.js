@@ -340,7 +340,14 @@ Store.prototype.createCommit = function(props, callback) {
  * @access private
  */
 Store.prototype.callGit = function(args) {
-	var proc = require('child_process').spawn('git', args);
+	var opts = {};
+	if ('path' in this.options) {
+		opts.cwd = this.options.path;
+		console.log('git repo', opts.cwd);
+	} else {
+		console.log('Warning: no git repo path given.');
+	}
+	var proc = require('child_process').spawn('git', args, opts);
 	var err = '';
 	proc.stderr.setEncoding('utf8');
 	proc.stderr.on('data', function(str) {

@@ -25,7 +25,11 @@ function Service( options ) {
 	/* Members */
 	
 	this.server = server;
-	this.store = require( './collabkitstore.js' ).create();
+	var storeOpts = {};
+	if (options && 'gitPath' in options) {
+		storeOpts.path = options.gitPath;
+	}
+	this.store = require( './collabkitstore.js' ).create(storeOpts);
 	
 	/* Methods */
 	
