@@ -124,7 +124,7 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 			res.end('Internal error saving media file.');
 			return;
 		}
-		var targetUrl = 'http://localhost:8124/:media/' + committed.version;
+		var targetUrl = '/:media/' + committed.version;
 
 		// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
 		res.writeHead( 200, {
@@ -133,64 +133,6 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 		} );
 		res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
 	});
-	/*
-	store.createBlobFromStream(req, function( imgBlobId, err ) {
-		if (err) {
-			console.log('Media upload blob save failure: ' + err);
-			res.writeHead( 500, {'Content-Type': 'text/plain'});
-			res.end('Internal error saving file blob.');
-			return;
-		}
-		var obj = {
-			type: 'application/x-collabkit-photo',
-			photo: {
-				type: contentType,
-				src: filename
-				// todo: put width, height, other metadata in here!
-				// means we need to understand the image file format
-				// and read it in before we create the data. :D
-			}
-		};
-		store.createBlob(obj, function(objBlobId, err) {
-			if (err) {
-				console.log('Metadata blob save failure: ' + err);
-				res.writeHead( 500, {'Content-Type': 'text/plain'});
-				res.end('Internal error saving data blob.');
-				return;
-			}
-			store.createTree([
-				{mode: '100664', type: 'blob', id: objBlobId, name: 'data.json'},
-				{mode: '100664', type: 'blob', id: imgBlobId, name: filename}
-			], function( treeId, err ) {
-				if (err) {
-					console.log('Media upload tree save failure: ' + err);
-					res.writeHead( 500, {'Content-Type': 'text/plain'});
-					res.end('Internal error saving file tree.');
-					return;
-				}
-				store.createCommit({
-					tree: treeId,
-					parents: [], // first version upload!
-					desc: 'web upload: ' + filename
-				}, function(commitId, err) {
-					if (err) {
-						console.log('Media upload tree save failure: ' + err);
-						res.writeHead( 500, {'Content-Type': 'text/plain'});
-						res.end('Internal error saving file commit.');
-						return;
-					}
-					var targetUrl = '/:media/' + commitId;
-					// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
-					res.writeHead( 200, {
-						'Content-Type': 'text/html',
-						'Location': targetUrl
-					} );
-					res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
-				});
-			});
-		});
-	});
-	*/
 };
 
 exports.MediaProvider = MediaProvider;
