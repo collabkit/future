@@ -24,7 +24,11 @@ function MediaProvider( service ) {
 						}
 					} else {
 						if (req.method == "GET") {
-							provider.handleGet( req, res, path[0] );
+							if (path[0] == 'library') {
+								provider.handleGetLibrary( req, res );
+							} else {
+								provider.handleGet( req, res, path[0] );
+							}
 						} else {
 							throw "Only GET allowed."; // @fixme HEAD also?
 						}
@@ -80,6 +84,34 @@ MediaProvider.prototype.handleGet = function( req, res, id ) {
 			res.end( 'Unknown object type: not a photo' );
 			return;
 		}
+	});
+};
+
+/**
+ * HTTP request event handler for media list (hack hack)
+ *
+ * @param {http.ServerRequest} req
+ * @param {http.ServerResponse} res
+ */
+MediaProvider.prototype.handleGetLibrary = function( req, res ) {
+	var store = this.store;
+	var respondWith = function(list) {
+		res.writeHead( 200, {'Content-Type': 'application/json'} );
+		res.end(JSON.stringify(list));
+	};
+	store.getBranchRef( 'refs/heads/collabkit-library', function( id, err ) {
+		if ( !id ) {
+			respondWith([]);
+			return;
+		}
+		store.getObject( id, function( obj, err ) {
+			if ( err ) {
+				res.writeHead( 500, {'Content-Type': 'text/plain'});
+				res.end('Internal error retrieving media library: ' + err);
+				return;
+			}
+			respondWith(obj.data.library.items);
+		});
 	});
 };
 

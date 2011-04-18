@@ -26,6 +26,17 @@ if ( !XMLHttpRequest.prototype.sendAsBinary ) {
 	};
 }
 
+/**
+ * @param {jQuery} target
+ * @param {String} viewUrl
+ */
+function showThumb(target, viewUrl) {
+	$('<div class="thumb"><a><img width="128" height="128" /></a></div>')
+		.find('a').attr('href', viewUrl).end()
+		.find('img').attr('src', viewUrl).end()
+		.appendTo(target);
+}
+
 $('#media-chooser').change(function(event) {
 	// This version requires FileAPI: Firefox 3.5+ and Chrome ok
 	var files = this.files;
@@ -47,11 +58,8 @@ $('#media-chooser').change(function(event) {
 					if (xhr.readyState == 4) {
 						var viewUrl = xhr.getResponseHeader('Location')
 						if (viewUrl) {
-							ui.empty();
-							$('<div class="thumb"><a><img width="128" height="128" /></a></div>')
-								.find('a').attr('href', viewUrl).end()
-								.find('img').attr('src', viewUrl).end()
-								.appendTo(ui);
+							ui.empty()
+							showThumb(ui, viewUrl);
 						} else {
 							ui.text('failllll');
 						}
@@ -63,3 +71,10 @@ $('#media-chooser').change(function(event) {
 		});
 	}
 });
+
+$.get('/:media/library', function(data, xhr) {
+	$.each(data, function(i, id) {
+		var thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
+		showThumb(thumb, '/:media/' + id);
+	});
+}, 'json');
