@@ -1,7 +1,7 @@
 var util = require('util');
 
 /**
- * Versioned object store, wrapping git or git-style commit trees.
+ * Low-level versioned object store, wrapping git or git-style commit trees.
  *
  * @returns {Store}
  */
@@ -104,11 +104,21 @@ var makeBlob = function() {
  *
  * @param {String} id
  * @param {function(data, err)} callback
- * @param {String} format: optional 'buffer', 'string', 'json', 'xml', or 'auto'
+ * @param {String} format: optional 'buffer', 'string', 'json', 'xml', 'id', 'stream', or 'auto' (chooses from json, xml, or buffer)
  * @throws exception if no valid blob file entry
  */
 Store.prototype.getBlob = function(id, callback, format) {
+	if ( format == 'id' ) {
+		// High-level caller only needs the id. Return immediately.
+		callback( id, null );
+		return;
+	}
 	var stream = this.streamBlob(id);
+	if ( format == 'stream' ) {
+		// High-level caller is taking the raw stream; fire it off!
+		callback( stream, null );
+		return;
+	}
 	var buffer = new Buffer(0);
 	stream.on('data', function(chunk) {
 		var next = new Buffer(buffer.length + chunk.length);
@@ -134,8 +144,14 @@ Store.prototype.getBlob = function(id, callback, format) {
  * @param {function(commit, err)} callback
  */
 Store.prototype.getCommit = function(id, callback) {
+	if (typeof id !== 'string') {
+		throw 'Invalid id to Store.getCommit';
+	}
 	var store = this;
 	this.readGitString(['cat-file', 'commit', id], function(str, err) {
+		if (typeof id !== 'string') {
+			throw 'Invalid id to Store.getCommit, caught later?!';
+		}
 		if (str === null) {
 			// error!
 			console.log('getTree fail: ' + err);
@@ -175,6 +191,7 @@ Store.prototype.getCommit = function(id, callback) {
 					}
 				}
 			});
+			console.log('Loading commit from:', id, props);
 			var commit = new Commit(store, id, props);
 			callback(commit, null);
 		}
@@ -247,10 +264,14 @@ Store.prototype.createBlobFromStream = function(stream, callback) {
  *
  * @param {mixed} data
  * @param {function(id, err)} callback
- * @param {string} format one of 'buffer', 'string', 'json', 'xml', 'auto'
+ * @param {string} format one of 'buffer', 'string', 'json', 'xml', 'stream', 'auto'
  */
 Store.prototype.createBlob = function(data, callback, format) {
-	this.writeGitStream(['hash-object', '-w', '--stdin'], callback).end(makeBlob(data));
+	if (format == 'stream') {
+		this.createBlobFromStream(data, callback);
+	} else {
+		this.writeGitStream(['hash-object', '-w', '--stdin'], callback).end(makeBlob(data));
+	}
 };
 
 /**
@@ -319,7 +340,14 @@ Store.prototype.createCommit = function(props, callback) {
  * @access private
  */
 Store.prototype.callGit = function(args) {
-	var proc = require('child_process').spawn('git', args);
+	var opts = {};
+	if ('path' in this.options) {
+		opts.cwd = this.options.path;
+		console.log('git repo', opts.cwd);
+	} else {
+		console.log('Warning: no git repo path given.');
+	}
+	var proc = require('child_process').spawn('git', args, opts);
 	var err = '';
 	proc.stderr.setEncoding('utf8');
 	proc.stderr.on('data', function(str) {
@@ -440,16 +468,21 @@ function Commit(store, id, props) {
 	}
 }
 
+util.inherits(Commit, StoreObject);
+
 /**
  * Asynchronously fetch a subtree node from this directory via a callback.
  *
  * @param {function(tree, err)} callback
  */
 Commit.prototype.getTree = function(callback) {
-	this.store.getTree(this.tree, callback);
+	if (this.tree) {
+		this.store.getTree(this.tree, callback);
+	} else {
+		console.log('wtf?', JSON.stringify(this));
+		callback(null, 'Commit lists no tree id.');
+	}
 };
-
-util.inherits(Commit, StoreObject);
 
 /**
  * A git tree is a node in a linked file tree structure. Each individual

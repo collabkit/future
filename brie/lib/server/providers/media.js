@@ -52,42 +52,34 @@ util.inherits( MediaProvider, events.EventEmitter );
  */
 MediaProvider.prototype.handleGet = function( req, res, id ) {
 	var store = this.store;
-	store.getCommit( id, function(commit, err) {
+	store.getObject( id, function(obj, err) {
 		if ( err ) {
-			console.log('Failure fetching commit: ' + err);
+			console.log('Failure fetching object: ' + err);
 			res.writeHead( 500, { 'Content-Type': 'text/plain' });
 			res.end( 'Internal error or not found or something.' );
 			return;
 		}
-		store.getTree( commit.tree, function( tree, err ) {
-			if ( err ) {
-				console.log('Failure fetching tree: ' + err);
-				res.writeHead( 500, { 'Content-Type': 'text/plain' });
-				res.end( 'Internal error or not found or something.' );
-				return;
+		var data = obj.data;
+		if (data.type == 'application/x-collabkit-photo') {
+			if (data.photo.src && data.photo.type) {
+				obj.getFile(data.photo.src, function(stream, err) {
+					if ( err ) {
+						res.writeHead( 500, {'Content-Type': 'text/plain' });
+						res.end( 'Error: ' + err );
+					} else {
+						res.writeHead( 200, { 'Content-Type': data.photo.type });
+						stream.pipe( res );
+					}
+				}, 'stream');
+			} else {
+				res.writeHead( 404, {'Content-Type': 'text/plain' });
+				res.end( 'Not found' );
 			}
-			tree.getBlob('data.json', function(data, err) {
-				if ( err ) {
-					console.log('Failure fetching data blob: ' + err);
-					res.writeHead( 500, { 'Content-Type': 'text/plain' });
-					res.end( 'Internal error or not found or something.' );
-					return;
-				}
-				if (data.type != 'application/x-collabkit-photo') {
-					res.writeHead( 400, { 'Content-Type': 'text/plain' });
-					res.end( 'Wrong object type: not a photo' );
-					return;
-				}
-				if (data.photo.src && data.photo.type) {
-					var stream = tree.streamBlob(data.photo.src);
-					res.writeHead( 200, { 'Content-Type': data.photo.type });
-					stream.pipe( res );
-				} else {
-					res.writeHead( 404, {'Content-Type': 'text/plain' });
-					res.end( 'Not found' );
-				}
-			});
-		});
+		} else {
+			res.writeHead( 400, { 'Content-Type': 'text/plain' });
+			res.end( 'Unknown object type: not a photo' );
+			return;
+		}
 	});
 };
 
@@ -114,6 +106,34 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 	var filename = 'image.' + types[contentType];
 
 	var store = this.store;
+	var obj = store.createObject({
+		type: 'application/x-collabkit-photo',
+		photo: {
+			type: contentType,
+			src: filename
+			// todo: put width, height, other metadata in here!
+			// means we need to understand the image file format
+			// and read it in before we create the data. :D
+		}
+	});
+	obj.addFile(filename, req, 'stream');
+	obj.commit({}, function(committed, err) {
+		if (err) {
+			console.log('Media upload failure: ' + err);
+			res.writeHead( 500, {'Content-Type': 'text/plain'});
+			res.end('Internal error saving media file.');
+			return;
+		}
+		var targetUrl = 'http://localhost:8124/:media/' + committed.version;
+
+		// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
+		res.writeHead( 200, {
+			'Content-Type': 'text/html',
+			'Location': targetUrl
+		} );
+		res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
+	});
+	/*
 	store.createBlobFromStream(req, function( imgBlobId, err ) {
 		if (err) {
 			console.log('Media upload blob save failure: ' + err);
@@ -170,6 +190,7 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 			});
 		});
 	});
+	*/
 };
 
 exports.MediaProvider = MediaProvider;
