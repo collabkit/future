@@ -24,7 +24,11 @@ function MediaProvider( service ) {
 						}
 					} else {
 						if (req.method == "GET") {
-							provider.handleGet( req, res, path[0] );
+							if (path[0] == 'library') {
+								provider.handleGetLibrary( req, res );
+							} else {
+								provider.handleGet( req, res, path[0] );
+							}
 						} else {
 							throw "Only GET allowed."; // @fixme HEAD also?
 						}
@@ -84,6 +88,34 @@ MediaProvider.prototype.handleGet = function( req, res, id ) {
 };
 
 /**
+ * HTTP request event handler for media list (hack hack)
+ *
+ * @param {http.ServerRequest} req
+ * @param {http.ServerResponse} res
+ */
+MediaProvider.prototype.handleGetLibrary = function( req, res ) {
+	var store = this.store;
+	var respondWith = function(list) {
+		res.writeHead( 200, {'Content-Type': 'application/json'} );
+		res.end(JSON.stringify(list));
+	};
+	store.getBranchRef( 'refs/heads/collabkit-library', function( id, err ) {
+		if ( !id ) {
+			respondWith([]);
+			return;
+		}
+		store.getObject( id, function( obj, err ) {
+			if ( err ) {
+				res.writeHead( 500, {'Content-Type': 'text/plain'});
+				res.end('Internal error retrieving media library: ' + err);
+				return;
+			}
+			respondWith(obj.data.library.items);
+		});
+	});
+};
+
+/**
  * HTTP request event handler for fetching original files.
  * Currently we just stash the file into some internal array.
  *
@@ -108,6 +140,9 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 	var store = this.store;
 	var obj = store.createObject({
 		type: 'application/x-collabkit-photo',
+		meta: {
+			title: filename
+		},
 		photo: {
 			type: contentType,
 			src: filename
@@ -124,73 +159,56 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 			res.end('Internal error saving media file.');
 			return;
 		}
-		var targetUrl = 'http://localhost:8124/:media/' + committed.version;
+		var targetUrl = '/:media/' + committed.version;
 
-		// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
-		res.writeHead( 200, {
-			'Content-Type': 'text/html',
-			'Location': targetUrl
-		} );
-		res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
-	});
-	/*
-	store.createBlobFromStream(req, function( imgBlobId, err ) {
-		if (err) {
-			console.log('Media upload blob save failure: ' + err);
-			res.writeHead( 500, {'Content-Type': 'text/plain'});
-			res.end('Internal error saving file blob.');
-			return;
-		}
-		var obj = {
-			type: 'application/x-collabkit-photo',
-			photo: {
-				type: contentType,
-				src: filename
-				// todo: put width, height, other metadata in here!
-				// means we need to understand the image file format
-				// and read it in before we create the data. :D
-			}
-		};
-		store.createBlob(obj, function(objBlobId, err) {
-			if (err) {
-				console.log('Metadata blob save failure: ' + err);
+		// But we're not done yet. Add this new image to our media library...
+		// @fixme encapsulate this
+		var oldLibraryId = null;
+		// Success! Prepare the return...
+		var onComplete = function( library, err ) {
+			if ( err ) {
 				res.writeHead( 500, {'Content-Type': 'text/plain'});
-				res.end('Internal error saving data blob.');
+				res.end('Internal error updating media library.');
 				return;
 			}
-			store.createTree([
-				{mode: '100664', type: 'blob', id: objBlobId, name: 'data.json'},
-				{mode: '100664', type: 'blob', id: imgBlobId, name: filename}
-			], function( treeId, err ) {
-				if (err) {
-					console.log('Media upload tree save failure: ' + err);
+			store.updateBranchRef('refs/heads/collabkit-library', library.version, oldLibraryId, function(str, err) {
+				if ( err ) {
 					res.writeHead( 500, {'Content-Type': 'text/plain'});
-					res.end('Internal error saving file tree.');
+					res.end('Internal error updating media library branch ref.');
 					return;
 				}
-				store.createCommit({
-					tree: treeId,
-					parents: [], // first version upload!
-					desc: 'web upload: ' + filename
-				}, function(commitId, err) {
-					if (err) {
-						console.log('Media upload tree save failure: ' + err);
+				// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
+				res.writeHead( 200, {
+					'Content-Type': 'text/html',
+					'Location': targetUrl
+				} );
+				res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
+			});
+		};
+		store.getBranchRef( 'refs/heads/collabkit-library', function( id, err ) {
+			if ( !id ) {
+				var library = store.createObject({
+					type: 'application/x-collabkit-library',
+					library: {
+						items: [committed.version]
+					}
+				});
+				library.commit({}, onComplete);
+			} else {
+				oldLibraryId = id;
+				store.getObject( id, function( obj, err ) {
+					if ( err ) {
 						res.writeHead( 500, {'Content-Type': 'text/plain'});
-						res.end('Internal error saving file commit.');
+						res.end('Internal error retrieving media library: ' + err);
 						return;
 					}
-					var targetUrl = '/:media/' + commitId;
-					// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
-					res.writeHead( 200, {
-						'Content-Type': 'text/html',
-						'Location': targetUrl
-					} );
-					res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
+					var library = obj.fork();
+					library.data.library.items.push(committed.version);
+					library.commit({}, onComplete);
 				});
-			});
+			}
 		});
 	});
-	*/
 };
 
 exports.MediaProvider = MediaProvider;
