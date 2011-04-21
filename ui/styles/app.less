@@ -1,0 +1,128 @@
+// Imports
+
+@import "common.less";
+@import "general.less";
+@import "fonts.less";
+
+// Variables
+
+@baseColor: #4d4d4d;
+
+// Rules
+
+* {
+	.border-box;
+	font-family: 'Droid Sans';
+	font-size: 100%;
+}
+
+html,
+body {
+	width: 1000px;
+	height: 100%;
+	margin: 0 auto;
+	padding: 0;
+	overflow: hidden;
+	font-size: 100%;
+}
+
+#app-head,
+#app-foot {
+	height: 3em;
+	position: absolute;
+	left: 0;
+	right: 0;
+	color: #ffffff;
+	.vertical-gradient(@baseColor, darken(@baseColor, 20%));
+}
+
+#app-head {
+	top: 0;
+}
+
+#app-foot {
+	bottom: 0;
+	height: 3.2em;
+}
+
+#app-head > ul,
+#app-foot > ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+#app-head ul > li,
+#app-foot ul > li {
+	display: inline-block;
+	height: 3em;
+	width: 3em;
+	margin: 0;
+	padding: 0;
+	cursor: pointer;
+	list-style: none;
+	font-size: 1em;
+	background-repeat: no-repeat;
+	background-position: center center;
+}
+
+#app-head #app-places {
+	float: left;
+}
+
+#app-head #app-places #app-logo {
+	width: 9.5em;
+	background-image: url(../graphics/collabkit-logo.svg);
+}
+
+#app-head #app-places #app-home {
+	width: 2.25em;
+	background-image: url(../graphics/home.svg);
+}
+
+#app-head #app-places #app-talk {
+	width: 2.25em;
+	background-image: url(../graphics/talk.svg);
+}
+
+#app-head #app-people {
+	float: right;
+}
+
+#app-head #app-people #app-invite {
+	background-image: url(../graphics/invite.svg);
+}
+
+#app-foot #app-personal {
+	width: 50%;
+	height: 3.2em;
+	float: left;
+	background-image: url(../graphics/personal-stripe.svg);
+	background-repeat: repeat-x;
+	background-position: bottom left;
+}
+
+#app-foot #app-group {
+	width: 50%;
+	height: 3.2em;
+	float: right;
+	background-image: url(../graphics/group-stripe.svg);
+	background-repeat: repeat-x;
+	background-position: bottom left;
+}
+
+#app-foot #app-controls {
+	position: absolute;
+	left: 50%;
+	width: 3em;
+	margin-left: -1.5em;
+}
+
+#app-foot #app-controls #app-share {
+	background-image: url(../graphics/share.svg);
+}
+
+#app-foot #app-controls #app-grab {
+	display: none;
+	background-image: url(../graphics/grab.svg);
+}
