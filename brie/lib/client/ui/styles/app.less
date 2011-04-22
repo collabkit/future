@@ -6,7 +6,7 @@
 
 // Variables
 
-@baseColor: #4d4d4d;
+@baseColor: #4abaeb;
 
 // Rules
 
@@ -33,7 +33,7 @@ body {
 	left: 0;
 	right: 0;
 	color: #ffffff;
-	.vertical-gradient(@baseColor, darken(@baseColor, 20%));
+	.vertical-gradient(#ffffff, lighten(@baseColor, 30%));
 	ul {
 		margin: 0;
 		padding: 0;
@@ -47,67 +47,55 @@ body {
 			cursor: pointer;
 			list-style: none;
 			font-size: 1em;
-			background-repeat: no-repeat;
-			background-position: center center;
 		}
 	}
 }
 
 #app-head {
 	top: 0;
+	border-bottom: solid 1px lighten(@baseColor, 20%);
+	#app-logo {
+		float: left;
+		width: 9.5em;
+		height: 3em;
+		background-image: url(../graphics/logo.svg);
+		background-repeat: no-repeat;
+		background-position: center center;
+	}
 	#app-places {
 		float: left;
-		#app-logo {
-			width: 9.5em;
-			background-image: url(../graphics/collabkit-logo.svg);
-		}
-		#app-home {
-			width: 2.25em;
-			background-image: url(../graphics/home.svg);
-		}
-		#app-talk {
-			width: 2.25em;
-			background-image: url(../graphics/talk.svg);
-		}
 	}
 	#app-people {
 		float: right;
-		#app-invite {
-			background-image: url(../graphics/invite.svg);
-		}
 	}
 }
 
 #app-foot {
 	bottom: 0;
-	height: 3.2em;
+	border-top: solid 1px lighten(@baseColor, 20%);
 	#app-personal {
 		width: 50%;
 		height: 3.2em;
 		float: left;
-		background-image: url(../graphics/personal-stripe.svg);
-		background-repeat: repeat-x;
-		background-position: bottom left;
 	}
 	#app-group {
 		width: 50%;
 		height: 3.2em;
 		float: right;
-		background-image: url(../graphics/group-stripe.svg);
-		background-repeat: repeat-x;
-		background-position: bottom left;
 	}
 	#app-controls {
 		position: absolute;
 		left: 50%;
 		width: 3em;
 		margin-left: -1.5em;
-		#app-share {
-			background-image: url(../graphics/share.svg);
-		}
-		#app-grab {
-			display: none;
-			background-image: url(../graphics/grab.svg);
-		}
 	}
+}
+
+#app-body {
+	position: absolute;
+	top: 3em;
+	left: 0;
+	right: 0;
+	bottom: 3em;
+	overflow: auto;
 }

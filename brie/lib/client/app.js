@@ -31,7 +31,7 @@ if ( !XMLHttpRequest.prototype.sendAsBinary ) {
  * @param {String} viewUrl
  */
 function showThumb(target, viewUrl) {
-	$('<div class="thumb"><a><img width="128" height="128" /></a></div>')
+	$('<div class="thumb"><a><img height="128" /></a></div>')
 		.find('a').attr('href', viewUrl).end()
 		.find('img').attr('src', viewUrl).end()
 		.appendTo(target);
