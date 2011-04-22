@@ -2,8 +2,7 @@ var util = require( 'util' ),
 	events = require( 'events' ),
 	path = require( 'path' ),
 	fs = require( 'fs' ),
-	static = require( 'node-static' ),
-	less = require( 'less' );
+	static = require( 'node-static' );
 
 var mimetypes = {
 	'.js': 'text/javascript',
@@ -21,6 +20,7 @@ var mimetypes = {
 var basePath = './lib/client/';
 
 function ResourceProvider( service ) {
+	var handlers = this.handlers = {};
 	events.EventEmitter.call( this );
 	service.mount( 'resource' );
 	service.server.on( 'request.resource', function( req, res ) {
@@ -38,23 +38,15 @@ function ResourceProvider( service ) {
 		}
 		var ext = require( 'path' ).extname( target );
 		// Special hacking for less files
-		if ( ext === '.less' ) {
+		if ( ext in handlers ) {
 			path.exists( basePath + target, function( exists ) {
 				if ( exists ) {
 					fs.readFile( basePath + target, 'utf8', function( err, data ) {
-						if ( err ) {
-							throw err;
-						}
-						var parser = new ( less.Parser ) ( {
-							'paths': [path.dirname( basePath + target )],
-							'filename': path.basename( target )
-						} );
-						parser.parse( data, function ( err, tree ) {
-							if ( err ) {
-								throw err;
-							}
-							res.writeHead( 200, { 'Content-Type': 'text/css' } );
-							res.end( tree.toCSS( /* { compress: true } */ ) );
+						var query = require( 'querystring' ).parse( req.parsedUrl.query );
+						var data = handlers[ext]( data, res, {
+							'path': path.dirname( basePath + target ),
+							'filename': path.basename( target ),
+							'compress': 'min' in query
 						} );
 					} );
 				} else {
@@ -73,6 +65,10 @@ function ResourceProvider( service ) {
 	} );
 }
 util.inherits( ResourceProvider, events.EventEmitter );
+
+ResourceProvider.prototype.addHandler = function( ext, render ) {
+	this.handlers[ext] = render;
+};
 
 exports.ResourceProvider = ResourceProvider;
 exports.create = function( service ) {
