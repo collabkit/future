@@ -46,7 +46,8 @@ function DataProvider( service ) {
 				res.end( JSON.stringify(obj.data) );
 			});
 		} else if (first == 'commit') {
-			//
+			// update zee data!!!
+			
 		} else if (first == 'merge') {
 			// combine whee
 		}
