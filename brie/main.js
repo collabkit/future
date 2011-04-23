@@ -30,3 +30,6 @@ var providers = {
 	'resource': require( './lib/server/providers/resource' ).create( service ),
 	'session': require( './lib/server/providers/session' ).create( service ),
 };
+
+providers.resource.addHandler( '.less', require( './lib/server/handlers/less' ).render );
+providers.resource.addHandler( '.js', require( './lib/server/handlers/uglifyjs' ).render );

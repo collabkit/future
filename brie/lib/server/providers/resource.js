@@ -1,7 +1,8 @@
 var util = require( 'util' ),
 	events = require( 'events' ),
+	path = require( 'path' ),
 	fs = require( 'fs' ),
-	static = require('node-static');
+	static = require( 'node-static' );
 
 var mimetypes = {
 	'.js': 'text/javascript',
@@ -16,7 +17,10 @@ var mimetypes = {
 	'.jpg': 'image/jpeg'
 };
 
+var basePath = './lib/client/';
+
 function ResourceProvider( service ) {
+	var handlers = this.handlers = {};
 	events.EventEmitter.call( this );
 	service.mount( 'resource' );
 	service.server.on( 'request.resource', function( req, res ) {
@@ -33,7 +37,27 @@ function ResourceProvider( service ) {
 			return;
 		}
 		var ext = require( 'path' ).extname( target );
-		( new ( require( 'node-static' ).Server )( './lib/client/', {
+		// Special hacking for less files
+		if ( ext in handlers ) {
+			path.exists( basePath + target, function( exists ) {
+				if ( exists ) {
+					fs.readFile( basePath + target, 'utf8', function( err, data ) {
+						var query = require( 'querystring' ).parse( req.parsedUrl.query );
+						var data = handlers[ext]( data, res, {
+							'path': path.dirname( basePath + target ),
+							'filename': path.basename( target ),
+							'compress': 'min' in query
+						} );
+					} );
+				} else {
+					res.writeHead( 500, { 'Content-Type': 'text/plain' } );
+					res.end( 'Missing whirlygig.\n' );
+				}
+			} );
+			return;
+		}
+		// Normal static file delivery
+		( new ( require( 'node-static' ).Server )( basePath, {
 			'headers': {
 				'Content-Type': ext in mimetypes ? mimetypes[ext] : 'text/plain'
 			}
@@ -41,6 +65,10 @@ function ResourceProvider( service ) {
 	} );
 }
 util.inherits( ResourceProvider, events.EventEmitter );
+
+ResourceProvider.prototype.addHandler = function( ext, render ) {
+	this.handlers[ext] = render;
+};
 
 exports.ResourceProvider = ResourceProvider;
 exports.create = function( service ) {
