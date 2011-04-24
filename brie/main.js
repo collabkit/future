@@ -1,25 +1,25 @@
 var options = {
-    port: 8124
+	port: 8124
 };
 var args = require( 'argsparser' ).parse();
 if ( 'C9_PORT' in process.env ) {
-    options.port = process.env.C9_PORT;
+	options.port = process.env.C9_PORT;
 } else if ( '--port' in args ) {
-    var port = parseInt( args['--port'], 10 );
-    if ( port && port > 0 && port < 65536 ) {
-        options.port = port;
-    } else {
-        throw 'Invalid listening port ' + port;
-    }
+	var port = parseInt( args['--port'], 10 );
+	if ( port && port > 0 && port < 65536 ) {
+		options.port = port;
+	} else {
+		throw 'Invalid listening port ' + port;
+	}
 }
 if ( '--git-repo' in args ) {
 	options.gitPath = args['--git-repo'];
 }
 if ( '--help' in args ) {
-    console.log('--port <number> (default 8124)\n\tSet HTTP server listening port');
-    console.log('--git-repo <path> (default current dir)\n\tStore data in the given git repository');
-    console.log('--help\n\tshow this help and exit');
-    process.exit(0);
+	console.log('--port <number> (default 8124)\n\tSet HTTP server listening port');
+	console.log('--git-repo <path> (default current dir)\n\tStore data in the given git repository');
+	console.log('--help\n\tshow this help and exit');
+	process.exit(0);
 }
 
 // Ensure relative paths are consistent
