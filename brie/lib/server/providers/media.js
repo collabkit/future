@@ -1,5 +1,6 @@
 var util = require( 'util' ),
-	events = require( 'events' );
+	events = require( 'events' ),
+	logger = require( '../logger' ).create( 'MediaProvider' );
 
 function MediaProvider( service ) {
 	var provider = this;
@@ -58,7 +59,7 @@ MediaProvider.prototype.handleGet = function( req, res, id ) {
 	var store = this.store;
 	store.getObject( id, function(obj, err) {
 		if ( err ) {
-			console.log('Failure fetching object: ' + err);
+			logger.fail('Failure fetching object: ' + err);
 			res.writeHead( 500, { 'Content-Type': 'text/plain' });
 			res.end( 'Internal error or not found or something.' );
 			return;
@@ -154,7 +155,7 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 	obj.addFile(filename, req, 'stream');
 	obj.commit({}, function(committed, err) {
 		if (err) {
-			console.log('Media upload failure: ' + err);
+			logger.fail('Media upload failure: ' + err);
 			res.writeHead( 500, {'Content-Type': 'text/plain'});
 			res.end('Internal error saving media file.');
 			return;

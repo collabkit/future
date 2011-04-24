@@ -1,4 +1,5 @@
-var util = require('util');
+var util = require('util'),
+	logger = require( './logger' ).create( 'Store' );
 
 /**
  * Low-level versioned object store, wrapping git or git-style commit trees.
@@ -193,7 +194,7 @@ Store.prototype.getCommit = function(id, callback) {
 					}
 				}
 			});
-			console.log('Loading commit from:', id, props);
+			logger.trace('Loading commit from:', id, props);
 			var commit = new Commit(store, id, props);
 			callback(commit, null);
 		}
@@ -214,7 +215,7 @@ Store.prototype.getTree = function(id, callback) {
 				err = "got null from read";
 			}
 			// error!
-			console.log('getTree fail: ' + err);
+			logger.fail('getTree fail: ' + err);
 			callback(null, err);
 		} else {
 			var entries = {};
@@ -380,9 +381,9 @@ Store.prototype.callGit = function(args) {
 	if ('path' in this.options) {
 		opts.cwd = this.options.path;
 	} else {
-		console.log('Warning: no git repo path given.');
+		logger.warn('Warning: no git repo path given.');
 	}
-	console.log('git', args);
+	logger.trace('git', args);
 	var proc = require('child_process').spawn('git', args, opts);
 	var err = '';
 	proc.stderr.setEncoding('utf8');
@@ -395,7 +396,7 @@ Store.prototype.callGit = function(args) {
 	proc.on('exit', function(code) {
 		if (code != 0) {
 			// Pass error on to the reader.
-			console.log('Error code out! ' + err);
+			logger.fail('Error code out! ' + err);
 			proc.stdout.emit('error', 'Error: ' + err);
 		}
 	});
@@ -515,7 +516,7 @@ Commit.prototype.getTree = function(callback) {
 	if (this.tree) {
 		this.store.getTree(this.tree, callback);
 	} else {
-		console.log('wtf?', JSON.stringify(this));
+		logger.fail('wtf?', JSON.stringify(this));
 		callback(null, 'Commit lists no tree id.');
 	}
 };
@@ -659,7 +660,7 @@ exports.create = function( options ) {
 if (module.parent === null) {
 	var store = new Store();
 
-	console.log("store.js testing interface!");
+	logger.trace("store.js testing interface!");
 
 	var args = process.argv.slice(2);
 	if (args.length == 0) {
@@ -668,27 +669,27 @@ if (module.parent === null) {
 
 	var createCallback = function(id, err) {
 		if (err) {
-			console.log("Error: " + err);
+			logger.fail("Error: " + err);
 			process.exit(1);
 		} else {
-			console.log("Success: " + id);
+			logger.success("Success: " + id);
 			process.exit(0);
 		}
 	};
 
 	if (args[0] == 'create-blob') {
-		console.log("Saving blob from stdin...");
+		logger.trace("Saving blob from stdin...");
 
 		store.createBlobFromStream(process.stdin, createCallback);
 		process.stdin.resume();
 	} else if (args[0] == 'read-blob') {
 		if (args.length < 2) {
-			console.log('Usage: read-blob <id>');
+			logger.trace('Usage: read-blob <id>');
 			process.exit(1);
 		}
 		var stream = store.streamBlob(args[1]);
 		stream.on('error', function(err) {
-			console.log('Error reading: ' + err);
+			logger.fail('Error reading: ' + err);
 			process.exit(1);
 		});
 		stream.on('end', function() {
@@ -697,7 +698,7 @@ if (module.parent === null) {
 		stream.pipe(process.stdout);
 	} else if (args[0] == 'get-blob') {
 		if (args.length < 2) {
-			console.log('Usage: get-blob <id> [<type>]');
+			logger.trace('Usage: get-blob <id> [<type>]');
 			process.exit(1);
 		}
 		var id = args[1];
@@ -705,20 +706,20 @@ if (module.parent === null) {
 		if (args.length > 2) {
 			type = args[2];
 		}
-		console.log('Fetching ' + id + ' as ' + type);
+		logger.trace('Fetching ' + id + ' as ' + type);
 		store.getBlob(id, function(data, err) {
 			if (err) {
-				console.log('Error: ' + err);
+				logger.fail('Error: ' + err);
 				process.exit(1);
 			} else {
-				console.log('Success!');
-				console.log(data);
+				logger.success('Success!');
+				logger.trace(data);
 				process.exit(0);
 			}
 		}, type);
 	} else if (args[0] == 'create-tree') {
 		if (args.length < 3) {
-			console.log('Usage: create-tree <filename> <blob id>');
+			logger.trace('Usage: create-tree <filename> <blob id>');
 			process.exit(1);
 		}
 		store.createTree([
@@ -726,7 +727,7 @@ if (module.parent === null) {
 		], createCallback);
 	} else if (args[0] == 'commit-tree') {
 		if (args.length < 2) {
-			console.log('Usage: commit-tree <tree id> [<desc>]');
+			logger.trace('Usage: commit-tree <tree id> [<desc>]');
 			process.exit(1);
 		}
 		store.createCommit({
@@ -735,7 +736,7 @@ if (module.parent === null) {
 			description: (args.length > 2) ? args[2] : 'committed'
 		}, createCallback);
 	} else {
-		console.log('Actions: create-blob, read-blob, get-blob, create-tree, commit-tree');
+		logger.trace('Actions: create-blob, read-blob, get-blob, create-tree, commit-tree');
 		process.exit(1);
 	}
 }

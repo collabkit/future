@@ -1,3 +1,4 @@
+var logger = require( './lib/server/logger' );
 var options = {
 	port: 8124
 };
@@ -19,7 +20,14 @@ if ( '--help' in args ) {
 	console.log('--port <number> (default 8124)\n\tSet HTTP server listening port');
 	console.log('--git-repo <path> (default current dir)\n\tStore data in the given git repository');
 	console.log('--help\n\tshow this help and exit');
+	console.log('--verbose\n\tshow all logging, including failures, warnings, successes and traces');
+	console.log('--quiet\n\thide most logging, showing failures only');
 	process.exit(0);
+}
+if ( '--verbose' in args ) {
+	logger.setVerbosity( 2 );
+} else if ( '--quiet' in args ) {
+	logger.setVerbosity( 0 );
 }
 
 // Ensure relative paths are consistent

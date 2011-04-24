@@ -1,12 +1,13 @@
 var util = require( 'util' ),
 	events = require( 'events' ),
-	fs = require( 'fs' );
+	fs = require( 'fs' ),
+	logger = require( '../logger' ).create( 'PageProvider' );
 
 function PageProvider( service ) {
 	events.EventEmitter.call( this );
 	service.mount( 'page' );
 	service.server.on( 'request.page', function( req, res ) {
-		console.log(req);
+		logger.trace(req);
 		if ( req.method != 'GET' && req.method != 'HEAD') {
 			res.writeHead( 400, { 'Content-Type': 'text/plain' } );
 			res.end( 'Can only GET page resources.\n' );
@@ -17,7 +18,7 @@ function PageProvider( service ) {
 			target = req.parsedUrl.target;
 		}
 		var path = './lib/server/pages/' + target + '.html';
-		console.log(path);
+		logger.trace(path);
 		fs.stat(path, function(err, stats) {
 			if (stats && stats.isFile()) {
 				res.writeHead( 200, {
@@ -31,7 +32,7 @@ function PageProvider( service ) {
 					stream.pipe(res);
 				}
 			} else {
-				console.log(err);
+				logger.warn(err);
 				res.writeHead( 404, { 'Content-Type': 'text/plain' } );
 				res.end('Page not found.');
 			}

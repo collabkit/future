@@ -1,6 +1,7 @@
 var util = require('util'),
-	grout = require( '../shared/grout' );
-	Store = require('./store.js').Store;
+	grout = require( '../shared/grout' ),
+	Store = require('./store.js').Store,
+	logger = require( './logger' ).create( 'CollabKitStore' );
 
 /**
  * High-level versioned object store, wrapping CollabKitObject access around
@@ -68,7 +69,7 @@ CollabKitStore.prototype.createObject = function(data, files) {
 	}
 	if ( files ) {
 		if (typeof files !== 'array') {
-			console.log('non-array', files);
+			logger.fail('non-array', files);
 			throw 'non-array files passed to createObject';
 		}
 		files.forEach( function( i, entry ) {
@@ -185,8 +186,8 @@ CollabKitObject.prototype.commit = function(params, callback) {
 
 	var saveNewTree = function( tree ) {
 		if (tree) {
-			console.log('tree', tree);
-			console.log('tree.children', tree.children);
+			logger.trace('tree', tree);
+			logger.trace('tree.children', tree.children);
 		}
 		var entries = [];
 		if (tree) {
@@ -199,7 +200,7 @@ CollabKitObject.prototype.commit = function(params, callback) {
 			if ( i >= files.length ) {
 				// We've finished all the file updates.
 				// Save this version of the file tree!
-				console.log('Saving tree for entries:', entries);
+				logger.trace('Saving tree for entries:', entries);
 				store.createTree( entries, function( treeId, err ) {
 					if ( err ) {
 						callback( null, err );
@@ -217,7 +218,7 @@ CollabKitObject.prototype.commit = function(params, callback) {
 						}
 						// Commit is saved. Yay!
 						// Build a fresh, non-dirty object and pass that to the callback.
-						console.log('Saved commit: ' + commitId);
+						logger.trace('Saved commit: ' + commitId);
 						var cko = new CollabKitObject( store, commitId, orig.data, orig.parents );
 						callback( cko, null );
 					});
@@ -284,7 +285,7 @@ exports.create = function( options ) {
 if (module.parent === null) {
 	var store = new CollabKitStore();
 
-	console.log("collabkitstore.js testing interface!");
+	logger.trace("collabkitstore.js testing interface!");
 
 	var args = process.argv.slice(2);
 	if (args.length == 0) {
@@ -293,21 +294,21 @@ if (module.parent === null) {
 
 	if (args[0] == 'get') {
 		if (args.length < 2) {
-			console.log('Usage: get <id>');
+			logger.trace('Usage: get <id>');
 			process.exit(1);
 		}
 		store.getObject(args[1], function(obj, err) {
 			if (err) {
-				console.log('Error: ' + err);
+				logger.fail('Error: ' + err);
 				process.exit(1);
 			} else {
-				console.log('Success!');
-				console.log(obj.toString());
+				logger.succeed('Success!');
+				logger.trace(obj.toString());
 				process.exit(0);
 			}
 		});
 	} else {
-		console.log('Actions: get');
+		logger.trace('Actions: get');
 		process.exit(1);
 	}
 }
