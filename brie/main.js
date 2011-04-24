@@ -5,7 +5,7 @@ var args = require( 'argsparser' ).parse();
 if ( 'C9_PORT' in process.env ) {
     options.port = process.env.C9_PORT;
 } else if ( '--port' in args ) {
-    var port = parseInt( args['--port'] );
+    var port = parseInt( args['--port'], 10 );
     if ( port && port > 0 && port < 65536 ) {
         options.port = port;
     } else {
@@ -32,7 +32,7 @@ var providers = {
 	'data': require( './lib/server/providers/data' ).create( service ),
 	'media': require( './lib/server/providers/media' ).create( service ),
 	'resource': require( './lib/server/providers/resource' ).create( service ),
-	'session': require( './lib/server/providers/session' ).create( service ),
+	'session': require( './lib/server/providers/session' ).create( service )
 };
 
 providers.resource.addHandler( '.less', require( './lib/server/handlers/less' ).render );
