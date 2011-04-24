@@ -2,7 +2,9 @@ var options = {
     port: 8124
 };
 var args = require( 'argsparser' ).parse();
-if ( '--port' in args ) {
+if ( 'C9_PORT' in process.env ) {
+    options.port = process.env.C9_PORT;
+} else if ( '--port' in args ) {
     var port = parseInt( args['--port'] );
     if ( port && port > 0 && port < 65536 ) {
         options.port = port;
@@ -20,6 +22,8 @@ if ( '--help' in args ) {
     process.exit(0);
 }
 
+// Ensure relative paths are consistent
+process.chdir( __dirname );
 // Create service
 var service = require( './lib/server/service' ).create( options );
 // Attach providers
