@@ -2,7 +2,8 @@ var util = require( 'util' ),
 	events = require( 'events' ),
 	path = require( 'path' ),
 	fs = require( 'fs' ),
-	static = require( 'node-static' );
+	static = require( 'node-static' ),
+	moduleIndex = require( '../moduleIndex.js' );
 
 var mimetypes = {
 	'.js': 'text/javascript',
@@ -17,9 +18,8 @@ var mimetypes = {
 	'.jpg': 'image/jpeg'
 };
 
-var basePath = './lib/client/';
-
 function ResourceProvider( service ) {
+	var modules = this.modules = moduleIndex.create( ['lib/client/', 'lib/shared/'] );
 	var handlers = this.handlers = {};
 	events.EventEmitter.call( this );
 	service.mount( 'resource' );
@@ -36,28 +36,42 @@ function ResourceProvider( service ) {
 			res.end( 'Invalid thingy.\n' );
 			return;
 		}
+		
+		// Allow requests for modules
+		// FIXME: Right now we just fall through to direct file reading, but we should probably
+		// explicitly describe whether we are looking for a module or a file in the URL
+		var basename = path.basename( target, '.js' );
+		if ( modules.exists( basename ) ) {
+			target = modules.get( basename ).main;
+			base = '';
+		} else {
+			// XXX: This only exposes client files, not shared ones as well
+			base = 'lib/client/';
+		}
+		// Try to handle requests for actual files
 		var ext = require( 'path' ).extname( target );
 		// Special hacking for less files
 		if ( ext in handlers ) {
-			path.exists( basePath + target, function( exists ) {
+			var local = path.join( base, target );
+			path.exists( local, function( exists ) {
 				if ( exists ) {
-					fs.readFile( basePath + target, 'utf8', function( err, data ) {
+					fs.readFile( local, 'utf8', function( err, data ) {
 						var query = require( 'querystring' ).parse( req.parsedUrl.query );
 						var data = handlers[ext]( data, res, {
-							'path': path.dirname( basePath + target ),
+							'path': path.dirname( local ),
 							'filename': path.basename( target ),
 							'compress': 'min' in query
 						} );
 					} );
 				} else {
 					res.writeHead( 500, { 'Content-Type': 'text/plain' } );
-					res.end( 'Missing whirlygig.\n' );
+					res.end( 'File not found: ' + target + '\n' );
 				}
 			} );
 			return;
 		}
 		// Normal static file delivery
-		( new ( require( 'node-static' ).Server )( basePath, {
+		( new ( require( 'node-static' ).Server )( base, {
 			'headers': {
 				'Content-Type': ext in mimetypes ? mimetypes[ext] : 'text/plain'
 			}
