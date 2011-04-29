@@ -4,15 +4,23 @@ var util = require( 'util' ),
 /**
  * URL patterns
  *
- * GET:
- * /:data/[commit-id]
- * /:data/branch/[branch-name]
- * /:data/history/[commit-id]
+ * GET /:data/[branch-name|commit-id]
+ *  Returns the JSON data from the given object version.
  *
- * POST:
- * /:data/new
- * /:data/commit/[parent-commit-id]
- * /:data/merge/[commit-id-1]/[commit-id-2]
+ * GET /:data/history/[branch-name|commit-id]
+ *  Return the commit history tree as JSON data (format?)
+ *
+ * PUT /:data/new
+ *	Create a new thingy from scratch!
+ *
+ * PUT /:data/[branch-name]
+ *  Save a new version of this object's data and update the branch.
+ *  Request body: JSON data for the new object version.
+ *
+ * PUT /:data/[branch-name]/[branch-name-2|commit-id-2]
+ *  Save a new version of this object's data and update the branch,
+ *  marking history as a merge with the other given branch/commit.
+ *  Request body: JSON data for the new object version.
  */
 function DataProvider( service ) {
 	events.EventEmitter.call( this );

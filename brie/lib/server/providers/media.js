@@ -4,8 +4,20 @@ var util = require( 'util' ),
 /**
  * URL patterns
  *
- * /:media/new
- * /:media/[blob-id]
+ * PUT /:media/new/photo
+ *	Creates a new CollabKit photo object from the uploaded image file.
+ *	Returns {commit: 'commit-id'}
+ *
+ * GET /:media/[branch-name|commit-id]
+ *	Returns HTML fragment showing the object full-sizeish.
+ *
+ * GET /:media/[branch-name|commit-id]/embed
+ *	Returns HTML fragment showing a thumbnail of the object.
+ *
+ * GET /:media/[branch-name|commit-id]/photo/thumb
+ * GET /:media/[branch-name|commit-id]/photo/large
+ * GET /:media/[branch-name|commit-id]/photo/original
+ *  Return a JPEG, PNG, or GIF image at thumb (128x128), large (800x600), or original sizes.
  */
 function MediaProvider( service ) {
 	var provider = this;
