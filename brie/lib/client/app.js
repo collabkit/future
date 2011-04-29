@@ -72,8 +72,12 @@ $('#media-chooser').change(function(event) {
 	}
 });
 
-$.get('/:media/library', function(data, xhr) {
-	$.each(data, function(i, id) {
+$.get('/:data/collabkit-library', function(data, xhr) {
+	if (data.type != 'application/x-collabkit-library') {
+		alert('invalid collabkit library data');
+		return;
+	}
+	$.each(data.library.items, function(i, id) {
 		var thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
 		showThumb(thumb, '/:media/' + id);
 	});

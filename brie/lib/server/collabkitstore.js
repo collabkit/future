@@ -79,6 +79,31 @@ CollabKitStore.prototype.createObject = function(data, files) {
 	return cko;
 };
 
+
+
+/**
+ * Lazy-initialize the library in the data store and send
+ * it as a CollabKitObject on to the callback.
+ *
+ * @param {function(library, err)} callback
+ */
+CollabKitStore.prototype.initLibrary = function(callback) {
+	var store = this;
+	store.getBranchRef( 'refs/heads/collabkit-library', function( id, err ) {
+		if ( id ) {
+			store.getObject( id, callback );
+		} else {
+			var library = store.createObject({
+				type: 'application/x-collabkit-library',
+				library: {
+					items: []
+				}
+			});
+			library.commit({}, callback);
+		}
+	});
+};
+
 /**
  * A CollabKitObject is a JSON data structure with an associated directory tree
  * of supporting files, which is bundled and versioned together as a unit.

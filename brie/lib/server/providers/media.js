@@ -138,7 +138,7 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 	var filename = 'image-' + ts + '.' + types[contentType];
 
 	var store = this.store;
-	this.initLibrary( function( oldLibrary, err ) {
+	store.initLibrary( function( oldLibrary, err ) {
 		if ( err ) {
 			return fail( err );
 		}
@@ -174,29 +174,6 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 				res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
 			});
 		});
-	});
-};
-
-/**
- * Lazy-initialize the library in the data store and send
- * it as a CollabKitObject on to the callback.
- *
- * @param {function(library, err)} callback
- */
-MediaProvider.prototype.initLibrary = function(callback) {
-	var store = store;
-	store.getBranchRef( 'refs/heads/collabkit-library', function( id, err ) {
-		if ( id ) {
-			store.getObject( id, callback );
-		} else {
-			var library = store.createObject({
-				type: 'application/x-collabkit-library',
-				library: {
-					items: []
-				}
-			});
-			library.commit({}, callback);
-		}
 	});
 };
 

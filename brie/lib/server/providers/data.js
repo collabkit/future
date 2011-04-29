@@ -45,14 +45,21 @@ function DataProvider( service ) {
 			return fail( 'need some params' );
 		}
 		var first = path[0];
-		if (reBlobId.exec(first)) {
-			store.getObject(first, function( obj, err ) {
-				if ( err ) {
-					return fail( err );
-				}
+
+		// Common callback function to dump JSON data from a fetched object.
+		var dumpObject = function( obj, err ) {
+			if ( err ) {
+				fail( err );
+			} else {
 				res.writeHead( 200, { 'Content-Type': 'application/json' } );
 				res.end( JSON.stringify(obj.data) );
-			});
+			}
+		};
+
+		if (reBlobId.exec(first)) {
+			store.getObject(first, dumpObject);
+		} else if (first == 'collabkit-library') {
+			store.initLibrary(dumpObject);
 		} else if (first == 'commit') {
 			// update zee data!!!
 			
