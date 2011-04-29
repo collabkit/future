@@ -59,11 +59,11 @@ $('#media-chooser').change(function(event) {
 					if (xhr.readyState == 4) {
 						var result = JSON.parse(xhr.responseText);
 						if (result) {
-							console.log(result);
+							var photoId = result.id;
 							ui.empty()
-							showThumb(ui, result.id);
+							showThumb(ui, photoId);
 						} else {
-							ui.text('failllll');
+							ui.text('Failed to upload.');
 						}
 					}
 				};
@@ -74,13 +74,16 @@ $('#media-chooser').change(function(event) {
 	}
 });
 
+var lib = {};
+
 $.get('/:data/collabkit-library', function(data, xhr) {
 	if (data.type != 'application/x-collabkit-library') {
 		alert('invalid collabkit library data');
 		return;
 	}
-	$.each(data.library.items, function(i, id) {
+	lib = data;
+	$.each(lib.library.items, function(i, id) {
 		var thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
-		showThumb(thumb, '/:media/' + id);
+		showThumb(thumb, id);
 	});
 }, 'json');

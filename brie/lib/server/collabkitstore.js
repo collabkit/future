@@ -99,7 +99,15 @@ CollabKitStore.prototype.initLibrary = function(callback) {
 					items: []
 				}
 			});
-			library.commit({}, callback);
+			library.commit({}, function(committed, err) {
+				if (err) {
+					callback(null, err);
+					return;
+				}
+				store.updateBranchRef('refs/heads/collabkit-library', committed.version, '', function(ok, err) {
+					callback(library, err);
+				});
+			});
 		}
 	});
 };
@@ -245,6 +253,7 @@ CollabKitObject.prototype.commit = function(params, callback) {
 						// Build a fresh, non-dirty object and pass that to the callback.
 						logger.trace('Saved commit: ' + commitId);
 						var cko = new CollabKitObject( store, commitId, orig.data, orig.parents );
+						cko._dirty = false;
 						callback( cko, null );
 					});
 				});

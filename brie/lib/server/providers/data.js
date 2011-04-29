@@ -71,28 +71,6 @@ function DataProvider( service ) {
 }
 util.inherits( DataProvider, events.EventEmitter );
 
-/**
- * HTTP request event handler for media list (hack hack)
- *
- * @param {http.ServerRequest} req
- * @param {http.ServerResponse} res
- * @param {string} version
- */
-DataProvider.prototype.handleGet = function( req, res, version ) {
-	var fail = function( msg, code ) {
-		res.writeHead( code || 500, {'Content-Type': 'text/plain'});
-		res.end( 'Error: ' + msg );
-		return null;
-	};
-	this.store.getObject( version, function( obj, err ) {
-		if ( err ) {
-			return fail( err );
-		}
-		res.writeHead( 200, {'Content-Type': 'application/json'} );
-		res.end( JSON.stringify( obj.data ) );
-	} );
-};
-
 exports.DataProvider = DataProvider;
 exports.create = function( service ) {
 	return new DataProvider( service );

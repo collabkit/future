@@ -54,7 +54,7 @@ function MediaProvider( service ) {
 				throw "Unrecognized parameters.";
 			}
 		} catch (e) {
-			res.writeHead( 400, { 'Content-Type': 'text/plain' } );
+			res.writeHead( 400, {'Content-Type': 'text/plain'} );
 			res.end( 'MediaProvider error: ' + e + '\n' );
 		}
 	} );
@@ -86,7 +86,7 @@ MediaProvider.prototype.handleGet = function( req, res, id ) {
 				if ( err ) {
 					fail( err );
 				} else {
-					res.writeHead( 200, { 'Content-Type': data.photo.type });
+					res.writeHead( 200, {'Content-Type': data.photo.type});
 					stream.pipe( res );
 				}
 			}, 'stream');
@@ -115,6 +115,7 @@ MediaProvider.prototype.handleGet = function( req, res, id ) {
  * @param {http.ServerResponse} res
  */
 MediaProvider.prototype.handlePut = function( req, res ) {
+	var store = this.store;
 	var fail = function( msg, code ) {
 		logger.fail( 'media put error: ' + msg);
 		res.writeHead( code || 500, {'Content-Type': 'text/plain'});
@@ -133,7 +134,7 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 	var ts = Date.now();
 	var filename = 'image-' + ts + '.' + types[contentType];
 
-	var obj = this.store.createObject({
+	var obj = store.createObject({
 		type: 'application/x-collabkit-photo',
 		meta: {
 			title: filename
@@ -151,13 +152,41 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 		if ( err ) {
 			fail( err );
 		} else {
-			res.writeHead( 200, {
-				'Content-Type': 'application/json'
-			} );
-			res.end(JSON.stringify({
-				id: photo.version,
-				data: photo.data
-			}));
+			// hack hack... add to the library
+			store.initLibrary(function(obj, err) {
+				if (err) {
+					fail( err );
+				}
+				// hack... should work for now
+				var old = obj.version;
+				console.log('photo is', photo);
+				console.log('old library', obj);
+				var updated = obj.fork();
+				console.log('photo.version', photo.version);
+				console.log('updated.data.library.items', updated.data.library.items);
+				updated.data.library.items.push(photo.version);
+				console.log('updated.data.library.items', updated.data.library.items);
+				console.log('updated.data.library', updated.data.library);
+				console.log('updated.data', updated.data);
+				console.log('committing...', updated);
+				updated.commit({}, function(library, err) {
+					if (err) {
+						return fail( err );
+					}
+					store.updateBranchRef('refs/heads/collabkit-library', updated.version, old, function(ok, err) {
+						if (err) {
+							return fail( err );
+						}
+						res.writeHead( 200, {
+							'Content-Type': 'application/json'
+						} );
+						res.end(JSON.stringify({
+							id: photo.version,
+							data: photo.data
+						}));
+					});
+				});
+			});
 		}
 	});
 };
