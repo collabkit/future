@@ -30,7 +30,8 @@ if ( !XMLHttpRequest.prototype.sendAsBinary ) {
  * @param {jQuery} target
  * @param {String} viewUrl
  */
-function showThumb(target, viewUrl) {
+function showThumb(target, id) {
+	var viewUrl = '/:media/' + id;
 	$('<div class="thumb"><a><img height="128" /></a></div>')
 		.find('a').attr('href', viewUrl).end()
 		.find('img').attr('src', viewUrl).end()
@@ -56,10 +57,11 @@ $('#media-chooser').change(function(event) {
 				xhr.setRequestHeader('Content-Length', file.length);
 				xhr.onreadystatechange = function(e) {
 					if (xhr.readyState == 4) {
-						var viewUrl = xhr.getResponseHeader('Location')
-						if (viewUrl) {
+						var result = JSON.parse(xhr.responseText);
+						if (result) {
+							console.log(result);
 							ui.empty()
-							showThumb(ui, viewUrl);
+							showThumb(ui, result.id);
 						} else {
 							ui.text('failllll');
 						}

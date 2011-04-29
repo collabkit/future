@@ -68,7 +68,7 @@ util.inherits( MediaProvider, events.EventEmitter );
  * @param {http.ServerResponse} res
  * @param {string} id
  */
-MediaProvider.prototype.handleGet = function( req, res, version, filename ) {
+MediaProvider.prototype.handleGet = function( req, res, id ) {
 	var fail = function( msg, code ) {
 		logger.fail('media get error: ' + msg);
 		res.writeHead( code || 500, {'Content-Type': 'text/plain'});
@@ -76,47 +76,43 @@ MediaProvider.prototype.handleGet = function( req, res, version, filename ) {
 		return null;
 	};
 	var store = this.store;
-	store.getObject( version, function(obj, err) {
+	store.getObject( id, function(obj, err) {
 		if ( err ) {
 			return fail( err );
 		}
-		if ( obj.data.type != 'application/x-collabkit-library' ) {
-			return fail( 'Invalid commit id; not a CollabKit library.' );
-		}
 		var data = obj.data;
 		if (data.type == 'application/x-collabkit-photo') {
-			if (data.photo.src && data.photo.type) {
-				obj.getFile(data.photo.src, function(stream, err) {
-					if ( err ) {
-						res.writeHead( 500, {'Content-Type': 'text/plain' });
-						res.end( 'Error: ' + err );
-					} else {
-						res.writeHead( 200, { 'Content-Type': data.photo.type });
-						stream.pipe( res );
-					}
-				}, 'stream');
-			} else {
-				res.writeHead( 404, {'Content-Type': 'text/plain' });
-				res.end( 'Not found' );
-				return;
-			}
+			obj.getFile(data.photo.src, function(stream, err) {
+				if ( err ) {
+					fail( err );
+				} else {
+					res.writeHead( 200, { 'Content-Type': data.photo.type });
+					stream.pipe( res );
+				}
+			}, 'stream');
 		} else {
-			res.writeHead( 400, { 'Content-Type': 'text/plain' });
-			res.end( 'Unknown object type: not a photo' );
-			return;
+			fail( 'Invalid object type' );
 		}
 	});
 };
 
 /**
  * HTTP request event handler for uploading original files.
- * Currently we just stash the raw file into the git store and
- * return its blob ID; actually saving it into a library will
- * need a visit to the data provider.
+ *
+ * Currently we stash the raw file into the git store and build
+ * a stock photo object around it, then return its commit id.
+ *
+ * Actually saving it into a library will need a visit to the
+ * data provider, or it will eventually fall into garbage
+ * collection.
+ *
+ * Returns a JSON chunk: {
+ *   id: <string commit id>
+ *   data: <JSON data blob from the photo>
+ * }
  *
  * @param {http.ServerRequest} req
  * @param {http.ServerResponse} res
- * @param {string} id
  */
 MediaProvider.prototype.handlePut = function( req, res ) {
 	var fail = function( msg, code ) {
@@ -137,43 +133,32 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 	var ts = Date.now();
 	var filename = 'image-' + ts + '.' + types[contentType];
 
-	var store = this.store;
-	store.initLibrary( function( oldLibrary, err ) {
-		if ( err ) {
-			return fail( err );
+	var obj = this.store.createObject({
+		type: 'application/x-collabkit-photo',
+		meta: {
+			title: filename
+		},
+		photo: {
+			type: contentType,
+			src: filename
+			// todo: put width, height, other metadata in here!
+			// means we need to understand the image file format
+			// and read it in before we create the data. :D
 		}
-		var library = oldLibrary.fork();
-		library.data.items.push({
-			type: 'application/x-collabkit-photo',
-			meta: {
-				title: filename
-			},
-			photo: {
-				type: contentType,
-				src: filename
-				// todo: put width, height, other metadata in here!
-				// means we need to understand the image file format
-				// and read it in before we create the data. :D
-			}
-		});
-		library.addFile(filename, req, 'stream');
-		library.commit({}, function( library, err ) {
-			if ( err ) {
-				return fail( err );
-			}
-			store.updateBranchRef('refs/heads/collabkit-library', library.version, oldLibrary.Id, function(str, err) {
-				if ( err ) {
-					return fail( err );
-				}
-				// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
-				var targetUrl = '/:media/' + library.version + '/' + filename;
-				res.writeHead( 200, {
-					'Content-Type': 'text/html',
-					'Location': targetUrl
-				} );
-				res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
-			});
-		});
+	});
+	obj.addFile(filename, req, 'stream');
+	obj.commit({}, function( photo, err ) {
+		if ( err ) {
+			fail( err );
+		} else {
+			res.writeHead( 200, {
+				'Content-Type': 'application/json'
+			} );
+			res.end(JSON.stringify({
+				id: photo.version,
+				data: photo.data
+			}));
+		}
 	});
 };
 
