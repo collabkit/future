@@ -18,3 +18,11 @@ Brie is the first run at various portions of CollabKit's service and app layers.
 * chameleon: Template processor for full/partial HTML pages.
 * grout: The in-between bits we all need.
 * localizr: Message system for i18n/L10n.
+
+### Dependencies
+
+* argsparser
+* node-static
+* faye
+* less
+* uglify-js

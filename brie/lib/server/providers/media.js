@@ -1,5 +1,6 @@
 var util = require( 'util' ),
-	events = require( 'events' );
+	events = require( 'events' ),
+	logger = require( '../logger' ).create( 'MediaProvider' );
 
 /**
  * URL patterns
@@ -69,6 +70,7 @@ util.inherits( MediaProvider, events.EventEmitter );
  */
 MediaProvider.prototype.handleGet = function( req, res, version, filename ) {
 	var fail = function( msg, code ) {
+		logger.fail('media get error: ' + msg);
 		res.writeHead( code || 500, {'Content-Type': 'text/plain'});
 		res.end( 'Error: ' + msg );
 		return null;
@@ -118,6 +120,7 @@ MediaProvider.prototype.handleGet = function( req, res, version, filename ) {
  */
 MediaProvider.prototype.handlePut = function( req, res ) {
 	var fail = function( msg, code ) {
+		logger.fail( 'media put error: ' + msg);
 		res.writeHead( code || 500, {'Content-Type': 'text/plain'});
 		res.end( 'Error: ' + msg );
 		return null;

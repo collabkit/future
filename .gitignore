@@ -1,3 +1,5 @@
 .DS_Store
 .project
 .metadata
+/nbproject
+/node_modules
