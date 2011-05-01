@@ -169,6 +169,57 @@ function updateToolbar() {
 	}
 }
 
+$toolbar.find('.slideshow').click(function() {
+	var photos = lib.library.items.slice();
+	var $slideshow = $('<div id="slideshow">' +
+						'<div class="area"></div>' +
+						'<div class="controls">' +
+							'<button class="close">Close</button>' +
+							'</div>' + 
+						'</div>');
+
+	/**
+	 * Load up the photo into an <img> and call us back when done.
+	 */
+	var buildPhoto = function(id, callback) {
+		var $photo = $('<img class="slideshow-photo"/>').attr('src', '/:media/' + id);
+		if (callback) {
+			$photo.bind('load', function() {
+				callback(this);
+			});
+		}
+		return $photo[0];
+	};
+
+	var interval = 10;
+	var index = 0;
+
+	var advance = function() {
+		buildPhoto(photos[index], function(img) {
+			$slideshow.find('.area').empty().append(img);
+
+			index = (index + 1) % photos.length;
+		});
+	};
+
+	var timer = window.setInterval(advance, interval * 1000);
+
+	$slideshow.click(function() {
+		// Reset the timer...
+		window.clearInterval(timer);
+		timer = window.setInterval(advance, interval * 1000);
+
+		advance();
+	});
+
+	$slideshow.find('.close').click(function() {
+		window.clearInterval(timer);
+		$slideshow.remove();
+	})
+	$slideshow.appendTo('body');
+	advance();
+});
+
 $toolbar.find('.delete').click(function() {
 	var $selected = $('#mediatest > .ui-selected');
 	$selected.each(function(i, node) {
