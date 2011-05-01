@@ -159,6 +159,14 @@ function updateToolbar() {
 	} else {
 		$operators.attr('disabled', 'disabled');
 	}
+	var first = $('#mediatest > div:first'),
+	    last = $('#mediatest > div:last');
+	if (first.hasClass('ui-selected')) {
+		$toolbar.find('.moveup').attr('disabled', 'disabled');
+	}
+	if (last.hasClass('ui-selected')) {
+		$toolbar.find('.movedown').attr('disabled', 'disabled');
+	}
 }
 
 $toolbar.find('.delete').click(function() {
@@ -179,6 +187,49 @@ $toolbar.find('.delete').click(function() {
 			$selected.remove();
 		}
 	});
+});
+
+function doMovePhotos(incr) {
+	var $selected = $('#mediatest > .ui-selected');
+	var items = lib.library.items;
+	var targetIndices = [];
+	$selected.each(function(i, node) {
+		var id = $(node).find('.thumb').data('collabkit-id');
+		var index = items.indexOf(id);
+		if (index == -1) {
+			throw new Error("Trying to move photo that doesn't exist: " + id);
+		}
+		targetIndices.push(index);
+	});
+	var i, index, tmp;
+	if (incr < 0) {
+		for (i = 0; i < targetIndices.length; i++) {
+			index = targetIndices[i];
+			tmp = items[index];
+			items[index] = items[index + incr];
+			items[index + incr] = tmp;
+		}
+	} else {
+		for (i = targetIndices.length - 1; i >= 0; i--) {
+			index = targetIndices[i];
+			tmp = items[index];
+			items[index] = items[index + incr];
+			items[index + incr] = tmp;
+		}
+	}
+	store.updateObjectRef('collabkit-library', lib, function(result, err) {
+		if (err) {
+			alert(err);
+		} else {
+			showLibrary(lib);
+		}
+	});
+}
+$toolbar.find('.moveup').click(function() {
+	doMovePhotos(-1);
+});
+$toolbar.find('.movedown').click(function() {
+	doMovePhotos(1);
 });
 
 function showLibrary(data) {
@@ -202,7 +253,7 @@ $('#mediatest')
 	.bind('selectablestop', function() {
 		updateToolbar();
 	});
-
+updateToolbar();
 
 
 /**
