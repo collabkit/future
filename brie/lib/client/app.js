@@ -84,6 +84,12 @@ var store = {
 			type: 'PUT',
 			data: JSON.stringify(data),
 			success: function(result) {
+				// Really this should be triggered from the server?
+				session.publish('/commits', {
+					branch: 'collabkit-library',
+					id: result.version,
+					data: result.data
+				});
 				callback(result, null);
 			},
 			error: function(err) {
@@ -101,6 +107,7 @@ var store = {
 function showThumb(target, id) {
 	var viewUrl = '/:media/' + id;
 	var $thumb = $('<div class="thumb"><a><img height="128" /></a></div>')
+	    .data('collabkit-id', id)
 		.find('a').attr('href', viewUrl).end()
 		.find('img').attr('src', viewUrl).end()
 		.appendTo(target);
@@ -127,11 +134,6 @@ $('#media-chooser').change(function(event) {
 						if (result) {
 							ui.empty()
 							showThumb(ui, photoId);
-							session.publish('/commits', {
-								branch: 'collabkit-library',
-								id: result.version,
-								data: result.data
-							});
 						} else {
 							ui.text('Failed to update library.');
 						}
@@ -146,6 +148,39 @@ $('#media-chooser').change(function(event) {
 
 var lib = {};
 
+var $toolbar = $('.library-toolbar:first');
+
+function updateToolbar() {
+	// These buttons need something selected to operate on.
+	var $operators = $toolbar.find('.delete, .moveup, .movedown');
+	var $selected = $('#mediatest > .ui-selected');
+	if ($selected.length > 0) {
+		$operators.removeAttr('disabled');
+	} else {
+		$operators.attr('disabled', 'disabled');
+	}
+}
+
+$toolbar.find('.delete').click(function() {
+	var $selected = $('#mediatest > .ui-selected');
+	$selected.each(function(i, node) {
+		var id = $(node).find('.thumb').data('collabkit-id');
+		var index = lib.library.items.indexOf(id);
+		if (index == -1) {
+			throw new Error("Trying to remove photo that doesn't exist: " + id);
+		}
+		lib.library.items.splice(index, 1);
+		$(node).text('Removing...');
+	});
+	store.updateObjectRef('collabkit-library', lib, function(result, err) {
+		if (err) {
+			alert(err);
+		} else {
+			$selected.remove();
+		}
+	});
+});
+
 function showLibrary(data) {
 	if (data.type != 'application/x-collabkit-library') {
 		alert('invalid collabkit library data');
@@ -157,9 +192,18 @@ function showLibrary(data) {
 		var thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
 		showThumb(thumb, id);
 	});
-$('#mediatest').selectable();
-
 }
+
+/**
+ * Set up selection interface
+ */
+$('#mediatest')
+	.selectable()
+	.bind('selectablestop', function() {
+		updateToolbar();
+	});
+
+
 
 /**
  * Connect a session so we can get updates on inter-client state...

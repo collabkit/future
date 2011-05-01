@@ -24,6 +24,11 @@
 				border: solid 1px blue;
 				background: rgba(128, 128, 255, 0.5);
 			}
+			.library-toolbar {
+				background: #f8f8f8;
+				padding: 4px;
+				border-bottom: solid 1px #ccc;
+			}
 		</style>
 	</head>
 	<body>
@@ -42,7 +47,15 @@
 				<legend>Photo library</legend>
 				<p>Changes you make will be mirrored immediately to other people
 				with the same page open, and vice versa. Have fun!</p>
-				<label>Import photo(s): <input type="file" id="media-chooser" multiple></label>
+				<div class="library-toolbar">
+					<label>Import photo(s): <input type="file" id="media-chooser" multiple></label>
+					|
+					<button class="slideshow">Slideshow</button>
+					|
+					<button class="moveup">Move up</button>
+					<button class="movedown">Move down</button>
+					<button class="delete">Delete</button>
+				</div>
 				<div id="mediatest"></div>
 				<div style="clear:both"></div>
 			</fieldset>
