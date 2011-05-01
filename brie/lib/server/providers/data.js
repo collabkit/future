@@ -55,11 +55,40 @@ function DataProvider( service ) {
 				res.end( JSON.stringify(obj.data) );
 			}
 		};
+		// Common callback function to dump JSON data from a saved object.
+		// The data is wrapped along with the updated commit id.
+		var dumpSavedObject = function( obj, err ) {
+			if ( err ) {
+				fail( err );
+			} else {
+				res.writeHead( 200, { 'Content-Type': 'application/json' } );
+				res.end( JSON.stringify( {
+					id: obj.version,
+					data: obj.data
+				} ) );
+			}
+		};
 
 		if (reBlobId.exec(first)) {
 			store.getObject(first, dumpObject);
 		} else if (first == 'collabkit-library') {
-			store.initLibrary(dumpObject);
+			if (req.method == 'PUT') {
+				var str = '';
+				req.on('data', function(buf) {
+					str += buf.toString('utf-8');
+				});
+				req.on('end', function() {
+					try {
+						var data = JSON.parse(str);
+					} catch (e) {
+						callback(null, e);
+					} finally {
+						store.updateObjectRef('refs/heads/collabkit-library', {}, data, dumpSavedObject);
+					}
+				});
+			} else {
+				store.initLibrary(dumpObject);
+			}
 		} else if (first == 'commit') {
 			// update zee data!!!
 			

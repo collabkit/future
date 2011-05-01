@@ -113,6 +113,44 @@ CollabKitStore.prototype.initLibrary = function(callback) {
 };
 
 /**
+ * Shorthand to commit a new version of a data object and update its branch
+ * reference.
+ *
+ * @fixme needs to be safer with branch versions etc?
+ *
+ * @param {String} ref branch reference name
+ * @param {object} commitOptions
+ * @param {object} data as a JSON object
+ * @param {function(obj, err)} callback
+ */
+CollabKitStore.prototype.updateObjectRef = function(ref, commitOptions, data, callback) {
+	var store = this;
+	store.getBranchRef(ref, function(id, err) {
+		if (err) {
+			callback(null, err);
+			return;
+		}
+		store.getObject(id, function(obj, err) {
+			if (err) {
+				callback(null, err);
+				return;
+			}
+			var updated = obj.fork();
+			updated.data = data; // @fixme clone it
+			updated.commit(commitOptions, function(committed, err) {
+				if (err) {
+					callback(null, err);
+					return;
+				}
+				store.updateBranchRef(ref, committed.version, id, function(ok, err) {
+					callback(committed, err);
+				});
+			});
+		});
+	});
+};
+
+/**
  * A CollabKitObject is a JSON data structure with an associated directory tree
  * of supporting files, which is bundled and versioned together as a unit.
  * This is conceptually similar to XML-based file formats like ODF which are

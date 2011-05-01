@@ -150,44 +150,15 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 	obj.addFile(filename, req, 'stream');
 	obj.commit({}, function( photo, err ) {
 		if ( err ) {
-			fail( err );
-		} else {
-			// hack hack... add to the library
-			store.initLibrary(function(obj, err) {
-				if (err) {
-					fail( err );
-				}
-				// hack... should work for now
-				var old = obj.version;
-				console.log('photo is', photo);
-				console.log('old library', obj);
-				var updated = obj.fork();
-				console.log('photo.version', photo.version);
-				console.log('updated.data.library.items', updated.data.library.items);
-				updated.data.library.items.push(photo.version);
-				console.log('updated.data.library.items', updated.data.library.items);
-				console.log('updated.data.library', updated.data.library);
-				console.log('updated.data', updated.data);
-				console.log('committing...', updated);
-				updated.commit({}, function(library, err) {
-					if (err) {
-						return fail( err );
-					}
-					store.updateBranchRef('refs/heads/collabkit-library', updated.version, old, function(ok, err) {
-						if (err) {
-							return fail( err );
-						}
-						res.writeHead( 200, {
-							'Content-Type': 'application/json'
-						} );
-						res.end(JSON.stringify({
-							id: photo.version,
-							data: photo.data
-						}));
-					});
-				});
-			});
+			return fail( err );
 		}
+		res.writeHead( 200, {
+			'Content-Type': 'application/json'
+		} );
+		res.end(JSON.stringify({
+			id: photo.version,
+			data: photo.data
+		}));
 	});
 };
 

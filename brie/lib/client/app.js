@@ -26,6 +26,74 @@ if ( !XMLHttpRequest.prototype.sendAsBinary ) {
 	};
 }
 
+var store = {
+	/**
+	 * Create a new CollabKit photo object on the server from the
+	 * given image file. Will return the saved object id & data
+	 * on success.
+	 *
+	 * No permanent branch is created by default, caller's responsibility
+	 * to save pointers.
+	 *
+	 * @param {Blob} blob: file or blob to upload
+	 * @param {function({id, data}, err)} callback
+	 */
+	createPhoto: function(blob, callback) {
+		// Start an upload!
+		var url = '/:media/new';
+		var reader = new FileReader();
+		reader.onload = function(e) {
+			var xhr = new XMLHttpRequest();
+			xhr.open('PUT', url);
+			xhr.setRequestHeader('Content-Type', blob.type);
+			xhr.setRequestHeader('Content-Length', blob.length);
+			xhr.onreadystatechange = function(e) {
+				if (xhr.readyState == 4) {
+					var err;
+					try {
+						var result = JSON.parse(xhr.responseText);
+					} catch (e) {
+						err = e;
+					} finally {
+						callback(result, err);
+					}
+				}
+			};
+			xhr.sendAsBinary(reader.result);
+		};
+		reader.readAsBinaryString(blob);
+	},
+
+	/**
+	 * Update the data in a named-branch CollabKit object, and update the
+	 * branch reference to match.
+	 *
+	 * @fixme keep prior version for safety etc
+	 *
+	 * @param {string} ref branch name, currently must be 'collabkit-library'
+	 * @param {object} data updated JSON-able data to save
+	 * @param {function({id, data}, err)} callback
+	 */
+	updateObjectRef: function(ref, data, callback) {
+		if (ref != 'collabkit-library') {
+			callback(null, 'hardcoded branch still');
+			return;
+		}
+		$.ajax({
+			url: '/:data/collabkit-library',
+			type: 'PUT',
+			data: JSON.stringify(data),
+			success: function(result) {
+				callback(result, null);
+			},
+			error: function(err) {
+				callback(null, err);
+			}
+		});
+	}
+};
+
+
 /**
  * @param {jQuery} target
  * @param {String} viewUrl
@@ -46,30 +114,24 @@ $('#media-chooser').change(function(event) {
 			var ui = $('<div class="photo-entry">Reading...</div>');
 			$('#mediatest').append(ui);
 
-			// Start an upload!
-			var url = '/:media/new';
-			var reader = new FileReader();
-			reader.onload = function(e) {
-				ui.text('Uploading...');
-				var xhr = new XMLHttpRequest();
-				xhr.open('PUT', url);
-				xhr.setRequestHeader('Content-Type', file.type);
-				xhr.setRequestHeader('Content-Length', file.length);
-				xhr.onreadystatechange = function(e) {
-					if (xhr.readyState == 4) {
-						var result = JSON.parse(xhr.responseText);
+			ui.text('Uploading...');
+			store.createPhoto(file, function(result, err) {
+				if (result) {
+					var photoId = result.id;
+					ui.text('Updating library...');
+					lib.library.items.push(photoId);
+					store.updateObjectRef('collabkit-library', lib, function(result, err) {
 						if (result) {
-							var photoId = result.id;
 							ui.empty()
 							showThumb(ui, photoId);
 						} else {
-							ui.text('Failed to upload.');
+							ui.text('Failed to update library.');
 						}
-					}
-				};
-				xhr.sendAsBinary(reader.result);
-			};
-			reader.readAsBinaryString(file);
+					});
+				} else {
+					ui.text('Failed to upload.');
+				}
+			});
 		});
 	}
 });
