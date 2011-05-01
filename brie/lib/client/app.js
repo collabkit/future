@@ -161,7 +161,6 @@ function showLibrary(data) {
  */
 var session = new Faye.Client('/:session/');
 session.subscribe('/commits', function(message) {
-	console.log('received commit', message);
 	showLibrary(message.data);
 });
 
