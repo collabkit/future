@@ -377,7 +377,6 @@ Store.prototype.updateBranchRef = function(ref, newid, oldid, callback) {
  * @access private
  */
 Store.prototype.callGit = function(args) {
-	console.log(args);
 	var opts = {};
 	if ('path' in this.options) {
 		opts.cwd = this.options.path;

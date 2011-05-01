@@ -85,11 +85,8 @@ var store = {
 			data: JSON.stringify(data),
 			success: function(result) {
 				// Really this should be triggered from the server?
-				session.publish('/commits', {
-					branch: 'collabkit-library',
-					id: result.version,
-					data: result.data
-				});
+				$.extend(result, {branch: ref});
+				session.publish('/commits', result);
 				callback(result, null);
 			},
 			error: function(err) {
@@ -146,6 +143,7 @@ $('#media-chooser').change(function(event) {
 	}
 });
 
+var library = {};
 var lib = {};
 
 var $toolbar = $('.library-toolbar:first');
@@ -272,7 +270,7 @@ function doMovePhotos(incr) {
 		if (err) {
 			alert(err);
 		} else {
-			showLibrary(lib);
+			showLibrary(result);
 		}
 	});
 }
@@ -283,13 +281,17 @@ $toolbar.find('.movedown').click(function() {
 	doMovePhotos(1);
 });
 
-function showLibrary(data) {
+function showLibrary(commitInfo) {
+	var data = commitInfo.data;
 	if (data.type != 'application/x-collabkit-library') {
 		alert('invalid collabkit library data');
 		return;
 	}
-	lib = $.extend({}, data);
+	library = commitInfo;
+	lib = library.data;
+
 	$('#mediatest').empty();
+	$('#mediastate').text('Version: ' + library.id + ' (parents: ' + library.parents.join('') + ')');
 	$.each(lib.library.items, function(i, id) {
 		var thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
 		showThumb(thumb, id);
@@ -312,7 +314,7 @@ updateToolbar();
  */
 var session = new Faye.Client('/:session/');
 session.subscribe('/commits', function(message) {
-	showLibrary(message.data);
+	showLibrary(message);
 });
 
 $.get('/:data/collabkit-library', function(data, xhr) {

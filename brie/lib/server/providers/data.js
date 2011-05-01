@@ -52,18 +52,9 @@ function DataProvider( service ) {
 				fail( err );
 			} else {
 				res.writeHead( 200, { 'Content-Type': 'application/json' } );
-				res.end( JSON.stringify(obj.data) );
-			}
-		};
-		// Common callback function to dump JSON data from a saved object.
-		// The data is wrapped along with the updated commit id.
-		var dumpSavedObject = function( obj, err ) {
-			if ( err ) {
-				fail( err );
-			} else {
-				res.writeHead( 200, { 'Content-Type': 'application/json' } );
 				res.end( JSON.stringify( {
 					id: obj.version,
+					parents: obj.parents,
 					data: obj.data
 				} ) );
 			}
@@ -83,15 +74,23 @@ function DataProvider( service ) {
 					} catch (e) {
 						callback(null, e);
 					} finally {
-						store.updateObjectRef('refs/heads/collabkit-library', {}, data, dumpSavedObject);
+						store.updateObjectRef('refs/heads/collabkit-library', {}, data, dumpObject);
 					}
 				});
 			} else {
 				store.initLibrary(dumpObject);
 			}
-		} else if (first == 'commit') {
-			// update zee data!!!
-			
+		} else if (first == 'history') {
+			var id = path[1];
+			if (reBlobId.exec(id)) {
+				provider.showHistory(id, res);
+			} else if (id == 'collabkit-library') {
+				store.getBranchRef('refs/heads/collabkit-library', function(id, err) {
+					provider.showHistory(id, res);
+				});
+			} else {
+				throw 'blaaaaaah';
+			}
 		} else if (first == 'merge') {
 			// combine whee
 		}
@@ -99,6 +98,22 @@ function DataProvider( service ) {
 	} );
 }
 util.inherits( DataProvider, events.EventEmitter );
+
+/**
+ * @param {String} id
+ * @param {Stream} res
+ */
+DataProvider.prototype.showHistory = function(id, res) {
+	var max = 100;
+	var store = this.store;
+	store.getCommit(id, function(commit, err) {
+		res.writeHead( 200, { 'Content-Type': 'application/json' } );
+		res.end(JSON.stringify({
+			id: commit.id,
+			commit: commit.props
+		}));
+	});
+}
 
 exports.DataProvider = DataProvider;
 exports.create = function( service ) {
