@@ -124,6 +124,11 @@ $('#media-chooser').change(function(event) {
 						if (result) {
 							ui.empty()
 							showThumb(ui, photoId);
+							session.publish('/commits', {
+								branch: 'collabkit-library',
+								id: result.version,
+								data: result.data
+							});
 						} else {
 							ui.text('Failed to update library.');
 						}
@@ -138,14 +143,28 @@ $('#media-chooser').change(function(event) {
 
 var lib = {};
 
-$.get('/:data/collabkit-library', function(data, xhr) {
+function showLibrary(data) {
 	if (data.type != 'application/x-collabkit-library') {
 		alert('invalid collabkit library data');
 		return;
 	}
-	lib = data;
+	lib = $.extend({}, data);
+	$('#mediatest').empty();
 	$.each(lib.library.items, function(i, id) {
 		var thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
 		showThumb(thumb, id);
 	});
+}
+
+/**
+ * Connect a session so we can get updates on inter-client state...
+ */
+var session = new Faye.Client('/:session/');
+session.subscribe('/commits', function(message) {
+	console.log('received commit', message);
+	showLibrary(message.data);
+});
+
+$.get('/:data/collabkit-library', function(data, xhr) {
+	showLibrary(data);
 }, 'json');
