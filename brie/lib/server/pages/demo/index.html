@@ -5,15 +5,23 @@
 		<meta charset="utf-8">
 		<title>CollabKit Demo</title>
 		<link rel="stylesheet" href="/:resource/ui/styles/app.less">
+		<link rel="stylesheet" href="/:resource/jquery/jquery-ui-1.8.12.custom.css">
 		<style>
 			fieldset {
 				margin: 1em;
 				border: solid 1px silver;
 			}
 			.thumb {
-				float: left;
+				width: 128px;
+				height: 128px;
+				text-align: center;
 				margin: 1em;
 				border: solid 1px silver;
+			}
+			.ui-selected .thumb,
+			.ui-selecting .thumb {
+				border: solid 1px blue;
+				background: rgba(0.5, 0.5, 1.0, 0.5);
 			}
 		</style>
 	</head>
@@ -29,14 +37,17 @@
 			<ul id="app-group"></ul>
 		</nav>
 		<section id="app-body" role="main">
-			<fieldset>
+			<fieldset id="library-view">
 				<legend>Photo library</legend>
-				<div id="mediatest"></div>
-				<div style="clear:both"></div>
+				<p>Changes you make will be mirrored immediately to other people
+				with the same page open, and vice versa. Have fun!</p>
 				<label>Import photo(s): <input type="file" id="media-chooser" multiple></label>
+				<ul id="mediatest"></ul>
+				<div style="clear:both"></div>
 			</fieldset>
 		</section>
 		<script src="/:resource/jquery/jquery.js"></script>
+		<script src="/:resource/jquery/jquery-ui-1.8.12.custom.js"></script>
 		<script src="/:resource/faye/faye-browser.js"></script>
 		<script src="/:resource/app.js"></script>
 	</body>

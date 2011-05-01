@@ -100,10 +100,13 @@ var store = {
  */
 function showThumb(target, id) {
 	var viewUrl = '/:media/' + id;
-	$('<div class="thumb"><a><img height="128" /></a></div>')
+	var $thumb = $('<div class="thumb"><a><img height="128" /></a></div>')
 		.find('a').attr('href', viewUrl).end()
 		.find('img').attr('src', viewUrl).end()
 		.appendTo(target);
+	$thumb.find('a').click(function(event) {
+		event.preventDefault();
+	});
 }
 
 $('#media-chooser').change(function(event) {
@@ -111,7 +114,7 @@ $('#media-chooser').change(function(event) {
 	var files = this.files;
 	if (files.length > 0) {
 		$.each(files, function(i, file) {
-			var ui = $('<div class="photo-entry">Reading...</div>');
+			var ui = $('<li class="photo-entry">Reading...</li>');
 			$('#mediatest').append(ui);
 
 			ui.text('Uploading...');
@@ -151,9 +154,12 @@ function showLibrary(data) {
 	lib = $.extend({}, data);
 	$('#mediatest').empty();
 	$.each(lib.library.items, function(i, id) {
-		var thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
+		var thumb = $('<li class="photo-entry"></li>').appendTo('#mediatest');
 		showThumb(thumb, id);
 	});
+$('#mediatest').selectable();
+$('#mediatest').sortable();
+
 }
 
 /**
