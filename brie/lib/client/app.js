@@ -114,7 +114,7 @@ $('#media-chooser').change(function(event) {
 	var files = this.files;
 	if (files.length > 0) {
 		$.each(files, function(i, file) {
-			var ui = $('<li class="photo-entry">Reading...</li>');
+			var ui = $('<div class="photo-entry">Reading...</div>');
 			$('#mediatest').append(ui);
 
 			ui.text('Uploading...');
@@ -154,11 +154,10 @@ function showLibrary(data) {
 	lib = $.extend({}, data);
 	$('#mediatest').empty();
 	$.each(lib.library.items, function(i, id) {
-		var thumb = $('<li class="photo-entry"></li>').appendTo('#mediatest');
+		var thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
 		showThumb(thumb, id);
 	});
 $('#mediatest').selectable();
-$('#mediatest').sortable();
 
 }
 
