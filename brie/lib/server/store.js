@@ -428,16 +428,22 @@ Store.prototype.readGitStream = function(args) {
 Store.prototype.readGitString = function(args, callback) {
 	var stream = this.readGitStream(args);
 	var str = '';
+	var calledError = false;
 	stream.setEncoding('utf8');
 	stream.on('data', function(chunk) {
 		str += chunk;
 	});
 	stream.on('end', function() {
-		// wait... will this get called on failure too?
-		callback(str, null);
+		if (!calledError) {
+			// wait... will this get called on failure too?
+			callback(str, null);
+		}
 	});
 	stream.on('error', function(err) {
-		callback(null, err);
+		if (!calledError) {
+			calledError = true;
+			callback(null, err);
+		}
 	});
 }
 

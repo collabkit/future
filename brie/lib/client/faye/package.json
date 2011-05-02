@@ -1,0 +1,5 @@
+{
+	"name" : "faye",
+	"description" : "Faye",
+	"main" : "./faye-browser.js"
+}

@@ -2,46 +2,59 @@ var util = require( 'util' ),
 	events = require( 'events' ),
 	logger = require( '../logger' ).create( 'MediaProvider' );
 
+/**
+ * URL patterns
+ *
+ * PUT /:media/new/photo
+ *	Creates a new CollabKit photo object from the uploaded image file.
+ *	Returns {commit: 'commit-id'}
+ *
+ * GET /:media/[branch-name|commit-id]
+ *	Returns HTML fragment showing the object full-sizeish.
+ *
+ * GET /:media/[branch-name|commit-id]/embed
+ *	Returns HTML fragment showing a thumbnail of the object.
+ *
+ * GET /:media/[branch-name|commit-id]/photo/thumb
+ * GET /:media/[branch-name|commit-id]/photo/large
+ * GET /:media/[branch-name|commit-id]/photo/original
+ *  Return a JPEG, PNG, or GIF image at thumb (128x128), large (800x600), or original sizes.
+ */
 function MediaProvider( service ) {
 	var provider = this;
 	provider.store = service.store;
+
+	var reBlobId = /^[0-9a-f]{1,40}$/;
 
 	events.EventEmitter.call( this );
 	service.mount( 'media' );
 	service.server.on( 'request.media', function( req, res ) {
 		try {
 			// @fixme ideally the URL mapper should be able to divide this down further first
-			if ( typeof req.parsedUrl.target === 'string' ) {
-				var path = req.parsedUrl.target.split( '/' );
-
-				if ( path.length < 1 ) {
-					throw "Invalid.";
-				} else if ( path.length == 1 ) {
-					if ( path[0] == 'new' ) {
-						if ( req.method == "PUT" ) {
-							provider.handlePut( req, res );
-						} else {
-							throw "Uploading a media resource requires HTTP PUT.";
-						}
-					} else {
-						if (req.method == "GET") {
-							if (path[0] == 'library') {
-								provider.handleGetLibrary( req, res );
-							} else {
-								provider.handleGet( req, res, path[0] );
-							}
-						} else {
-							throw "Only GET allowed."; // @fixme HEAD also?
-						}
-					}
-				} else if ( path.length > 1 ) {
-					throw "Unrecognized parameters.";
-				}
-			} else {
+			if ( typeof req.parsedUrl.target !== 'string' ) {
 				throw "No path given.";
 			}
+			var path = req.parsedUrl.target.split( '/' );
+
+			if ( path.length < 1 ) {
+				throw "Invalid.";
+			} else if ( path.length == 1 && path[0] == 'new' ) {
+				// /:media/new
+				if ( req.method != "PUT" ) {
+					throw "Uploading a media resource requires HTTP PUT.";
+				}
+				provider.handlePut( req, res );
+			} else if ( path.length == 1 ) {
+				// /:media/0123456789abcdef0123456789abcdef012345678
+				if (req.method != "GET") {
+					throw "Only GET allowed."; // @fixme HEAD also?
+				}
+				provider.handleGet( req, res, path[0] );
+			} else {
+				throw "Unrecognized parameters.";
+			}
 		} catch (e) {
-			res.writeHead( 400, { 'Content-Type': 'text/plain' } );
+			res.writeHead( 400, {'Content-Type': 'text/plain'} );
 			res.end( 'MediaProvider error: ' + e + '\n' );
 		}
 	} );
@@ -56,75 +69,59 @@ util.inherits( MediaProvider, events.EventEmitter );
  * @param {string} id
  */
 MediaProvider.prototype.handleGet = function( req, res, id ) {
+	var fail = function( msg, code ) {
+		logger.fail('media get error: ' + msg);
+		res.writeHead( code || 500, {'Content-Type': 'text/plain'});
+		res.end( 'Error: ' + msg );
+		return null;
+	};
 	var store = this.store;
 	store.getObject( id, function(obj, err) {
 		if ( err ) {
-			logger.fail('Failure fetching object: ' + err);
-			res.writeHead( 500, { 'Content-Type': 'text/plain' });
-			res.end( 'Internal error or not found or something.' );
-			return;
+			return fail( err );
 		}
 		var data = obj.data;
 		if (data.type == 'application/x-collabkit-photo') {
-			if (data.photo.src && data.photo.type) {
-				obj.getFile(data.photo.src, function(stream, err) {
-					if ( err ) {
-						res.writeHead( 500, {'Content-Type': 'text/plain' });
-						res.end( 'Error: ' + err );
-					} else {
-						res.writeHead( 200, { 'Content-Type': data.photo.type });
-						stream.pipe( res );
-					}
-				}, 'stream');
-			} else {
-				res.writeHead( 404, {'Content-Type': 'text/plain' });
-				res.end( 'Not found' );
-			}
+			obj.getFile(data.photo.src, function(stream, err) {
+				if ( err ) {
+					fail( err );
+				} else {
+					res.writeHead( 200, {'Content-Type': data.photo.type});
+					stream.pipe( res );
+				}
+			}, 'stream');
 		} else {
-			res.writeHead( 400, { 'Content-Type': 'text/plain' });
-			res.end( 'Unknown object type: not a photo' );
-			return;
+			fail( 'Invalid object type' );
 		}
 	});
 };
 
 /**
- * HTTP request event handler for media list (hack hack)
+ * HTTP request event handler for uploading original files.
+ *
+ * Currently we stash the raw file into the git store and build
+ * a stock photo object around it, then return its commit id.
+ *
+ * Actually saving it into a library will need a visit to the
+ * data provider, or it will eventually fall into garbage
+ * collection.
+ *
+ * Returns a JSON chunk: {
+ *   id: <string commit id>
+ *   data: <JSON data blob from the photo>
+ * }
  *
  * @param {http.ServerRequest} req
  * @param {http.ServerResponse} res
- */
-MediaProvider.prototype.handleGetLibrary = function( req, res ) {
-	var store = this.store;
-	var respondWith = function(list) {
-		res.writeHead( 200, {'Content-Type': 'application/json'} );
-		res.end(JSON.stringify(list));
-	};
-	store.getBranchRef( 'refs/heads/collabkit-library', function( id, err ) {
-		if ( !id ) {
-			respondWith([]);
-			return;
-		}
-		store.getObject( id, function( obj, err ) {
-			if ( err ) {
-				res.writeHead( 500, {'Content-Type': 'text/plain'});
-				res.end('Internal error retrieving media library: ' + err);
-				return;
-			}
-			respondWith(obj.data.library.items);
-		});
-	});
-};
-
-/**
- * HTTP request event handler for fetching original files.
- * Currently we just stash the file into some internal array.
- *
- * @param {http.ServerRequest} req
- * @param {http.ServerResponse} res
- * @param {string} id
  */
 MediaProvider.prototype.handlePut = function( req, res ) {
+	var store = this.store;
+	var fail = function( msg, code ) {
+		logger.fail( 'media put error: ' + msg);
+		res.writeHead( code || 500, {'Content-Type': 'text/plain'});
+		res.end( 'Error: ' + msg );
+		return null;
+	};
 	var contentType = req.headers['content-type'];
 	var types = {
 		'image/jpeg': 'jpg',
@@ -132,13 +129,11 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 		'image/gif': 'gif'
 	};
 	if (!(contentType in types)) {
-		res.writeHead( 400, {'Content-Type': 'text/plain'});
-		res.end('Cannot accept files of type ' + contentType);
-		return;
+		return fail( 'Cannot accept files of type ' + contentType, 400 );
 	}
-	var filename = 'image.' + types[contentType];
+	var ts = Date.now();
+	var filename = 'image-' + ts + '.' + types[contentType];
 
-	var store = this.store;
 	var obj = store.createObject({
 		type: 'application/x-collabkit-photo',
 		meta: {
@@ -153,62 +148,17 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 		}
 	});
 	obj.addFile(filename, req, 'stream');
-	obj.commit({}, function(committed, err) {
-		if (err) {
-			logger.fail('Media upload failure: ' + err);
-			res.writeHead( 500, {'Content-Type': 'text/plain'});
-			res.end('Internal error saving media file.');
-			return;
+	obj.commit({}, function( photo, err ) {
+		if ( err ) {
+			return fail( err );
 		}
-		var targetUrl = '/:media/' + committed.version;
-
-		// But we're not done yet. Add this new image to our media library...
-		// @fixme encapsulate this
-		var oldLibraryId = null;
-		// Success! Prepare the return...
-		var onComplete = function( library, err ) {
-			if ( err ) {
-				res.writeHead( 500, {'Content-Type': 'text/plain'});
-				res.end('Internal error updating media library.');
-				return;
-			}
-			store.updateBranchRef('refs/heads/collabkit-library', library.version, oldLibraryId, function(str, err) {
-				if ( err ) {
-					res.writeHead( 500, {'Content-Type': 'text/plain'});
-					res.end('Internal error updating media library branch ref.');
-					return;
-				}
-				// @fixme this should be 303, but we can't read the redirect without fetching it. Grr!
-				res.writeHead( 200, {
-					'Content-Type': 'text/html',
-					'Location': targetUrl
-				} );
-				res.end( '<p>New file uploaded as <a href="' + targetUrl + '">' + targetUrl + '</a></p>\n' );
-			});
-		};
-		store.getBranchRef( 'refs/heads/collabkit-library', function( id, err ) {
-			if ( !id ) {
-				var library = store.createObject({
-					type: 'application/x-collabkit-library',
-					library: {
-						items: [committed.version]
-					}
-				});
-				library.commit({}, onComplete);
-			} else {
-				oldLibraryId = id;
-				store.getObject( id, function( obj, err ) {
-					if ( err ) {
-						res.writeHead( 500, {'Content-Type': 'text/plain'});
-						res.end('Internal error retrieving media library: ' + err);
-						return;
-					}
-					var library = obj.fork();
-					library.data.library.items.push(committed.version);
-					library.commit({}, onComplete);
-				});
-			}
-		});
+		res.writeHead( 200, {
+			'Content-Type': 'application/json'
+		} );
+		res.end(JSON.stringify({
+			id: photo.version,
+			data: photo.data
+		}));
 	});
 };
 

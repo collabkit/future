@@ -1,6 +1,5 @@
 {
 	"name" : "jquery",
 	"description" : "jQuery",
-	"main" : "./jquery.js",
-	"exports" : ["jQuery"]
+	"main" : "./jquery-1.5.1.js"
 }

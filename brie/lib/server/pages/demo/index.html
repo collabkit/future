@@ -5,6 +5,7 @@
 		<meta charset="utf-8">
 		<title>CollabKit Demo</title>
 		<link rel="stylesheet" href="/:resource/ui/styles/app.less">
+		<link rel="stylesheet" href="/:resource/jquery.ui/jquery-ui-1.8.12.custom.css">
 		<style>
 			fieldset {
 				margin: 1em;
@@ -12,8 +13,38 @@
 			}
 			.thumb {
 				float: left;
+				width: 136px;
+				height: 136px;
+				text-align: center;
 				margin: 1em;
 				border: solid 1px silver;
+			}
+			.ui-selected .thumb,
+			.ui-selecting .thumb {
+				border: solid 1px blue;
+				background: rgba(128, 128, 255, 0.5);
+			}
+			.library-toolbar {
+				background: #f8f8f8;
+				padding: 4px;
+				border-bottom: solid 1px #ccc;
+			}
+			#slideshow {
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background: black;
+				color: white;
+				text-align: center;
+			}
+			#slideshow .controls {
+				position: absolute;
+				text-align: center;
+				left: 0;
+				right: 0;
+				bottom: 0;
 			}
 		</style>
 	</head>
@@ -29,14 +60,27 @@
 			<ul id="app-group"></ul>
 		</nav>
 		<section id="app-body" role="main">
-			<fieldset>
+			<fieldset id="library-view">
 				<legend>Photo library</legend>
+				<p>Changes you make will be mirrored immediately to other people
+				with the same page open, and vice versa. Have fun!</p>
+				<div class="library-toolbar">
+					<label>Import photo(s): <input type="file" id="media-chooser" multiple></label>
+					|
+					<button class="slideshow">Slideshow</button>
+					|
+					<button class="moveup">Move up</button>
+					<button class="movedown">Move down</button>
+					<button class="delete">Delete</button>
+				</div>
 				<div id="mediatest"></div>
 				<div style="clear:both"></div>
-				<label>Import photo(s): <input type="file" id="media-chooser" multiple></label>
+				<div id="mediastate"></div>
 			</fieldset>
 		</section>
 		<script src="/:resource/jquery"></script>
+		<script src="/:resource/jquery.ui"></script>
+		<script src="/:resource/faye"></script>
 		<script src="/:resource/app"></script>
 	</body>
 </html>
