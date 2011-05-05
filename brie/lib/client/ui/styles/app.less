@@ -10,13 +10,6 @@
 
 // Rules
 
-* {
-	.border-box;
-	font-family: 'Droid Sans';
-	font-size: 100%;
-}
-
-html,
 body {
 	width: 1000px;
 	height: 100%;
@@ -26,76 +19,147 @@ body {
 	font-size: 100%;
 }
 
+div, ul, li {
+	.border-box;
+	font-family: 'Droid Sans';
+	font-size: 100%;
+}
+
 #app-head,
-#app-foot {
+#app-nav,
+#app-dock {
 	height: 3em;
 	position: absolute;
 	left: 0;
 	right: 0;
-	color: #ffffff;
-	.vertical-gradient(#ffffff, lighten(@baseColor, 30%));
-	ul {
-		margin: 0;
-		padding: 0;
-		list-style: none;
-		li {
-			display: inline-block;
-			height: 3em;
-			width: 3em;
-			margin: 0;
-			padding: 0;
-			cursor: pointer;
-			list-style: none;
-			font-size: 1em;
-		}
-	}
 }
 
 #app-head {
+	background-image: url(../graphics/head.svg);
+	background-position: bottom left;
+	background-repeat: repeat-x;
 	top: 0;
-	border-bottom: solid 1px lighten(@baseColor, 20%);
-	#app-logo {
-		float: left;
-		width: 9.5em;
-		height: 3em;
-		background-image: url(../graphics/logo.svg);
-		background-repeat: no-repeat;
-		background-position: center center;
-	}
-	#app-places {
-		float: left;
-	}
-	#app-people {
-		float: right;
-	}
+}
+
+#app-nav,
+#app-dock {
+	background-image: url(../graphics/themes/green/bar.svg);
+	background-position: top left;
+	background-repeat: repeat-x;
+}
+
+#app-nav {
+	top: 3em;
+}
+
+#app-dock {
+	bottom: 0;
+}
+
+#app-logo {
+	float: left;
+	width: 9em;
+	height: 2.5em;
+	background-image: url(../graphics/logo.svg);
+	background-repeat: no-repeat;
+	background-position: center right;
+}
+
+#app-search {
+	float: left;
+	width: 12em;
+	height: 3em;
+}
+
+#app-search-input {
+	width: 8em;
+	height: 2.125em;
+	margin: 0.5em 1em;
+	padding: 0 2em;
+	font-size: 0.9em;
+	border: solid 1px silver;
+	.border-radius(0.2em);
+	background-image: url(../graphics/icons/search.svg);
+	background-position: 0.5em 50%;
+	background-repeat: no-repeat;
+}
+
+#app-places {
+	float: left;
+}
+
+#app-places-list {
+	margin: 0.6em;
+}
+
+#app-people {
+	float: right;
 }
 
 #app-foot {
 	bottom: 0;
 	border-top: solid 1px lighten(@baseColor, 20%);
-	#app-personal {
-		width: 50%;
-		height: 3.2em;
-		float: left;
-	}
-	#app-group {
-		width: 50%;
-		height: 3.2em;
-		float: right;
-	}
-	#app-controls {
-		position: absolute;
-		left: 50%;
-		width: 3em;
-		margin-left: -1.5em;
-	}
+}
+
+#app-personalTasks {
+	width: 50%;
+	height: 3.2em;
+	float: left;
+}
+
+#app-groupTasks {
+	width: 50%;
+	height: 3.2em;
+	float: right;
+}
+
+#app-controls {
+	position: absolute;
+	left: 50%;
+	width: 3em;
+	margin-left: -1.5em;
 }
 
 #app-body {
 	position: absolute;
-	top: 3em;
+	top: 6em;
 	left: 0;
 	right: 0;
 	bottom: 3em;
 	overflow: auto;
+	background-image: url(../graphics/themes/green/glow-down.svg), url(../graphics/themes/green/glow-up.svg);
+	background-repeat: repeat-x;
+	background-position: top left, bottom left;
+}
+
+#app-notes-icon {
+	background-image: url(../graphics/icons/notes.svg);
+}
+
+#app-talk-icon {
+	background-image: url(../graphics/icons/talk.svg);
+}
+
+.app-icon {
+	display: block;
+	width: 1.5em;
+	height: 1.5em;
+	background-image: center center;
+	background-repeat: no-repeat;
+}
+
+.app-icon-label {
+	display: none;
+}
+
+.app-icon-list,
+.app-icon-list-item {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.app-icon-list-item {
+	display: inline-block;
+	margin-right: 0.5em;
 }

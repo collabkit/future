@@ -7,27 +7,32 @@
 		<link rel="stylesheet" href="/:resource/ui/styles/app.less">
 		<link rel="stylesheet" href="/:resource/jquery.ui/jquery-ui-1.8.12.custom.css">
 		<style>
-			fieldset {
-				margin: 1em;
-				border: solid 1px silver;
+			#mediatest {
+				padding: 1.5em;
+				height: 100%;
 			}
 			.thumb {
 				float: left;
-				min-width: 136px;
-				height: 136px;
+				min-width: 150px;
+				height: 150px;
+				padding: 10px;
 				text-align: center;
-				margin: 1em;
+				margin-right: 1.5em;
+				margin-bottom: 1.5em;
 				border: solid 1px silver;
+				border-radius: 0.5em;
+				-webkit-box-shadow: 0px 3px 10px #eeeeee;
+				-moz-box-shadow: 0px 3px 10px #eeeeee;
+				box-shadow: 0px 3px 10px #eeeeee;
 			}
 			.ui-selected .thumb,
 			.ui-selecting .thumb {
-				border: solid 1px blue;
-				background: rgba(128, 128, 255, 0.5);
+				border: solid 1px #66cc66;
+				background-color: #eeffee;
 			}
 			.library-toolbar {
-				background: #f8f8f8;
-				padding: 4px;
-				border-bottom: solid 1px #ccc;
+				margin: 0.5em;
+				padding: 0.25em;
 			}
 			#slideshow {
 				position: absolute;
@@ -46,24 +51,45 @@
 				right: 0;
 				bottom: 0;
 			}
+			#mediainfo {
+				position: absolute;
+				left: 1.5em;
+				right: 1.5em;
+				bottom: 1.5em;
+				font-size: 0.8em;
+				background-color: #f3f3f3;
+				color: #666666;
+				border-radius: 1em;
+			}
+			#mediainfo > div {
+				margin: 1em;
+			}
 		</style>
 	</head>
 	<body>
-		<nav id="app-head">
+		<div id="app-head">
 			<div id="app-logo"></div>
-			<ul id="app-places"></ul>
-			<ul id="app-people"></ul>
-		</nav>
-		<nav id="app-foot">
-			<ul id="app-personal"></ul>
-			<ul id="app-controls"></ul>
-			<ul id="app-group"></ul>
-		</nav>
-		<section id="app-body" role="main">
-			<fieldset id="library-view">
-				<legend>Photo library</legend>
-				<p>Changes you make will be mirrored immediately to other people
-				with the same page open, and vice versa. Have fun!</p>
+			<div id="app-search">
+				<input type="text" id="app-search-input" name="q" placeholder="Search" />
+			</div>
+			<div id="app-places">
+				<ul id="app-places-list" class="app-icon-list">
+					<li class="app-icon-list-item">
+						<a href="#notes" id="app-notes-icon" class="app-icon">
+							<span class="app-icon-label"></span>
+						</a>
+					</li>
+					<li class="app-icon-list-item">
+						<a href="#talk" id="app-talk-icon" class="app-icon">
+							<span class="app-icon-label"></span>
+						</a>
+					</li>
+				</ul>
+			</div>
+			<div id="app-people"></div>
+		</div>
+		<div id="app-nav">
+			<div id="app-modes">
 				<div class="library-toolbar">
 					<label>Import photo(s): <input type="file" id="media-chooser" multiple></label>
 					|
@@ -73,11 +99,26 @@
 					<button class="movedown">Move down</button>
 					<button class="delete">Delete</button>
 				</div>
-				<div id="mediatest"></div>
-				<div style="clear:both"></div>
+			</div>
+			<div id="app-views"></div>
+		</div>
+		<div id="app-dock">
+			<div id="app-home"></div>
+			<div id="app-personalTasks"></div>
+			<div id="app-controls"></div>
+			<div id="app-groupTasks"></div>
+			<div id="app-group"></div>
+		</div>
+		<div id="app-body" role="main">
+			<div id="mediatest"></div>
+			<div id="mediainfo">
 				<div id="mediastate"></div>
-			</fieldset>
-		</section>
+				<div>
+					Changes you make will be mirrored immediately to other people with the same page
+					open, and vice versa. Have fun!
+				</div>
+			</div>
+		</div>
 		<script src="/:resource/jquery"></script>
 		<script src="/:resource/jquery.ui"></script>
 		<script src="/:resource/faye"></script>
