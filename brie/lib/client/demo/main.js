@@ -1,15 +1,4 @@
 /*
-function App() {
-	//
-};
-
-exports.App = App;
-exports.create = function() {
-	return new App();
-};
-*/
-
-/*
  * Only Firefox implements XMLHttpRequest.sendAsBinary
  * 
  * @see http://code.google.com/p/chromium/issues/detail?id=35705
