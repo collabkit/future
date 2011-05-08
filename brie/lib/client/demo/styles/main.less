@@ -4,25 +4,34 @@
 	width: 100%;
 }
 .photo-entry {
-	display: inline-block;
+	float: left;
 }
 .thumb {
 	min-width: 150px;
 	height: 150px;
 	padding: 10px;
 	text-align: center;
-	margin-right: 1.5em;
-	margin-bottom: 1.5em;
+	margin: 0.75em;
 	border: solid 1px silver;
+	background-color: white;
 	border-radius: 0.5em;
 	-webkit-box-shadow: 0px 3px 10px #eeeeee;
 	-moz-box-shadow: 0px 3px 10px #eeeeee;
 	box-shadow: 0px 3px 10px #eeeeee;
 }
-.ui-selected .thumb,
-.ui-selecting .thumb {
+.ui-sortable .thumb {
+	cursor: move;
+}
+.ui-sortable .thumb img {
+	cursor: default;
+}
+.ui-selected .thumb {
 	border: solid 1px #66cc66;
 	background-color: #eeffee;
+}
+.ui-selecting .thumb {
+	border: solid 1px #66cc66;
+	background-color: #ddffdd;
 }
 .library-toolbar {
 	margin: 0.5em;

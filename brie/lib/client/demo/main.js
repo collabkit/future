@@ -85,7 +85,6 @@ var store = {
 	}
 };
 
-
 /**
  * @param {jQuery} target
  * @param {String} viewUrl
@@ -291,12 +290,22 @@ function showLibrary(commitInfo) {
  * Set up selection interface
  */
 $('#mediatest')
+	/* Needs a way to convey the ordering change to the server - but otherwise works fine
+	.sortable({
+		'cancel': 'img',
+		'containment': '#mediatest',
+		'opacity': 0.5,
+		'tolerance': 'intersect',
+		'distance': 10,
+		'delay': 100,
+		'revert': true
+	})
+	*/
 	.selectable()
 	.bind('selectablestop', function() {
 		updateToolbar();
-	});
+	})
 updateToolbar();
-
 
 /**
  * Connect a session so we can get updates on inter-client state...
