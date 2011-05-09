@@ -183,9 +183,18 @@ Class( 'Gallery', {
 				.end();
 			$('#media-chooser').change(function(event) {
 				// This version requires FileAPI: Firefox 3.5+ and Chrome ok
-				var files = this.files;
+				var files = $.makeArray(this.files);
 				if (files.length > 0) {
-					$.each(files, function(i, file) {
+					var i = 0;
+					var uploadNextFile = function() {
+						if (i >= files.length) {
+							// Clear it out...
+							$('#media-chooser').val('');
+							return;
+						}
+						var file = files[i];
+						i++;
+
 						var ui = $('<div class="photo-entry">Reading...</div>');
 						$('#mediatest').append(ui);
 		
@@ -202,12 +211,15 @@ Class( 'Gallery', {
 									} else {
 										ui.text('Failed to update library.');
 									}
+									uploadNextFile();
 								});
 							} else {
 								ui.text('Failed to upload.');
+								uploadNextFile();
 							}
 						});
-					});
+					};
+					uploadNextFile();
 				}
 			});
 			/**
