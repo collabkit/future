@@ -281,17 +281,6 @@ Class( 'Gallery', {
 		 * @param {String} viewUrl
 		 */
 		'showThumb': function(target, id) {
-			/*
-			var viewUrl = '/:media/' + id;
-			var $thumb = $('<div class="thumb"><a><img height="128" /></a></div>')
-			    .data('collabkit-id', id)
-				.find('a').attr('href', viewUrl).end()
-				.find('img').attr('src', viewUrl).end()
-				.appendTo(target);
-			$thumb.find('a').click(function(event) {
-				event.preventDefault();
-			});
-			*/
 		   target.data('collabkit-id', id);
 		   target.load('/:media/' + id + '/embed/thumb');
 		},
