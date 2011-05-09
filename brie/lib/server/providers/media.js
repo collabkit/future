@@ -14,12 +14,16 @@ var util = require( 'util' ),
  *	Returns HTML fragment showing the object full-sizeish.
  *
  * GET /:media/[branch-name|commit-id]/embed
- *	Returns HTML fragment showing a thumbnail of the object.
+ * GET /:media/[branch-name|commit-id]/embed/thumb
+ * GET /:media/[branch-name|commit-id]/embed/medium
+ * GET /:media/[branch-name|commit-id]/embed/large
+ *	Returns HTML fragment showing a thumbnail, medium, or large view of the object.
  *
+ * GET /:media/[branch-name|commit-id]/photo
  * GET /:media/[branch-name|commit-id]/photo/thumb
+ * GET /:media/[branch-name|commit-id]/photo/medium
  * GET /:media/[branch-name|commit-id]/photo/large
- * GET /:media/[branch-name|commit-id]/photo/original
- *  Return a JPEG, PNG, or GIF image at thumb (128x128), large (800x600), or original sizes.
+ *  Return a JPEG, PNG, or GIF image at original, thumb (128x128), medium (640x480), or large (1280x960) sizes.
  */
 function MediaProvider( service ) {
 	var provider = this;
@@ -45,12 +49,12 @@ function MediaProvider( service ) {
 					throw "Uploading a media resource requires HTTP PUT.";
 				}
 				provider.handlePut( req, res );
-			} else if ( path.length == 1 ) {
+			} else if ( path.length >= 1 ) {
 				// /:media/0123456789abcdef0123456789abcdef012345678
 				if (req.method != "GET") {
 					throw "Only GET allowed."; // @fixme HEAD also?
 				}
-				provider.handleGet( req, res, path[0] );
+				provider.handleGet( req, res, path[0], path.slice(1) );
 			} else {
 				throw "Unrecognized parameters.";
 			}
@@ -68,29 +72,54 @@ util.inherits( MediaProvider, events.EventEmitter );
  * @param {http.ServerRequest} req
  * @param {http.ServerResponse} res
  * @param {string} id
+ * @param {string[]} params
  */
-MediaProvider.prototype.handleGet = function( req, res, id ) {
+MediaProvider.prototype.handleGet = function( req, res, id, params ) {
 	var fail = function( msg, code ) {
 		logger.fail('media get error: ' + msg);
 		res.writeHead( code || 500, {'Content-Type': 'text/plain'});
 		res.end( 'Error: ' + msg );
-		return null;
 	};
 	var store = this.store;
 	store.getObject( id, function(obj, err) {
 		if ( err ) {
-			return fail( err );
+			fail( err );
+			return;
 		}
 		var data = obj.data;
 		if (data.type == 'application/x-collabkit-photo') {
-			obj.getFile(data.photo.src, function(stream, err) {
-				if ( err ) {
-					fail( err );
-				} else {
-					res.writeHead( 200, {'Content-Type': data.photo.type});
-					stream.pipe( res );
-				}
-			}, 'stream');
+			if (params.length == 0) {
+				params = ['embed'];
+			}
+			var size = params[1] || 'original',
+				photo = data.photo,
+				display;
+			if (photo.thumbs && size in photo.thumbs) {
+				display = photo.thumbs[size];
+			} else {
+				display = photo;
+			}
+			if (params[0] == 'embed') {
+				res.writeHead( 200, {'Content-Type': 'text/html'});
+				res.end(
+					'<div class="collabkit-photo size-' + size + ' collabkit-object-' + id + '">' +
+						'<img src="/:media/' + id + '/photo/' + size + '" ' +
+							'width="' + display.width + '" ' +
+							'height="' + display.height + '" />' +
+					'</div>'
+				);
+			} else if (params[0] == 'photo') {
+				obj.getFile(display.src, function(stream, err) {
+					if ( err ) {
+						fail( err );
+					} else {
+						res.writeHead( 200, {'Content-Type': photo.display});
+						stream.pipe( res );
+					}
+				}, 'stream');
+			} else {
+				fail( 'Invalid media method ' + params[0] + ' on photo object.' );
+			}
 		} else {
 			fail( 'Invalid object type' );
 		}
