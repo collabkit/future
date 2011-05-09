@@ -254,7 +254,7 @@ Class( 'Gallery', {
 							if (err) {
 								alert(err);
 							} else {
-								that.showLibrary(result);
+								that.updateLibrary(result);
 							}
 						});
 					},
@@ -352,6 +352,27 @@ Class( 'Gallery', {
 				}
 			});
 		},
+		
+		// Check the current library state and make sure it's consistent with
+		// what we've got; if not we'll refresh the view.
+		'updateLibrary': function(commitInfo) {
+			if (this.library && this.library.id == commitInfo.id) {
+				// We're good!
+			} else {
+				var oldItems = this.library.data && this.library.data.library.items && this.library.data.library.items.join(',');
+				var newItems = commitInfo.data.library.items.join(',');
+				if (oldItems == newItems) {
+					// We've already updated to this data; update metadata only.
+					this.library = commitInfo;
+					this.lib = this.library.data;
+					this.showMeta();
+				} else {
+					// Someone else changed us or we didn't touch the display;
+					// refresh it.
+					this.showLibrary(commitInfo);
+				}
+			}
+		},
 		'showLibrary': function(commitInfo) {
 			var data = commitInfo.data;
 			if (data.type != 'application/x-collabkit-library') {
@@ -361,15 +382,19 @@ Class( 'Gallery', {
 			this.library = commitInfo;
 			this.lib = this.library.data;
 	
-			$('#mediatest').empty();
-			$('#mediastate').text('Version: ' + this.library.id + ' (parents: ' + this.library.parents.join('') + ')');
+			this.showMeta();
+
 			var that = this;
+			$('#mediatest').empty();
 			$.each(this.lib.library.items, function(i, id) {
 				var $thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
 				that.showThumb($thumb, id);
 			});
 			this.restoreSelection();
 			this.updateToolbar();
+		},
+		'showMeta': function() {
+			$('#mediastate').text('Version: ' + this.library.id + ' (parents: ' + this.library.parents.join('') + ')');
 		}
 	}
 } );
@@ -381,7 +406,7 @@ var gallery = new Gallery();
  */
 var session = new Faye.Client('/:session/');
 session.subscribe('/commits', function(message) {
-	gallery.showLibrary(message);
+	gallery.updateLibrary(message);
 });
 
 $.get('/:data/collabkit-library', function(data, xhr) {
