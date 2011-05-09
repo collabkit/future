@@ -1,7 +1,12 @@
 var util = require('util'),
 	fs = require('fs'),
 	events = require( 'events' ),
-	gd = require('gd/gd');
+
+	// npm modules
+	gd = require('gd/gd'),
+
+	// other shared modules
+	grout = require('../grout');
 
 
 /**
@@ -53,18 +58,25 @@ var readerForType = function(type) {
 			open: function(buffer) {
 				return gd.createFromGifPtr(buffer.toString('binary'));
 			},
-			toBuffer: function(image) {
-				return new Buffer(image.gifPtr(), 'binary');
-			},
 			ext: 'gif'
 		}
 	};
-	return function (type) {
+	var getFormat = function(type) {
 		if (type in formats) {
-			return formats[type];
+			return grout.mix({contentType: type}, formats[type]);
 		} else {
 			throw new Error('Unrecognized type ' + type + ' passed to Squisher');
 		}
+	};
+	return function (type) {
+		var format = getFormat(type);
+		if ('toBuffer' in format) {
+			format.writer = format;
+		} else {
+			// We may not be able to save eg GIFs; thumb them to PNG.
+			format.writer = formats['image/png'];
+		}
+		return format;
 	}
 }();
 
@@ -114,6 +126,8 @@ Squisher.prototype.read = function(buffer, contentType) {
 		return;
 	}
 
+	var writer = reader.writer;
+
 	var image = reader.open(buffer);
 	if (!image) {
 		this.emit('error', new Error('Failed to read image data.'));
@@ -151,13 +165,13 @@ Squisher.prototype.read = function(buffer, contentType) {
 					0, 0, // src X/Y
 					destWidth, destHeight,
 					meta.width, meta.height);
-				var resizedData = reader.toBuffer(destImage);
+				var resizedData = writer.toBuffer(destImage);
 				this.emit('resized', {
 					size: name,
 					width: destWidth,
 					height: destHeight,
-					ext: reader.ext,
-					contentType: contentType,
+					ext: writer.ext,
+					contentType: writer.contentType,
 					data: resizedData
 				});
 			} else {
@@ -167,7 +181,7 @@ Squisher.prototype.read = function(buffer, contentType) {
 					width: meta.width,
 					height: meta.height,
 					ext: reader.ext,
-					contentType: contentType,
+					contentType: reader.contentType,
 					data: null
 				});
 			}
