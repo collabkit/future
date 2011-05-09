@@ -183,43 +183,11 @@ Class( 'Gallery', {
 				.end();
 			$('#media-chooser').change(function(event) {
 				// This version requires FileAPI: Firefox 3.5+ and Chrome ok
-				var files = $.makeArray(this.files);
-				if (files.length > 0) {
-					var i = 0;
-					var uploadNextFile = function() {
-						if (i >= files.length) {
-							// Clear it out...
-							$('#media-chooser').val('');
-							return;
-						}
-						var file = files[i];
-						i++;
-
-						var ui = $('<div class="photo-entry">Reading...</div>');
-						$('#mediatest').append(ui);
-		
-						ui.text('Uploading...');
-						that.store.createPhoto(file, function(result, err) {
-							if (result) {
-								var photoId = result.id;
-								ui.text('Updating library...');
-								that.lib.library.items.push(photoId);
-								that.store.updateObjectRef('collabkit-library', that.lib, function(result, err) {
-									if (result) {
-										ui.empty()
-										that.showThumb(ui, photoId);
-									} else {
-										ui.text('Failed to update library.');
-									}
-									uploadNextFile();
-								});
-							} else {
-								ui.text('Failed to upload.');
-								uploadNextFile();
-							}
-						});
-					};
-					uploadNextFile();
+				if (this.files && this.files.length > 0) {
+					that.uploadFiles(this.files, function() {
+						// Clear it out...
+						$('#media-chooser').val('');
+					});
 				}
 			});
 			/**
@@ -352,7 +320,56 @@ Class( 'Gallery', {
 				}
 			});
 		},
-		
+
+		/**
+		 * Start asynchronously uploading files and adding them to the library.
+		 *
+		 * @param {File[]} files
+		 * @param {function} callback on completion
+		 */
+		'uploadFiles': function(files, callback) {
+			var that = this;
+			files = $.makeArray(files);
+			if (files.length == 0) {
+				callback();
+				return;
+			}
+			var i = 0;
+			var uploadNextFile = function() {
+				if (i >= files.length) {
+					callback();
+					return;
+				}
+				var file = files[i];
+				i++;
+
+				var ui = $('<div class="photo-entry">Reading...</div>');
+				$('#mediatest').append(ui);
+
+				ui.text('Uploading...');
+				that.store.createPhoto(file, function(result, err) {
+					if (result) {
+						var photoId = result.id;
+						ui.text('Updating library...');
+						that.lib.library.items.push(photoId);
+						that.store.updateObjectRef('collabkit-library', that.lib, function(result, err) {
+							if (result) {
+								ui.empty()
+								that.showThumb(ui, photoId);
+							} else {
+								ui.text('Failed to update library.');
+							}
+							uploadNextFile();
+						});
+					} else {
+						ui.text('Failed to upload.');
+						uploadNextFile();
+					}
+				});
+			};
+			uploadNextFile();
+		},
+
 		// Check the current library state and make sure it's consistent with
 		// what we've got; if not we'll refresh the view.
 		'updateLibrary': function(commitInfo) {
