@@ -219,9 +219,32 @@ Class( 'Gallery', {
 					'tolerance': 'intersect',
 					'distance': 0,
 					'delay': 0,
-					'change': function(event, ui) {
-						// TODO: SOMETHING HERE!
+					'update': function(event, ui) {
+						// 'change' triggers during UI operations; 'update' only at end.
 						// Figure out which photo(s) were moved and update the server
+						var items = []
+						$('#mediatest > .photo-entry').each(function() {
+							items.push($(this).data('collabkit-id'));
+						});
+
+						var data = that.library.data;
+						if (data.library.items.length != items.length) {
+							// oh nooooooooo
+							console.log('old items', data.library.items);
+							console.log('new items', items);
+							throw new Error('Sorting resulted in mismatched item list');
+						}
+						
+						// Store them new sorted items!
+						data.library.items = items;
+						that.saveSelection();
+						that.store.updateObjectRef('collabkit-library', data, function(result, err) {
+							if (err) {
+								alert(err);
+							} else {
+								that.showLibrary(result);
+							}
+						});
 					},
 					'start': function( event, ui ) {
 						$(ui.item)
