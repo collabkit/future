@@ -112,7 +112,7 @@ Class( 'Gallery', {
 					 * Load up the photo into an <img> and call us back when done.
 					 */
 					var buildPhoto = function(id, callback) {
-						var $photo = $('<img class="slideshow-photo"/>').attr('src', '/:media/' + id);
+						var $photo = $('<img class="slideshow-photo"/>').attr('src', '/:media/' + id + '/photo/large');
 						if (callback) {
 							$photo.bind('load', function() {
 								callback(this);
@@ -154,7 +154,7 @@ Class( 'Gallery', {
 				.click(function() {
 					var $selected = $('#mediatest > .ui-selected');
 					$selected.each(function(i, node) {
-						var id = $(node).find('.thumb').data('collabkit-id');
+						var id = $(node).data('collabkit-id');
 						var index = that.lib.library.items.indexOf(id);
 						if (index == -1) {
 							throw new Error("Trying to remove photo that doesn't exist: " + id);
@@ -241,13 +241,13 @@ Class( 'Gallery', {
 			this.selection = [];
 			var that = this;
 			$('#mediatest > .ui-selected').each(function(i, node) {
-				that.selection.push( $(node).find('.thumb').data('collabkit-id') );
+				that.selection.push( $(node).data('collabkit-id') );
 			});
 		},
 		'restoreSelection': function() {
 			var that = this;
 			$('#mediatest > .photo-entry').each(function(i, node) {
-				var id = $(node).find('.thumb').data('collabkit-id');
+				var id = $(node).data('collabkit-id');
 				if ( $.inArray( id, that.selection ) >= 0 ) {
 					$(node).addClass( 'ui-selected' );
 				}
@@ -258,6 +258,7 @@ Class( 'Gallery', {
 		 * @param {String} viewUrl
 		 */
 		'showThumb': function(target, id) {
+			/*
 			var viewUrl = '/:media/' + id;
 			var $thumb = $('<div class="thumb"><a><img height="128" /></a></div>')
 			    .data('collabkit-id', id)
@@ -267,6 +268,9 @@ Class( 'Gallery', {
 			$thumb.find('a').click(function(event) {
 				event.preventDefault();
 			});
+			*/
+		   target.data('collabkit-id', id);
+		   target.load('/:media/' + id + '/embed/thumb');
 		},
 		'updateToolbar': function() {
 			// These buttons need something selected to operate on.
@@ -291,7 +295,7 @@ Class( 'Gallery', {
 			var items = this.lib.library.items;
 			var targetIndices = [];
 			$selected.each(function(i, node) {
-				var id = $(node).find('.thumb').data('collabkit-id');
+				var id = $(node).data('collabkit-id');
 				var index = items.indexOf(id);
 				if (index == -1) {
 					throw new Error("Trying to move photo that doesn't exist: " + id);
