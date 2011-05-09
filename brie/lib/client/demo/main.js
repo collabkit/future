@@ -181,6 +181,10 @@ Class( 'Gallery', {
 					that.doMovePhotos(1);
 				})
 				.end();
+
+			/**
+			 * Set up file chooser upload
+			 */
 			$('#media-chooser').change(function(event) {
 				// This version requires FileAPI: Firefox 3.5+ and Chrome ok
 				if (this.files && this.files.length > 0) {
@@ -190,6 +194,37 @@ Class( 'Gallery', {
 					});
 				}
 			});
+
+			/**
+			 * Set up drag-n-drop upload
+			 */
+			$('#mediatest').bind('dragenter', function(event) {
+				event.preventDefault();
+				return false; // for IE
+			}).bind('dragover', function(event) {
+				$('#mediatest').addClass('dragover');
+				event.preventDefault();
+				return false; // for IE
+			}).bind('drop', function(event) {
+				$('#mediatest').removeClass('dragover');
+			    var dataTransfer = event.originalEvent.dataTransfer;
+				if (dataTransfer && typeof dataTransfer.files == 'object') {
+					if (dataTransfer.files.length) {
+						that.uploadFiles(dataTransfer.files, function() {
+							//
+						});
+					} else {
+						alert('No files to drop.');
+					}
+				} else {
+					alert('Nothing to drop.');
+				}
+				event.preventDefault();
+				return false;
+			}).bind('dragleave', function(event) {
+				$('#mediatest').removeClass('dragover');
+			});
+
 			/**
 			 * Set up selection interface
 			 */
