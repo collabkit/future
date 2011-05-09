@@ -1,6 +1,7 @@
 var util = require( 'util' ),
 	events = require( 'events' ),
-	logger = require( '../logger' ).create( 'MediaProvider' );
+	logger = require( '../logger' ).create( 'MediaProvider' ),
+	Squisher = require('../../shared/squisher').Squisher;
 
 /**
  * URL patterns
@@ -140,26 +141,67 @@ MediaProvider.prototype.handlePut = function( req, res ) {
 			title: filename
 		},
 		photo: {
+			width: null,
+			height: null,
 			type: contentType,
-			src: filename
-			// todo: put width, height, other metadata in here!
-			// means we need to understand the image file format
-			// and read it in before we create the data. :D
+			src: filename,
+			thumbs: {}
 		}
 	});
-	obj.addFile(filename, req, 'stream');
-	obj.commit({}, function( photo, err ) {
-		if ( err ) {
-			return fail( err );
-		}
-		res.writeHead( 200, {
-			'Content-Type': 'application/json'
-		} );
-		res.end(JSON.stringify({
-			id: photo.version,
-			data: photo.data
-		}));
+
+	var squisher = new Squisher();
+
+	// Save the original image's metadata & data
+	squisher.on('metadata', function(data) {
+		obj.data.photo.width = data.width;
+		obj.data.photo.height = data.height;
+		obj.addFile(filename, data.data);
 	});
+
+	// Attach standard-sized thumbnail info...
+	squisher.on('resized', function(thumb) {
+		if (thumb.data) {
+			// Save a thumbnail!
+			var thumbFilename = thumb.size + '.' + thumb.ext;
+			obj.addFile(thumbFilename, thumb.data);
+			obj.data.photo.thumbs[thumb.size] = {
+				width: thumb.width,
+				height: thumb.height,
+				src: thumbFilename,
+				type: thumb.contentType
+			}
+		} else {
+			// Use the original file, scale client-size
+			obj.data.photo[thumb.size] = {
+				width: thumb.width,
+				height: thumb.height,
+				src: filename,
+				type: contentType
+			}
+		}
+	});
+
+	// Commit the object once complete :D
+	squisher.on('complete', function() {
+		obj.commit({}, function( photo, err ) {
+			if ( err ) {
+				return fail( err );
+			}
+			res.writeHead( 200, {
+				'Content-Type': 'application/json'
+			} );
+			res.end(JSON.stringify({
+				id: photo.version,
+				data: photo.data
+			}));
+		});
+	});
+
+	squisher.on('error', function(err) {
+		fail(err);
+	});
+
+	squisher.readStream(req, contentType);
 };
 
 exports.MediaProvider = MediaProvider;

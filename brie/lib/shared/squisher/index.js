@@ -124,7 +124,8 @@ Squisher.prototype.read = function(buffer, contentType) {
 		width: image.width,
 		height: image.height,
 		ext: reader.ext,
-		contentType: contentType
+		contentType: contentType,
+		data: buffer
 	}
 	this.emit('metadata', meta);
 
@@ -179,6 +180,8 @@ Squisher.prototype.read = function(buffer, contentType) {
  * @todo handle huge files in a saner way
  */
 Squisher.prototype.readStream = function(stream, contentType) {
+	var self = this;
+
 	// Just to validate first...
 	var reader = readerForType(contentType);
 
