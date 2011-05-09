@@ -142,6 +142,9 @@ Squisher.prototype.read = function(buffer, contentType) {
 			if (destWidth < meta.width || destHeight < meta.height) {
 				// New size is smaller -- resample!
 				var destImage = gd.createTrueColor(destWidth, destHeight);
+				var background = destImage.colorAllocateAlpha(0, 0, 0, 127);
+				destImage.colorTransparent(background);
+				destImage.alphaBlending(0); // @fixme it won't take 'false'
 				image.copyResampled(
 					destImage, // dest
 					0, 0, // dest X/Y
