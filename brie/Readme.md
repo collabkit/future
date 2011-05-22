@@ -8,6 +8,7 @@ Required npm modules:
 * faye
 * argsparser
 * node-static
+* gd
 
 To start the embedded web server:
 

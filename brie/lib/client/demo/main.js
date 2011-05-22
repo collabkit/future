@@ -112,7 +112,7 @@ Class( 'Gallery', {
 					 * Load up the photo into an <img> and call us back when done.
 					 */
 					var buildPhoto = function(id, callback) {
-						var $photo = $('<img class="slideshow-photo"/>').attr('src', '/:media/' + id);
+						var $photo = $('<img class="slideshow-photo"/>').attr('src', '/:media/' + id + '/photo/large');
 						if (callback) {
 							$photo.bind('load', function() {
 								callback(this);
@@ -123,52 +123,78 @@ Class( 'Gallery', {
 			
 					var interval = 10;
 					var index = 0;
-			
-					var advance = function() {
+
+					var update = function() {
 						buildPhoto(photos[index], function(img) {
 							$slideshow.find('.area').empty().append(img);
-			
-							index = (index + 1) % photos.length;
 						});
+					};
+					var advance = function(n) {
+						index = (index + n);
+						if (index < 0) {
+							index += photos.length;
+						}
+						if (index >= photos.length) {
+							index = index % photos.length;
+						}
+						update();
 					};
 			
 					var timer = window.setInterval(advance, interval * 1000);
-			
-					$slideshow.click(function() {
+					var manualAdvance = function(n) {
 						// Reset the timer...
 						window.clearInterval(timer);
 						timer = window.setInterval(advance, interval * 1000);
+
+						advance(n || 1);
+					};
+					var manualRewind = function() {
+						manualAdvance(-1);
+					}
 			
-						advance();
+					$slideshow.click(function() {
+						manualAdvance();
 					});
-			
-					$slideshow.find('.close').click(function() {
+
+					var escapeCheck, closeOut;
+					escapeCheck = function(event) {
+						var map = {
+							27: closeOut, // esc
+
+							13: manualAdvance, // enter
+							32: manualAdvance, // space
+							34: manualAdvance, // pgdn
+							39: manualAdvance, // right
+							40: manualAdvance, // down
+
+							8: manualRewind,  // backspace
+							33: manualRewind, // pgup
+							37: manualRewind, // left
+							38: manualRewind  // up
+						}
+						if (event.keyCode in map) {
+							map[event.keyCode]();
+							event.preventDefault();
+						}
+					};
+					closeOut = function() {
+						// Clean up & close the slideshow.
 						window.clearInterval(timer);
+						$(document).unbind('keydown', escapeCheck);
 						$slideshow.remove();
+					};
+					$slideshow.find('.close').click(function() {
+						closeOut();
 					})
+					// Bind global key checkers for simplicity :D
+					$(document).bind('keydown', escapeCheck);
 					$slideshow.appendTo('body');
-					advance();
+					update();
 				})
 				.end()
 			.find('.delete')
 				.click(function() {
-					var $selected = $('#mediatest > .ui-selected');
-					$selected.each(function(i, node) {
-						var id = $(node).find('.thumb').data('collabkit-id');
-						var index = that.lib.library.items.indexOf(id);
-						if (index == -1) {
-							throw new Error("Trying to remove photo that doesn't exist: " + id);
-						}
-						that.lib.library.items.splice(index, 1);
-						$(node).text('Removing...');
-					});
-					that.store.updateObjectRef('collabkit-library', that.lib, function(result, err) {
-						if (err) {
-							alert(err);
-						} else {
-							$selected.remove();
-						}
-					});
+					that.deleteSelected();
 				})
 				.end()
 			.find('.moveup')
@@ -181,35 +207,50 @@ Class( 'Gallery', {
 					that.doMovePhotos(1);
 				})
 				.end();
+
+			/**
+			 * Set up file chooser upload
+			 */
 			$('#media-chooser').change(function(event) {
 				// This version requires FileAPI: Firefox 3.5+ and Chrome ok
-				var files = this.files;
-				if (files.length > 0) {
-					$.each(files, function(i, file) {
-						var ui = $('<div class="photo-entry">Reading...</div>');
-						$('#mediatest').append(ui);
-		
-						ui.text('Uploading...');
-						that.store.createPhoto(file, function(result, err) {
-							if (result) {
-								var photoId = result.id;
-								ui.text('Updating library...');
-								that.lib.library.items.push(photoId);
-								that.store.updateObjectRef('collabkit-library', that.lib, function(result, err) {
-									if (result) {
-										ui.empty()
-										that.showThumb(ui, photoId);
-									} else {
-										ui.text('Failed to update library.');
-									}
-								});
-							} else {
-								ui.text('Failed to upload.');
-							}
-						});
+				if (this.files && this.files.length > 0) {
+					that.uploadFiles(this.files, function() {
+						// Clear it out...
+						$('#media-chooser').val('');
 					});
 				}
 			});
+
+			/**
+			 * Set up drag-n-drop upload
+			 */
+			$('#mediatest').bind('dragenter', function(event) {
+				event.preventDefault();
+				return false; // for IE
+			}).bind('dragover', function(event) {
+				$('#mediatest').addClass('dragover');
+				event.preventDefault();
+				return false; // for IE
+			}).bind('drop', function(event) {
+				$('#mediatest').removeClass('dragover');
+			    var dataTransfer = event.originalEvent.dataTransfer;
+				if (dataTransfer && typeof dataTransfer.files == 'object') {
+					if (dataTransfer.files.length) {
+						that.uploadFiles(dataTransfer.files, function() {
+							//
+						});
+					} else {
+						alert('No files to drop.');
+					}
+				} else {
+					alert('Nothing to drop.');
+				}
+				event.preventDefault();
+				return false;
+			}).bind('dragleave', function(event) {
+				$('#mediatest').removeClass('dragover');
+			});
+
 			/**
 			 * Set up selection interface
 			 */
@@ -219,9 +260,32 @@ Class( 'Gallery', {
 					'tolerance': 'intersect',
 					'distance': 0,
 					'delay': 0,
-					'change': function(event, ui) {
-						// TODO: SOMETHING HERE!
+					'update': function(event, ui) {
+						// 'change' triggers during UI operations; 'update' only at end.
 						// Figure out which photo(s) were moved and update the server
+						var items = []
+						$('#mediatest > .photo-entry').each(function() {
+							items.push($(this).data('collabkit-id'));
+						});
+
+						var data = that.library.data;
+						if (data.library.items.length != items.length) {
+							// oh nooooooooo
+							console.log('old items', data.library.items);
+							console.log('new items', items);
+							throw new Error('Sorting resulted in mismatched item list');
+						}
+						
+						// Store them new sorted items!
+						data.library.items = items;
+						that.saveSelection();
+						that.store.updateObjectRef('collabkit-library', data, function(result, err) {
+							if (err) {
+								alert(err);
+							} else {
+								that.updateLibrary(result);
+							}
+						});
 					},
 					'start': function( event, ui ) {
 						$(ui.item)
@@ -236,18 +300,33 @@ Class( 'Gallery', {
 					'stop': that.updateToolbar
 				});
 			this.updateToolbar();
+
+			/**
+			 * Keyboard
+			 */
+			$('#mediatest').mousedown(function() {
+				// Need to set focus to get key events
+				$(this).focus();
+			});
+			$('#mediatest').bind('keydown', function(event) {
+				if (event.keyCode == 8 || event.keyCode == 46) {
+					// backspace/delete
+					that.deleteSelected();
+					event.preventDefault();
+				}
+			});
 		},
 		'saveSelection': function() {
 			this.selection = [];
 			var that = this;
 			$('#mediatest > .ui-selected').each(function(i, node) {
-				that.selection.push( $(node).find('.thumb').data('collabkit-id') );
+				that.selection.push( $(node).data('collabkit-id') );
 			});
 		},
 		'restoreSelection': function() {
 			var that = this;
 			$('#mediatest > .photo-entry').each(function(i, node) {
-				var id = $(node).find('.thumb').data('collabkit-id');
+				var id = $(node).data('collabkit-id');
 				if ( $.inArray( id, that.selection ) >= 0 ) {
 					$(node).addClass( 'ui-selected' );
 				}
@@ -258,15 +337,8 @@ Class( 'Gallery', {
 		 * @param {String} viewUrl
 		 */
 		'showThumb': function(target, id) {
-			var viewUrl = '/:media/' + id;
-			var $thumb = $('<div class="thumb"><a><img height="128" /></a></div>')
-			    .data('collabkit-id', id)
-				.find('a').attr('href', viewUrl).end()
-				.find('img').attr('src', viewUrl).end()
-				.appendTo(target);
-			$thumb.find('a').click(function(event) {
-				event.preventDefault();
-			});
+		   target.data('collabkit-id', id);
+		   target.load('/:media/' + id + '/embed/thumb');
 		},
 		'updateToolbar': function() {
 			// These buttons need something selected to operate on.
@@ -291,7 +363,7 @@ Class( 'Gallery', {
 			var items = this.lib.library.items;
 			var targetIndices = [];
 			$selected.each(function(i, node) {
-				var id = $(node).find('.thumb').data('collabkit-id');
+				var id = $(node).data('collabkit-id');
 				var index = items.indexOf(id);
 				if (index == -1) {
 					throw new Error("Trying to move photo that doesn't exist: " + id);
@@ -324,6 +396,102 @@ Class( 'Gallery', {
 				}
 			});
 		},
+
+		/**
+		 * Start asynchronously uploading files and adding them to the library.
+		 *
+		 * @param {File[]} files
+		 * @param {function} callback on completion
+		 */
+		'uploadFiles': function(files, callback) {
+			var that = this;
+			files = $.makeArray(files);
+			if (files.length == 0) {
+				callback();
+				return;
+			}
+			var i = 0;
+			var uploadNextFile = function() {
+				if (i >= files.length) {
+					callback();
+					return;
+				}
+				var file = files[i];
+				i++;
+
+				var ui = $('<div class="photo-entry">Reading...</div>');
+				$('#mediatest').append(ui);
+
+				ui.text('Uploading...');
+				that.store.createPhoto(file, function(result, err) {
+					if (result) {
+						var photoId = result.id;
+						ui.text('Updating library...');
+						that.lib.library.items.push(photoId);
+						that.store.updateObjectRef('collabkit-library', that.lib, function(result, err) {
+							if (result) {
+								ui.empty()
+								that.showThumb(ui, photoId);
+							} else {
+								ui.text('Failed to update library.');
+							}
+							uploadNextFile();
+						});
+					} else {
+						ui.text('Failed to upload.');
+						uploadNextFile();
+					}
+				});
+			};
+			uploadNextFile();
+		},
+
+		/**
+		 * Remove the currently selected items from the library
+		 */
+		'deleteSelected': function() {
+			var that = this;
+			var $selected = $('#mediatest > .ui-selected');
+			if ($selected.length) {
+				$selected.each(function(i, node) {
+					var id = $(node).data('collabkit-id');
+					var index = that.lib.library.items.indexOf(id);
+					if (index == -1) {
+						throw new Error("Trying to remove photo that doesn't exist: " + id);
+					}
+					that.lib.library.items.splice(index, 1);
+					$(node).text('Removing...');
+				});
+				this.store.updateObjectRef('collabkit-library', this.lib, function(result, err) {
+					if (err) {
+						alert(err);
+					} else {
+						$selected.remove();
+					}
+				});
+			}
+		},
+
+		// Check the current library state and make sure it's consistent with
+		// what we've got; if not we'll refresh the view.
+		'updateLibrary': function(commitInfo) {
+			if (this.library && this.library.id == commitInfo.id) {
+				// We're good!
+			} else {
+				var oldItems = this.library.data && this.library.data.library.items && this.library.data.library.items.join(',');
+				var newItems = commitInfo.data.library.items.join(',');
+				if (oldItems == newItems) {
+					// We've already updated to this data; update metadata only.
+					this.library = commitInfo;
+					this.lib = this.library.data;
+					this.showMeta();
+				} else {
+					// Someone else changed us or we didn't touch the display;
+					// refresh it.
+					this.showLibrary(commitInfo);
+				}
+			}
+		},
 		'showLibrary': function(commitInfo) {
 			var data = commitInfo.data;
 			if (data.type != 'application/x-collabkit-library') {
@@ -333,15 +501,19 @@ Class( 'Gallery', {
 			this.library = commitInfo;
 			this.lib = this.library.data;
 	
-			$('#mediatest').empty();
-			$('#mediastate').text('Version: ' + this.library.id + ' (parents: ' + this.library.parents.join('') + ')');
+			this.showMeta();
+
 			var that = this;
+			$('#mediatest').empty();
 			$.each(this.lib.library.items, function(i, id) {
 				var $thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
 				that.showThumb($thumb, id);
 			});
 			this.restoreSelection();
 			this.updateToolbar();
+		},
+		'showMeta': function() {
+			$('#mediastate').text('Version: ' + this.library.id + ' (parents: ' + this.library.parents.join('') + ')');
 		}
 	}
 } );
@@ -353,7 +525,7 @@ var gallery = new Gallery();
  */
 var session = new Faye.Client('/:session/');
 session.subscribe('/commits', function(message) {
-	gallery.showLibrary(message);
+	gallery.updateLibrary(message);
 });
 
 $.get('/:data/collabkit-library', function(data, xhr) {
