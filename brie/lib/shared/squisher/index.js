@@ -25,7 +25,7 @@ function Squisher( options ) {
 		this.sizes = options.sizes;
 	} else {
 		this.sizes = {
-			thumb: [128, 128],
+			thumb: [512, 128], // Up to 4x width of height
 			medium: [640, 480],
 			large: [1280, 960]
 		}
