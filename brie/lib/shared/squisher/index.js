@@ -3,7 +3,7 @@ var util = require('util'),
 	events = require( 'events' ),
 
 	// npm modules
-	gd = require('gd/gd'),
+	gd = require('node-gd'),
 
 	// other shared modules
 	grout = require('../grout');
