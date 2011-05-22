@@ -8,7 +8,8 @@ Required npm modules:
 * faye
 * argsparser
 * node-static
-* gd
+* node-gd
+** which requires libgd, to install: apt-get install libgd2-xpm-dev
 
 To start the embedded web server:
 
