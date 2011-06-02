@@ -194,17 +194,23 @@ Class( 'Gallery', {
 				.end()
 			.find('.toolbar-tool-delete')
 				.click(function() {
-					that.deleteSelected();
+					if ( $(this).is( ':not([disabled])' ) ) {
+						that.deleteSelected();
+					}
 				})
 				.end()
 			.find('.toolbar-tool-moveup')
 				.click(function() {
-					that.doMovePhotos(-1);
+					if ( $(this).is( ':not([disabled])' ) ) {
+						that.doMovePhotos(-1);
+					}
 				})
 				.end()
 			.find('.toolbar-tool-movedown')
 				.click(function() {
-					that.doMovePhotos(1);
+					if ( $(this).is( ':not([disabled])' ) ) {
+						that.doMovePhotos(1);
+					}
 				})
 				.end();
 
