@@ -93,14 +93,14 @@ Class( 'Gallery', {
 		'lib': {},
 		'store': null,
 		'selection': [],
-		'$toolbar': '.library-toolbar:first'
+		'$toolbar': '.toolbar:first'
 	},
 	'can': {
 		'initialize': function() {
 			var that = this;
 			this.store = new Store();
 			this.$toolbar = $( this.$toolbar )
-				.find('.slideshow').click(function() {
+				.find('.toolbar-tool-slideshow').click(function() {
 					var photos = that.lib.library.items.slice();
 					var $slideshow = $('<div id="slideshow">' +
 										'<div class="area"></div>' +
@@ -192,17 +192,17 @@ Class( 'Gallery', {
 					update();
 				})
 				.end()
-			.find('.delete')
+			.find('.toolbar-tool-delete')
 				.click(function() {
 					that.deleteSelected();
 				})
 				.end()
-			.find('.moveup')
+			.find('.toolbar-tool-moveup')
 				.click(function() {
 					that.doMovePhotos(-1);
 				})
 				.end()
-			.find('.movedown')
+			.find('.toolbar-tool-movedown')
 				.click(function() {
 					that.doMovePhotos(1);
 				})
@@ -342,7 +342,7 @@ Class( 'Gallery', {
 		},
 		'updateToolbar': function() {
 			// These buttons need something selected to operate on.
-			var $operators = this.$toolbar.find('.delete, .moveup, .movedown');
+			var $operators = this.$toolbar.find('.toolbar-tool-delete, .toolbar-tool-moveup, .toolbar-tool-movedown');
 			var $selected = $('#mediatest > .ui-selected');
 			if ($selected.length > 0) {
 				$operators.removeAttr('disabled');
@@ -352,10 +352,10 @@ Class( 'Gallery', {
 			var first = $('#mediatest > div:first'),
 			    last = $('#mediatest > div:last');
 			if (first.hasClass('ui-selected')) {
-				this.$toolbar.find('.moveup').attr('disabled', 'disabled');
+				this.$toolbar.find('.toolbar-tool-moveup').attr('disabled', 'disabled');
 			}
 			if (last.hasClass('ui-selected')) {
-				this.$toolbar.find('.movedown').attr('disabled', 'disabled');
+				this.$toolbar.find('.toolbar-tool-movedown').attr('disabled', 'disabled');
 			}
 		},
 		'doMovePhotos': function(incr) {

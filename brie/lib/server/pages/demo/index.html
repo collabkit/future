@@ -32,14 +32,16 @@
 		</div>
 		<div id="app-nav">
 			<div id="app-modes">
-				<div class="library-toolbar">
-					<label>Import photo(s): <input type="file" id="media-chooser" multiple></label>
-					|
-					<button class="slideshow">Slideshow</button>
-					|
-					<button class="moveup">Move up</button>
-					<button class="movedown">Move down</button>
-					<button class="delete">Delete</button>
+				<div class="toolbar">
+					<div class="toolbar-group">
+						<label class="toolbar-tool toolbar-tool-import">Import<input type="file" id="media-chooser" multiple></label>
+						<div class="toolbar-tool toolbar-tool-slideshow">Slideshow</div>
+					</div>
+					<div class="toolbar-group">
+						<div class="toolbar-tool toolbar-tool-moveup">Move up</div>
+						<div class="toolbar-tool toolbar-tool-movedown">Move down</div>
+						<div class="toolbar-tool toolbar-tool-delete">Delete</div>
+					</div>
 				</div>
 			</div>
 			<div id="app-views"></div>
@@ -55,10 +57,6 @@
 			<div id="mediatest" tabindex="1000"></div>
 			<div id="mediainfo">
 				<div id="mediastate"></div>
-				<div>
-					Changes you make will be mirrored immediately to other people with the same page
-					open, and vice versa. Have fun!
-				</div>
 			</div>
 		</div>
 		<script src="/:resource/jquery"></script>
