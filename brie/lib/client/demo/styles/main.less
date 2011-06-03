@@ -10,7 +10,8 @@
 .photo-entry {
 	float: left;
 }
-.collabkit-photo {
+.collabkit-photo,
+.collabkit-photo-loading {
 	min-width: 50px;
 	height: 150px;
 	padding: 10px;
@@ -22,6 +23,13 @@
 	-webkit-box-shadow: 0px 3px 10px #dddddd;
 	-moz-box-shadow: 0px 3px 10px #dddddd;
 	box-shadow: 0px 3px 10px #dddddd;
+}
+.collabkit-photo-loading {
+	opacity: 0.25;
+	font-size: 0.8em;
+	background-image: url(images/loading.gif);
+	background-position: center center;
+	background-repeat: no-repeat;
 }
 .ui-sortable-helper {
 	cursor: move;

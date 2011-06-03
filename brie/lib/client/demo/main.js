@@ -425,26 +425,37 @@ Class( 'Gallery', {
 				var file = files[i];
 				i++;
 
-				var ui = $('<div class="photo-entry">Reading...</div>');
-				$('#mediatest').append(ui);
+				var $entry = $('<div class="photo-entry"></div>');
+				var $msg = $('<div class="collabkit-photo-loading"></div>');
+				$('#mediatest').append($entry.append($msg));
 
-				ui.text('Uploading...');
+				//$msg.text('Uploading...');
 				that.store.createPhoto(file, function(result, err) {
 					if (result) {
 						var photoId = result.id;
-						ui.text('Updating library...');
+						//$msg.text('Updating library...');
 						that.lib.library.items.push(photoId);
 						that.store.updateObjectRef('collabkit-library', that.lib, function(result, err) {
 							if (result) {
-								ui.empty()
-								that.showThumb(ui, photoId);
+								$entry.empty()
+								that.showThumb($entry, photoId);
 							} else {
-								ui.text('Failed to update library.');
+								$msg.text('Failed to update library.');
+								setTimeout( function() {
+									$entry.fadeOut( function() {
+										$entry.remove();
+									} );
+								}, 3000 );
 							}
 							uploadNextFile();
 						});
 					} else {
-						ui.text('Failed to upload.');
+						$msg.text('Failed to upload.');
+						setTimeout( function() {
+							$entry.fadeOut( function() {
+								$entry.remove();
+							} );
+						}, 3000 );
 						uploadNextFile();
 					}
 				});
@@ -466,7 +477,8 @@ Class( 'Gallery', {
 						throw new Error("Trying to remove photo that doesn't exist: " + id);
 					}
 					that.lib.library.items.splice(index, 1);
-					$(node).text('Removing...');
+					// Hide smoothly
+					$(node).animate( { 'opacity': 0, 'width': 0 }, 'fast' );
 				});
 				this.store.updateObjectRef('collabkit-library', this.lib, function(result, err) {
 					if (err) {
@@ -509,12 +521,20 @@ Class( 'Gallery', {
 	
 			this.showMeta();
 
-			var that = this;
-			$('#mediatest').empty();
-			$.each(this.lib.library.items, function(i, id) {
-				var $thumb = $('<div class="photo-entry"></div>').appendTo('#mediatest');
-				that.showThumb($thumb, id);
-			});
+			// Rearrange without having to re-created already existing thumbs
+			var $mediatest = $('#mediatest');
+			var $newThumbs = $('<div></div>');
+			for ( var i = 0; i < this.lib.library.items.length; i++ ) {
+				var id = this.lib.library.items[i];
+				var $existingThumb = $mediatest.find( '.photo-entry > .collabkit-object-' + id );
+				if ( $existingThumb.length ) {
+					$newThumbs.append( $existingThumb.parent().detach() );
+				} else {
+					var $newThumb = $('<div class="photo-entry"></div>').appendTo( $newThumbs );
+					this.showThumb( $newThumb, id );
+				}
+			}
+			$mediatest.empty().append( $newThumbs.children() );
 			this.restoreSelection();
 			this.updateToolbar();
 		},
