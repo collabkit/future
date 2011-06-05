@@ -36,7 +36,8 @@ Class( 'Store', {
 				var xhr = new XMLHttpRequest();
 				xhr.open('PUT', url);
 				xhr.setRequestHeader('Content-Type', blob.type);
-				xhr.setRequestHeader('Content-Length', blob.length);
+				// Chrome seems to think this is "unsafe"
+				//xhr.setRequestHeader('Content-Length', blob.length);
 				xhr.onreadystatechange = function(e) {
 					if (xhr.readyState == 4) {
 						var err;
