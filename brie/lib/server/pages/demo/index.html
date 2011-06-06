@@ -5,6 +5,7 @@
 		<meta charset="utf-8">
 		<title>CollabKit Demo</title>
 		<link rel="stylesheet" href="/:resource/ui/styles/app.less">
+		<link rel="stylesheet" href="/:resource/ui/styles/ux.less">
 		<link rel="stylesheet" href="/:resource/demo/styles/main.less">
 		<link rel="stylesheet" href="/:resource/jquery.ui/jquery-ui-1.8.12.custom.css">
 	</head>
@@ -32,17 +33,7 @@
 		</div>
 		<div id="app-nav">
 			<div id="app-modes">
-				<div class="toolbar">
-					<div class="toolbar-group">
-						<label class="toolbar-tool toolbar-tool-import">Import<input type="file" id="media-chooser" multiple></label>
-						<div class="toolbar-tool toolbar-tool-slideshow">Slideshow</div>
-					</div>
-					<div class="toolbar-group">
-						<div class="toolbar-tool toolbar-tool-moveup">Move up</div>
-						<div class="toolbar-tool toolbar-tool-movedown">Move down</div>
-						<div class="toolbar-tool toolbar-tool-delete">Delete</div>
-					</div>
-				</div>
+				<div id="app-toolbar"></div>
 			</div>
 			<div id="app-views"></div>
 		</div>
@@ -63,6 +54,7 @@
 		<script src="/:resource/jquery.ui"></script>
 		<script src="/:resource/faye"></script>
 		<script src="/:resource/grout"></script>
+		<script src="/:resource/ui"></script>
 		<script src="/:resource/demo"></script>
 	</body>
 </html>

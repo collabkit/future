@@ -52,6 +52,11 @@ div, ul, li {
 	top: 3em;
 }
 
+#app-toolbar {
+	padding: 0.5em;
+	font-size: 0.8em;
+}
+
 #app-dock {
 	bottom: 0;
 }
@@ -162,58 +167,4 @@ div, ul, li {
 .app-icon-list-item {
 	display: inline-block;
 	margin-right: 0.5em;
-}
-
-.toolbar {
-	padding: 0.5em;
-	font-size: 0.8em;
-	.toolbar-group {
-		padding: 0.75em;
-		display: inline-block;
-		border: solid 1px #d0e0d0;
-		.border-radius(1em);
-		.inner-shadow(0.125em, 0.125em, 1em, rgba(0,0,0,0.1));
-		margin-left: 0.125em;
-		margin-right: 0.25em;
-	}
-	.toolbar-tool {
-		display: inline-block;
-		height: 1.25em;
-		line-height: 1.25em;
-		margin-left: 0.25em;
-		margin-right: 0.25em;
-		cursor: pointer;
-		background-position: left center;
-		background-repeat: no-repeat;
-		padding-left: 1.75em;
-	}
-	.toolbar-tool:hover {
-		opacity: 0.75;
-	}
-	.toolbar-tool[disabled=disabled] {
-		opacity: 0.125;
-		cursor: default;
-	}
-	.toolbar-tool-moveup {
-		background-image: url(../graphics/icons/up.svg);
-	}
-	.toolbar-tool-delete {
-		background-image: url(../graphics/icons/delete.svg);
-	}
-	.toolbar-tool-movedown {
-		background-image: url(../graphics/icons/down.svg);
-	}
-	.toolbar-tool-slideshow {
-		background-image: url(../graphics/icons/block.svg);
-	}
-	.toolbar-tool-import {
-		background-image: url(../graphics/icons/folder.svg);
-		overflow: hidden;
-	}
-	.toolbar-tool-import input {
-		position: absolute;
-		top: -1000px;
-		width: 0;
-		height: 0;
-	}
 }

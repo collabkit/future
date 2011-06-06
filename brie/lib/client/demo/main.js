@@ -88,146 +88,169 @@ Class( 'Store', {
 	}
 } );
 
+function runSlideshow( items ) {
+	var photos = items.slice();
+	var $slideshow = $('<div id="slideshow">' +
+						'<div class="area"></div>' +
+						'<div class="controls">' +
+							'<button class="close">Close</button>' +
+							'</div>' + 
+						'</div>');
+	/**
+	 * Load up the photo into an <img> and call us back when done.
+	 */
+	var buildPhoto = function(id, callback) {
+		var $photo = $('<img class="slideshow-photo"/>').attr('src', '/:media/' + id + '/photo/large');
+		if (callback) {
+			$photo.bind('load', function() {
+				callback(this);
+			});
+		}
+		return $photo[0];
+	};
+
+	var interval = 10;
+	var index = 0;
+
+	var update = function() {
+		buildPhoto(photos[index], function(img) {
+			$slideshow.find('.area').empty().append(img);
+		});
+	};
+	var advance = function(n) {
+		index = (index + n);
+		if (index < 0) {
+			index += photos.length;
+		}
+		if (index >= photos.length) {
+			index = index % photos.length;
+		}
+		update();
+	};
+
+	var timer = window.setInterval(advance, interval * 1000);
+	var manualAdvance = function(n) {
+		// Reset the timer...
+		window.clearInterval(timer);
+		timer = window.setInterval(advance, interval * 1000);
+
+		advance(n || 1);
+	};
+	var manualRewind = function() {
+		manualAdvance(-1);
+	}
+
+	$slideshow.click(function() {
+		manualAdvance();
+	});
+
+	var escapeCheck, closeOut;
+	escapeCheck = function(event) {
+		var map = {
+			27: closeOut, // esc
+
+			13: manualAdvance, // enter
+			32: manualAdvance, // space
+			34: manualAdvance, // pgdn
+			39: manualAdvance, // right
+			40: manualAdvance, // down
+
+			8: manualRewind,  // backspace
+			33: manualRewind, // pgup
+			37: manualRewind, // left
+			38: manualRewind  // up
+		}
+		if (event.keyCode in map) {
+			map[event.keyCode]();
+			event.preventDefault();
+		}
+	};
+	closeOut = function() {
+		// Clean up & close the slideshow.
+		window.clearInterval(timer);
+		$(document).unbind('keydown', escapeCheck);
+		$slideshow.remove();
+	};
+	$slideshow.find('.close').click(function() {
+		closeOut();
+	})
+	// Bind global key checkers for simplicity :D
+	$(document).bind('keydown', escapeCheck);
+	$slideshow.appendTo('body');
+	update();
+}
+
+
 Class( 'Gallery', {
 	'has': {
 		'library': {},
 		'lib': {},
 		'store': null,
 		'selection': [],
-		'$toolbar': '.toolbar:first'
+		'$toolbar': '#app-toolbar'
 	},
 	'can': {
 		'initialize': function() {
 			var that = this;
 			this.store = new Store();
-			this.$toolbar = $( this.$toolbar )
-				.find('.toolbar-tool-slideshow').click(function() {
-					var photos = that.lib.library.items.slice();
-					var $slideshow = $('<div id="slideshow">' +
-										'<div class="area"></div>' +
-										'<div class="controls">' +
-											'<button class="close">Close</button>' +
-											'</div>' + 
-										'</div>');
-					/**
-					 * Load up the photo into an <img> and call us back when done.
-					 */
-					var buildPhoto = function(id, callback) {
-						var $photo = $('<img class="slideshow-photo"/>').attr('src', '/:media/' + id + '/photo/large');
-						if (callback) {
-							$photo.bind('load', function() {
-								callback(this);
-							});
-						}
-						return $photo[0];
-					};
 			
-					var interval = 10;
-					var index = 0;
-
-					var update = function() {
-						buildPhoto(photos[index], function(img) {
-							$slideshow.find('.area').empty().append(img);
-						});
-					};
-					var advance = function(n) {
-						index = (index + n);
-						if (index < 0) {
-							index += photos.length;
-						}
-						if (index >= photos.length) {
-							index = index % photos.length;
-						}
-						update();
-					};
-			
-					var timer = window.setInterval(advance, interval * 1000);
-					var manualAdvance = function(n) {
-						// Reset the timer...
-						window.clearInterval(timer);
-						timer = window.setInterval(advance, interval * 1000);
-
-						advance(n || 1);
-					};
-					var manualRewind = function() {
-						manualAdvance(-1);
-					}
-			
-					$slideshow.click(function() {
-						manualAdvance();
-					});
-
-					var escapeCheck, closeOut;
-					escapeCheck = function(event) {
-						var map = {
-							27: closeOut, // esc
-
-							13: manualAdvance, // enter
-							32: manualAdvance, // space
-							34: manualAdvance, // pgdn
-							39: manualAdvance, // right
-							40: manualAdvance, // down
-
-							8: manualRewind,  // backspace
-							33: manualRewind, // pgup
-							37: manualRewind, // left
-							38: manualRewind  // up
-						}
-						if (event.keyCode in map) {
-							map[event.keyCode]();
-							event.preventDefault();
-						}
-					};
-					closeOut = function() {
-						// Clean up & close the slideshow.
-						window.clearInterval(timer);
-						$(document).unbind('keydown', escapeCheck);
-						$slideshow.remove();
-					};
-					$slideshow.find('.close').click(function() {
-						closeOut();
+			this.$toolbar = $(this.$toolbar).ux('toolbar', {
+				'contents': [
+					$.ux.create( 'toolbarGroup', {
+						'contents': [
+							$.ux.create( 'toolbarUploadButton', 'app-toolbar-import', {
+								'label': 'Import',
+								'icon': 'folder',
+								'multiple': true
+							})
+							.bind('ux.execute', function( event, data ) {
+								// This version requires FileAPI: Firefox 3.5+ and Chrome ok
+								if (data.input.files && data.input.files.length > 0) {
+									that.uploadFiles(data.input.files, function() {
+										// Clear it out...
+										$(data.input).val('');
+									});
+								}
+							}),
+							$.ux.create('toolbarButton', 'app-toolbar-slideshow', {
+								'label': 'Slideshow',
+								'icon': 'block',
+							})
+							.bind('ux.execute', function() {
+								runSlideshow( that.lib.library.items );
+							})
+						]
+					} ),
+					$.ux.create('toolbarGroup', {
+						'contents': [
+							$.ux.create('toolbarButton', 'app-toolbar-moveup', {
+								'label': 'Move up',
+								'icon': 'up',
+							})
+							.bind('ux.execute', function() {
+								// Move selection up
+								that.doMovePhotos(-1);
+							}),
+							$.ux.create('toolbarButton', 'app-toolbar-movedown', {
+								'label': 'Move down',
+								'icon': 'down',
+							})
+							.bind('ux.execute', function() {
+								// Move selection down
+								that.doMovePhotos(1);
+							}),
+							$.ux.create('toolbarButton', 'app-toolbar-delete', {
+								'label': 'Delete',
+								'icon': 'delete',
+							})
+							.bind('ux.execute', function() {
+								// Delete selection
+								that.deleteSelected();
+							})
+						]
 					})
-					// Bind global key checkers for simplicity :D
-					$(document).bind('keydown', escapeCheck);
-					$slideshow.appendTo('body');
-					update();
-				})
-				.end()
-			.find('.toolbar-tool-delete')
-				.click(function() {
-					if ( $(this).is( ':not([disabled])' ) ) {
-						that.deleteSelected();
-					}
-				})
-				.end()
-			.find('.toolbar-tool-moveup')
-				.click(function() {
-					if ( $(this).is( ':not([disabled])' ) ) {
-						that.doMovePhotos(-1);
-					}
-				})
-				.end()
-			.find('.toolbar-tool-movedown')
-				.click(function() {
-					if ( $(this).is( ':not([disabled])' ) ) {
-						that.doMovePhotos(1);
-					}
-				})
-				.end();
-
-			/**
-			 * Set up file chooser upload
-			 */
-			$('#media-chooser').change(function(event) {
-				// This version requires FileAPI: Firefox 3.5+ and Chrome ok
-				if (this.files && this.files.length > 0) {
-					that.uploadFiles(this.files, function() {
-						// Clear it out...
-						$('#media-chooser').val('');
-					});
-				}
+				]
 			});
-
 			/**
 			 * Set up drag-n-drop upload
 			 */
@@ -349,20 +372,20 @@ Class( 'Gallery', {
 		},
 		'updateToolbar': function() {
 			// These buttons need something selected to operate on.
-			var $operators = this.$toolbar.find('.toolbar-tool-delete, .toolbar-tool-moveup, .toolbar-tool-movedown');
+			var $operators = $('#app-toolbar-delete, #app-toolbar-moveup, #app-toolbar-movedown');
 			var $selected = $('#mediatest > .ui-selected');
 			if ($selected.length > 0) {
-				$operators.removeAttr('disabled');
+				$operators.ux('toolbarButton', {'disabled':false});
 			} else {
-				$operators.attr('disabled', 'disabled');
+				$operators.ux('toolbarButton', {'disabled':true});
 			}
-			var first = $('#mediatest > div:first'),
-			    last = $('#mediatest > div:last');
+			var first = $('#mediatest > div:first');
+			var last = $('#mediatest > div:last');
 			if (first.hasClass('ui-selected')) {
-				this.$toolbar.find('.toolbar-tool-moveup').attr('disabled', 'disabled');
+				$('#app-toolbar-moveup').ux('toolbarButton', {'disabled':true});
 			}
 			if (last.hasClass('ui-selected')) {
-				this.$toolbar.find('.toolbar-tool-movedown').attr('disabled', 'disabled');
+				$('#app-toolbar-movedown').ux('toolbarButton', {'disabled':true});
 			}
 		},
 		'doMovePhotos': function(incr) {

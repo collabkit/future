@@ -1,0 +1,7 @@
+{
+	"name" : "collabkit-ux",
+	"description" : "User experience.",
+	"author" : "Trevor Parscal <trevorparscal@gmail.com>",
+	"main" : "./main.js"
+}
+

@@ -1,0 +1,70 @@
+// Imports
+
+@import "common.less";
+
+// Variables
+
+@baseColor: #4abaeb;
+
+// Rules
+
+.ux {
+	&-toolbarGroup {
+		display: inline-block;
+		border: solid 1px #d0e0d0;
+		.border-radius(1em);
+		.inner-shadow(0.125em, 0.125em, 1em, rgba(0,0,0,0.1));
+		margin-left: 0.125em;
+		margin-right: 0.25em;
+	}
+	&-toolbarButton {
+		display: inline-block;
+		cursor: pointer;
+		background-position: left center;
+		background-repeat: no-repeat;
+		margin-left: 0.25em;
+		margin-right: 0.25em;
+		&:first-child {
+			margin-left: 1em;
+		}
+		&:last-child {
+			margin-right: 0.5em;
+		}
+		&:hover {
+			opacity: 0.75;
+		}
+		&[ux-disabled=disabled] {
+			opacity: 0.125;
+			cursor: default;
+		}
+		&[ux-icon=up] {
+			background-image: url(../graphics/icons/up.svg);
+		}
+		&[ux-icon=delete] {
+			background-image: url(../graphics/icons/delete.svg);
+		}
+		&[ux-icon=down] {
+			background-image: url(../graphics/icons/down.svg);
+		}
+		&[ux-icon=block] {
+			background-image: url(../graphics/icons/block.svg);
+		}
+		&[ux-icon=folder] {
+			background-image: url(../graphics/icons/folder.svg);
+			overflow: hidden;
+		}
+		&-label {
+			display: block;
+			cursor: pointer;
+			line-height: 1.25em;
+			padding: 0.75em;
+			padding-left: 1.75em;
+		}
+		input[type=file] {
+			position: absolute;
+			top: -1000px;
+			width: 0;
+			height: 0;
+		}
+	}
+}
