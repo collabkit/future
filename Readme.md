@@ -21,8 +21,13 @@ Brie is the first run at various portions of CollabKit's service and app layers.
 
 ### Dependencies
 
+Use apt-get to install:
+* libgd2-xpm-dev (required for node-gd)
+
+Use npm to install:
 * argsparser
 * node-static
 * faye
 * less
 * uglify-js
+* node-gd
