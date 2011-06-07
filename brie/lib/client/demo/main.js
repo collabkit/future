@@ -196,7 +196,9 @@ Class( 'Gallery', {
 			
 			this.$toolbar = $(this.$toolbar).ux('toolbar', {
 				'contents': [
-					$.ux.create( 'toolbarGroup', {
+					$.ux.create( 'toolbarGroup', 'app-toolbar-gallery', {
+						'label': 'Gallery',
+						'icon': 'gallery',
 						'contents': [
 							$.ux.create( 'toolbarUploadButton', 'app-toolbar-import', {
 								'label': 'Import',
@@ -214,14 +216,16 @@ Class( 'Gallery', {
 							}),
 							$.ux.create('toolbarButton', 'app-toolbar-slideshow', {
 								'label': 'Slideshow',
-								'icon': 'block',
+								'icon': 'slideshow',
 							})
 							.bind('ux.execute', function() {
 								runSlideshow( that.lib.library.items );
 							})
 						]
 					} ),
-					$.ux.create('toolbarGroup', {
+					$.ux.create('toolbarGroup', 'app-toolbar-picture', {
+						'label': 'Picture',
+						'icon': 'block',
 						'contents': [
 							$.ux.create('toolbarButton', 'app-toolbar-moveup', {
 								'label': 'Move up',

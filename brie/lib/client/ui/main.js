@@ -96,7 +96,6 @@ $.ux.elements.toolbarGroup = {
 				case 'label':
 					return $this.find('.ux-toolbarGroup-label').text();
 				case 'icon':
-				case 'enabled':
 					return $this.attr('ux-' + key);
 				case 'contents':
 					return $this.find('.ux-toolbarGroup-contents');
@@ -108,7 +107,6 @@ $.ux.elements.toolbarGroup = {
 					$this.find('.ux-toolbarGroup-label').text(val);
 					break;
 				case 'icon':
-				case 'enabled':
 					$this.attr('ux-' + key, val);
 					break;
 				case 'contents':
@@ -158,7 +156,11 @@ $.ux.elements.toolbarButton = {
 					$this.attr('ux-' + key, val);
 					break;
 				case 'disabled':
-					$this.attr('ux-' + key, val ? 'disabled' : null);
+					if ( val ) {
+						$this.attr('ux-' + key, 'disabled');
+					} else {
+						$this.removeAttr('ux-' + key);
+					}
 					break;
 			}
 		}
@@ -206,7 +208,11 @@ $.ux.elements.toolbarUploadButton = {
 					$this.attr('ux-' + key, val);
 					break;
 				case 'disabled':
-					$this.attr('ux-' + key, val ? 'disabled' : null);
+					if ( val ) {
+						$this.attr('ux-' + key, 'disabled');
+					} else {
+						$this.removeAttr('ux-' + key);
+					}
 					break;
 				case 'multiple':
 					if ( val ) {

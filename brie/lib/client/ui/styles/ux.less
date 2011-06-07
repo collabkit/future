@@ -10,22 +10,58 @@
 
 .ux {
 	&-toolbarGroup {
-		display: inline-block;
-		border: solid 1px #d0e0d0;
-		.border-radius(1em);
-		.inner-shadow(0.125em, 0.125em, 1em, rgba(0,0,0,0.1));
+		float: left;
 		margin-left: 0.125em;
-		margin-right: 0.25em;
+		margin-right: 0.5em;
+		height: 2.75em;
+		&[ux-icon] .ux-toolbarGroup-label {
+			background-size: auto, 110% 110%;
+			background-position: 0.75em 47.5%, top left;
+			background-repeat: no-repeat;
+			padding-left: 2.5em;
+		}
+		&[ux-icon=block] .ux-toolbarGroup-label {
+			background-image: url(../graphics/icons/block.svg), url(../graphics/themes/green/button-up.svg);
+		}
+		&[ux-icon=gallery] .ux-toolbarGroup-label {
+			background-image: url(../graphics/icons/gallery.svg), url(../graphics/themes/green/button-up.svg);
+		}
+	}
+	&-toolbarGroup-label {
+		.border-box();
+		float: left;
+		height: 100%;
+		border: solid 1px #caf1bc;
+		border-right: none;
+		background-image: url(../graphics/themes/green/button-up.svg);
+		background-size: 100% 100%;
+		.border-radius(1em);
+		cursor: default;
+		line-height: 1.25em;
+		padding: 0.75em;
+		padding-left: 0.75em;
+		padding-right: 2.25em;
+		margin-right: -1.5em;
+	}
+	&-toolbarGroup-contents {
+		.border-box();
+		float: left;
+		height: 100%;
+		border: solid 1px #caf1bc;
+		background-image: url(../graphics/themes/green/group.svg);
+		background-size: 100% 100%;
+		.border-radius(1em);
 	}
 	&-toolbarButton {
-		display: inline-block;
+		.border-box();
+		float: left;
+		height: 100%;
 		cursor: pointer;
-		background-position: left center;
+		background-position: 0.75em 47.5%;
 		background-repeat: no-repeat;
-		margin-left: 0.25em;
-		margin-right: 0.25em;
+		overflow: hidden;
 		&:first-child {
-			margin-left: 1em;
+			margin-left: 0.5em;
 		}
 		&:last-child {
 			margin-right: 0.5em;
@@ -35,7 +71,12 @@
 		}
 		&[ux-disabled=disabled] {
 			opacity: 0.125;
+		}
+		&[ux-disabled=disabled] .ux-toolbarButton-label {
 			cursor: default;
+		}
+		&[ux-icon] .ux-toolbarButton-label {
+			padding-left: 2.5em;
 		}
 		&[ux-icon=up] {
 			background-image: url(../graphics/icons/up.svg);
@@ -46,19 +87,17 @@
 		&[ux-icon=down] {
 			background-image: url(../graphics/icons/down.svg);
 		}
-		&[ux-icon=block] {
-			background-image: url(../graphics/icons/block.svg);
+		&[ux-icon=slideshow] {
+			background-image: url(../graphics/icons/slideshow.svg);
 		}
 		&[ux-icon=folder] {
 			background-image: url(../graphics/icons/folder.svg);
-			overflow: hidden;
 		}
 		&-label {
 			display: block;
 			cursor: pointer;
 			line-height: 1.25em;
 			padding: 0.75em;
-			padding-left: 1.75em;
 		}
 		input[type=file] {
 			position: absolute;
