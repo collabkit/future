@@ -258,15 +258,15 @@ Class( 'Gallery', {
 			/**
 			 * Set up drag-n-drop upload
 			 */
-			$('#mediatest').bind('dragenter', function(event) {
+			$('#app-gallery').bind('dragenter', function(event) {
 				event.preventDefault();
 				return false; // for IE
 			}).bind('dragover', function(event) {
-				$('#mediatest').addClass('dragover');
+				$('#app-gallery').addClass('dragover');
 				event.preventDefault();
 				return false; // for IE
 			}).bind('drop', function(event) {
-				$('#mediatest').removeClass('dragover');
+				$('#app-gallery').removeClass('dragover');
 			    var dataTransfer = event.originalEvent.dataTransfer;
 				if (dataTransfer && typeof dataTransfer.files == 'object') {
 					if (dataTransfer.files.length) {
@@ -282,15 +282,15 @@ Class( 'Gallery', {
 				event.preventDefault();
 				return false;
 			}).bind('dragleave', function(event) {
-				$('#mediatest').removeClass('dragover');
+				$('#app-gallery').removeClass('dragover');
 			});
 
 			/**
 			 * Set up selection interface
 			 */
-			$('#mediatest')
+			$('#app-gallery')
 				.sortable({
-					'containment': '#mediatest',
+					'containment': '#app-gallery',
 					'tolerance': 'intersect',
 					'distance': 0,
 					'delay': 0,
@@ -298,7 +298,7 @@ Class( 'Gallery', {
 						// 'change' triggers during UI operations; 'update' only at end.
 						// Figure out which photo(s) were moved and update the server
 						var items = []
-						$('#mediatest > .photo-entry').each(function() {
+						$('#app-gallery > .photo-entry').each(function() {
 							items.push($(this).data('collabkit-id'));
 						});
 
@@ -338,11 +338,11 @@ Class( 'Gallery', {
 			/**
 			 * Keyboard
 			 */
-			$('#mediatest').mousedown(function() {
+			$('#app-gallery').mousedown(function() {
 				// Need to set focus to get key events
 				$(this).focus();
 			});
-			$('#mediatest').bind('keydown', function(event) {
+			$('#app-gallery').bind('keydown', function(event) {
 				if (event.keyCode == 8 || event.keyCode == 46) {
 					// backspace/delete
 					that.deleteSelected();
@@ -353,13 +353,13 @@ Class( 'Gallery', {
 		'saveSelection': function() {
 			this.selection = [];
 			var that = this;
-			$('#mediatest > .ui-selected').each(function(i, node) {
+			$('#app-gallery > .ui-selected').each(function(i, node) {
 				that.selection.push( $(node).data('collabkit-id') );
 			});
 		},
 		'restoreSelection': function() {
 			var that = this;
-			$('#mediatest > .photo-entry').each(function(i, node) {
+			$('#app-gallery > .photo-entry').each(function(i, node) {
 				var id = $(node).data('collabkit-id');
 				if ( $.inArray( id, that.selection ) >= 0 ) {
 					$(node).addClass( 'ui-selected' );
@@ -377,14 +377,14 @@ Class( 'Gallery', {
 		'updateToolbar': function() {
 			// These buttons need something selected to operate on.
 			var $operators = $('#app-toolbar-delete, #app-toolbar-moveup, #app-toolbar-movedown');
-			var $selected = $('#mediatest > .ui-selected');
+			var $selected = $('#app-gallery > .ui-selected');
 			if ($selected.length > 0) {
 				$operators.ux('toolbarButton', {'disabled':false});
 			} else {
 				$operators.ux('toolbarButton', {'disabled':true});
 			}
-			var first = $('#mediatest > div:first');
-			var last = $('#mediatest > div:last');
+			var first = $('#app-gallery > div:first');
+			var last = $('#app-gallery > div:last');
 			if (first.hasClass('ui-selected')) {
 				$('#app-toolbar-moveup').ux('toolbarButton', {'disabled':true});
 			}
@@ -393,7 +393,7 @@ Class( 'Gallery', {
 			}
 		},
 		'doMovePhotos': function(incr) {
-			var $selected = $('#mediatest > .ui-selected');
+			var $selected = $('#app-gallery > .ui-selected');
 			var items = this.lib.library.items;
 			var targetIndices = [];
 			$selected.each(function(i, node) {
@@ -455,7 +455,7 @@ Class( 'Gallery', {
 
 				var $entry = $('<div class="photo-entry"></div>');
 				var $msg = $('<div class="collabkit-photo-loading"></div>');
-				$('#mediatest').append($entry.append($msg));
+				$('#app-gallery').append($entry.append($msg));
 
 				//$msg.text('Uploading...');
 				that.store.createPhoto(file, function(result, err) {
@@ -496,7 +496,7 @@ Class( 'Gallery', {
 		 */
 		'deleteSelected': function() {
 			var that = this;
-			var $selected = $('#mediatest > .ui-selected');
+			var $selected = $('#app-gallery > .ui-selected');
 			if ($selected.length) {
 				$selected.each(function(i, node) {
 					var id = $(node).data('collabkit-id');
@@ -550,7 +550,7 @@ Class( 'Gallery', {
 			this.showMeta();
 
 			// Rearrange without having to re-created already existing thumbs
-			var $mediatest = $('#mediatest');
+			var $mediatest = $('#app-gallery');
 			var $newThumbs = $('<div></div>');
 			for ( var i = 0; i < this.lib.library.items.length; i++ ) {
 				var id = this.lib.library.items[i];
@@ -567,7 +567,7 @@ Class( 'Gallery', {
 			this.updateToolbar();
 		},
 		'showMeta': function() {
-			$('#mediastate').text('Version: ' + this.library.id + ' (parents: ' + this.library.parents.join('') + ')');
+			$('#app-version').text('Version: ' + this.library.id + ' (parents: ' + this.library.parents.join('') + ')');
 		}
 	}
 } );
