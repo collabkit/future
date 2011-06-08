@@ -1,32 +1,38 @@
 /**
  * jQuery initialization and configuration interface
  */
-$.fn.ux = function( type, options ) {
+$.fn.ux = function() {
 	var $this = $(this);
-	if (!(type in $.ux.elements)) {
-		throw "Unkonwn UX element type error. " + type + " is not a valid element type.";
-	}
-	// Element types are stored in the "ux-type" attribute
-	var currentType = $this.attr('ux-type');
-	if (!currentType) {
-		// Auto-initialize
-		$.ux.elements[type].initialize($this, options);
-		$this.attr('ux-type', type);
-		// Proceed to configuration
-		currentType = type;
-	}
-	if (currentType === type) {
-		// Configure
-		if ($.isPlainObject(options)) {
-			for (var key in options) {
-				$.ux.elements[type].configure($this, key, options[key]);
-			}
-		} else if ($.type(options) === 'string') {
-			return $.ux.elements[type].configure($this, options);
+	var args = $.makeArray(arguments);
+	var type = $this.attr('ux-type');
+	if (!type && args.length) {
+		type = args[0];
+		if (!(type in $.ux.elements)) {
+			throw "Unkonwn UX element type error. " + type + " is not a valid element type.";
 		}
-	} else {
-		// Type mismatch error
-		throw "UX element type mismatch error. Can't convert " + currentType + " to " + type;
+		// Auto-initialize
+		if ( args.length >= 2 ) {
+			$.ux.elements[type].initialize($this, args[1]);
+		} else {
+			$.ux.elements[type].initialize($this);
+		}
+		$this.attr('ux-type', type);
+		args.shift();
+	}
+	if (args.length) {
+		// Configure
+		var config = args[0];
+		if ($.isPlainObject(config)) {
+			for (var key in config) {
+				$.ux.elements[type].configure($this, key, config[key]);
+			}
+		} else if ($.type(config) === 'string') {
+			if (args.length >= 2) {
+				$.ux.elements[type].configure($this, config, args[1]);
+			} else {
+				return $.ux.elements[type].configure($this, config);
+			}
+		}
 	}
 	return $this;
 };

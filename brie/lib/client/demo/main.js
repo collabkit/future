@@ -379,17 +379,15 @@ Class( 'Gallery', {
 			var $operators = $('#app-toolbar-delete, #app-toolbar-moveup, #app-toolbar-movedown');
 			var $selected = $('#app-gallery > .ui-selected');
 			if ($selected.length > 0) {
-				$operators.ux('toolbarButton', {'disabled':false});
+				$operators.ux('disabled', false);
 			} else {
-				$operators.ux('toolbarButton', {'disabled':true});
+				$operators.ux('disabled', true);
 			}
-			var first = $('#app-gallery > div:first');
-			var last = $('#app-gallery > div:last');
-			if (first.hasClass('ui-selected')) {
-				$('#app-toolbar-moveup').ux('toolbarButton', {'disabled':true});
+			if ($('#app-gallery > div:first').hasClass('ui-selected')) {
+				$('#app-toolbar-moveup').ux('disabled', true);
 			}
-			if (last.hasClass('ui-selected')) {
-				$('#app-toolbar-movedown').ux('toolbarButton', {'disabled':true});
+			if ($('#app-gallery > div:last').hasClass('ui-selected')) {
+				$('#app-toolbar-movedown').ux('disabled', true);
 			}
 		},
 		'doMovePhotos': function(incr) {
