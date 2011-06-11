@@ -326,6 +326,7 @@ Class( 'Gallery', {
 							.addClass( 'ui-selected' )
 							.siblings()
 								.removeClass( 'ui-selected' );
+						that.updateToolbar();
 					},
 					'stop': that.updateToolbar
 				})
@@ -382,10 +383,10 @@ Class( 'Gallery', {
 			} else {
 				$operators.ux('disabled', true);
 			}
-			if ($('#app-gallery > div:first').hasClass('ui-selected')) {
+			if ($('#app-gallery > div:not(.ui-sortable-placeholder):first').hasClass('ui-selected')) {
 				$('#app-toolbar-moveup').ux('disabled', true);
 			}
-			if ($('#app-gallery > div:last').hasClass('ui-selected')) {
+			if ($('#app-gallery > div:not(.ui-sortable-placeholder):last').hasClass('ui-selected')) {
 				$('#app-toolbar-movedown').ux('disabled', true);
 			}
 		},

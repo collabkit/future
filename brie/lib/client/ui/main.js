@@ -2,39 +2,43 @@
  * jQuery initialization and configuration interface
  */
 $.fn.ux = function() {
-	var $this = $(this);
-	var args = $.makeArray(arguments);
-	var type = $this.attr('ux-type');
-	if (!type && args.length) {
-		type = args[0];
-		if (!(type in $.ux.elements)) {
-			throw "Unkonwn UX element type error. " + type + " is not a valid element type.";
-		}
-		// Auto-initialize
-		if ( args.length >= 2 ) {
-			$.ux.elements[type].initialize($this, args[1]);
-		} else {
-			$.ux.elements[type].initialize($this);
-		}
-		$this.attr('ux-type', type);
-		args.shift();
-	}
-	if (args.length) {
-		// Configure
-		var config = args[0];
-		if ($.isPlainObject(config)) {
-			for (var key in config) {
-				$.ux.elements[type].configure($this, key, config[key]);
+	var args = $.makeArray(arguments),
+		result = $(this);
+	$(this).each( function() {
+		var $this = $(this),
+			type = $this.attr('ux-type');
+		if (!type && args.length) {
+			type = args[0];
+			if (!(type in $.ux.elements)) {
+				throw "Unkonwn UX element type error. " + type + " is not a valid element type.";
 			}
-		} else if ($.type(config) === 'string') {
-			if (args.length >= 2) {
-				$.ux.elements[type].configure($this, config, args[1]);
+			// Auto-initialize
+			if ( args.length >= 2 ) {
+				$.ux.elements[type].initialize($this, args[1]);
 			} else {
-				return $.ux.elements[type].configure($this, config);
+				$.ux.elements[type].initialize($this);
+			}
+			$this.attr('ux-type', type);
+			args.shift();
+		}
+		if (args.length) {
+			// Configure
+			var config = args[0];
+			if ($.isPlainObject(config)) {
+				for (var key in config) {
+					$.ux.elements[type].configure($this, key, config[key]);
+				}
+			} else if ($.type(config) === 'string') {
+				if (args.length >= 2) {
+					$.ux.elements[type].configure($this, config, args[1]);
+				} else {
+					result = $.ux.elements[type].configure($this, config);
+					return false;
+				}
 			}
 		}
-	}
-	return $this;
+	} );
+	return result;
 };
 
 /**
