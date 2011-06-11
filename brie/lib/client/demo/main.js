@@ -326,7 +326,6 @@ Class( 'Gallery', {
 							.addClass( 'ui-selected' )
 							.siblings()
 								.removeClass( 'ui-selected' );
-						that.updateToolbar();
 					},
 					'stop': that.updateToolbar
 				})
