@@ -110,21 +110,21 @@ var blobCache = function() {
 	return {
 		get: function( key, callback ) {
 			if ( key in vals ) {
-				console.log('cache hit: ' + key);
+				logger.trace('cache hit: ' + key);
 				callback( vals[key], null );
 			} else {
-				console.log('cache miss: ' + key);
+				logger.trace('cache miss: ' + key);
 				callback( null, null );
 			}
 		},
 		set: function( key, buffer ) {
-			console.log('cache set: ' + key);
+			logger.trace('cache set: ' + key);
 			if ( !( key in vals ) ) {
 				keys.push( key );
 				if ( keys.length > max ) {
 					// Drop off some unused bit.
 					var garbage = keys.shift();
-					console.log('cache trim: ' + garbage);
+					logger.trace('cache trim: ' + garbage);
 					delete vals[garbage];
 				}
 			}
@@ -181,7 +181,7 @@ Store.prototype.getBlob = function(id, callback, format) {
 		});
 	};
 	if ( format == 'stream' ) {
-		console.log('stream; skipping cache ' + id);
+		logger.trace('stream; skipping cache ' + id);
 		fetch();
 	} else {
 		blobCache.get( key, function( buffer, err ) {
@@ -468,7 +468,6 @@ Store.prototype.callGit = function(args) {
 	} else {
 		logger.warn('Warning: no git repo path given.');
 	}
-	console.log(args.join(' '));
 	logger.trace('git', args);
 	var proc = require('child_process').spawn('git', args, opts);
 	var err = '';
