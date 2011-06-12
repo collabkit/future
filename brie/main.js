@@ -13,11 +13,20 @@ if ( 'C9_PORT' in process.env ) {
 		throw 'Invalid listening port ' + port;
 	}
 }
+if ( '--latency' in args ) {
+	var latency = parseInt( args['--latency'], 10 );
+	if (latency && latency > 0) {
+		options.latency = latency;
+	} else {
+		throw 'Invalid latency ' + latency;
+	}
+}
 if ( '--git-repo' in args ) {
 	options.gitPath = args['--git-repo'];
 }
 if ( '--help' in args ) {
 	console.log('--port <number> (default 8124)\n\tSet HTTP server listening port');
+	console.log('--latency <milliseconds> (default 0)\n\tSimulate latency on all HTTP hits');
 	console.log('--git-repo <path> (default current dir)\n\tStore data in the given git repository');
 	console.log('--help\n\tshow this help and exit');
 	console.log('--verbose\n\tshow all logging, including failures, warnings, successes and traces');
