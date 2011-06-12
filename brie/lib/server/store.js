@@ -205,53 +205,69 @@ Store.prototype.getCommit = function(id, callback) {
 		throw 'Invalid id to Store.getCommit';
 	}
 	var store = this;
-	this.readGitString(['cat-file', 'commit', id], function(str, err) {
-		if (typeof id !== 'string') {
-			throw 'Invalid id to Store.getCommit, caught later?!';
-		}
-		if (str === null) {
-			// error!
-			callback(null, err);
-		} else {
-			/*
-			Something like this... Can have multiple 'parent' entries, is this the only one?
+	var key = 'commit:' + id;
+	var complete = function( str ) {
+		/*
+		Something like this... Can have multiple 'parent' entries, is this the only one?
 
-			tree 84f43c00099681cce788375e002c425f5bc90d64
-			parent 894ef352591fe581909c01c46047bf530e59a984
-			author Brion Vibber <brion@pobox.com> 1301870259 -0700
-			committer Brion Vibber <brion@pobox.com> 1301870259 -0700
+		tree 84f43c00099681cce788375e002c425f5bc90d64
+		parent 894ef352591fe581909c01c46047bf530e59a984
+		author Brion Vibber <brion@pobox.com> 1301870259 -0700
+		committer Brion Vibber <brion@pobox.com> 1301870259 -0700
 
-			Switch some strings from heredoc to double-quotes so xgettext picks them up.
-			*/
-			var props = {
-				parents: [], // zero or more 'parent' entries
-				description: '' // stored as text after the other stuff
-			};
-			var propsDone = false;
-			str.split('\n').forEach(function(line) {
-				if (propsDone) {
-					props.description += line;
-				} else if (line == '') {
-					propsDone = true;
-				} else {
-					var pos = line.indexOf(' ');
-					if (pos == -1) {
-						throw "Unexpected commit line format: " + line;
-					}
-					var prop = line.substr(0, pos);
-					var val = line.substr(pos + 1);
-					if (prop == 'parent') {
-						props.parents.push(val);
-					} else {
-						props[prop] = val;
-					}
+		Switch some strings from heredoc to double-quotes so xgettext picks them up.
+		*/
+		var props = {
+			parents: [], // zero or more 'parent' entries
+			description: '' // stored as text after the other stuff
+		};
+		var propsDone = false;
+		str.split('\n').forEach(function(line) {
+			if (propsDone) {
+				props.description += line;
+			} else if (line == '') {
+				propsDone = true;
+			} else {
+				var pos = line.indexOf(' ');
+				if (pos == -1) {
+					throw "Unexpected commit line format: " + line;
 				}
-			});
-			logger.trace('Loading commit from:', id, props);
-			var commit = new Commit(store, id, props);
-			callback(commit, null);
+				var prop = line.substr(0, pos);
+				var val = line.substr(pos + 1);
+				if (prop == 'parent') {
+					props.parents.push(val);
+				} else {
+					props[prop] = val;
+				}
+			}
+		});
+		logger.trace('Loading commit from:', id, props);
+		var commit = new Commit(store, id, props);
+		callback(commit, null);
+	};
+	var fetch = function() {
+		store.readGitString(['cat-file', 'commit', id], function(str, err) {
+			if (typeof id !== 'string') {
+				throw 'Invalid id to Store.getCommit, caught later?!';
+			}
+			if (str === null) {
+				// error!
+				callback(null, err);
+			} else {
+				blobCache.set( key, str );
+				complete( str );
+			}
+		});
+	};
+	blobCache.get( key, function( str, err ) {
+		if ( err ) {
+			callback( null, err );
+		} else if ( str ) {
+			complete( str );
+		} else {
+			fetch();
 		}
-	});
+	} );
 }
 
 /**
