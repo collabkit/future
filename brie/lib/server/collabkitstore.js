@@ -196,6 +196,36 @@ CollabKitObject.prototype.isDirty = function() {
 };
 
 /**
+ * Look up a file by name from this object.
+ *
+ * @param {String} path
+ * @param {function(blobId, err)} callback
+ *
+ * @fixme include support for uncommitted files?
+ * @fixme subpaths requires fixes on store's Tree class
+ */
+CollabKitObject.prototype.findFile = function(path, callback) {
+	var cko = this, store = this.store;
+	store.getCommit( this.version, function( commit, err ) {
+		commit.getTree( function( tree, err ) {
+			if ( err ) {
+				callback( null, err );
+			} else {
+				var meta = null;
+				try {
+					// @fixme tree.findFile interface needs to change too
+					meta = tree.findFile( path, 'blob' );
+				} catch ( e ) {
+					err = e;
+				} finally {
+					callback( meta.id, err );
+				}
+			}
+		});
+	});
+};
+
+/**
  * Read a file!
  * @param {String} path
  * @param {function(data, err)} callback
@@ -205,15 +235,13 @@ CollabKitObject.prototype.isDirty = function() {
  * @fixme subpaths requires fixes on store's Tree class
  */
 CollabKitObject.prototype.getFile = function(path, callback, format) {
-	var cko = this, store = this.store;
-	store.getCommit( this.version, function( commit, err ) {
-		commit.getTree( function( tree, err ) {
-			if ( err ) {
-				callback( null, err );
-				return;
-			}
-			tree.getBlob( path, callback, format );
-		});
+	var store = this.store;
+	this.findFile( path, function( id, err ) {
+		if ( err ) {
+			callback( null, err );
+		} else {
+			store.getBlob( id, callback, format );
+		}
 	});
 };
 

@@ -83,6 +83,7 @@ MediaProvider.prototype.handleGet = function( req, res, id, params ) {
 	};
 	var media = this;
 	var store = this.store;
+	var etag = 'CollabKit.photo.' + id;
 	store.getObject( id, function( obj, err ) {
 		if ( err ) {
 			fail( err );
@@ -94,18 +95,40 @@ MediaProvider.prototype.handleGet = function( req, res, id, params ) {
 				if ( err ) {
 					fail( err );
 				} else {
-					res.writeHead( 200, {'Content-Type': 'text/html'});
+					// @fixme add caching headers once versioning is more stable :)
+					res.writeHead( 200, {
+						'Content-Type': 'text/html'
+					});
 					res.end( html );
 				}
 			} );
 		} else if ( mode == 'photo' ) {
 			// Return an image
-			media.renderPhoto( obj, params, function( stream, type, err ) {
+			media.renderPhoto( obj, params, function( blobId, type, err ) {
 				if ( err ) {
 					fail( err );
 				} else {
-					res.writeHead( 200, {'Content-Type': type});
-					stream.pipe( res );
+					var maxAge = 86400 * 30; // Cache for a month, they're invariant!
+					var headers = {
+						'Content-Type': type,
+						'Cache-Control': 'private, max-age=' + maxAge,
+						'ETag': etag
+						// @fixme send Content-Length if available
+					};
+					if ( req.headers['if-none-match'] == etag ) {
+						// Cache shortcut!
+						res.writeHead( 304, headers );
+						res.end();
+					} else {
+						try {
+							var stream = store.streamBlob( blobId );
+						} catch ( e ) {
+							fail( e );
+							return;
+						}
+						res.writeHead( 200, headers );
+						stream.pipe( res );
+					}
 				}
 			})
 		} else {
@@ -174,13 +197,13 @@ MediaProvider.prototype.renderEmbed = function( obj, params, callback ) {
  *
  * @param {CollabKitObject} obj
  * @param {object} params
- * @param {function(stream, contentType, err)} callback
+ * @param {function(blobId, contentType, err)} callback
  */
 MediaProvider.prototype.renderPhoto = function( obj, params, callback ) {
 	if ( obj.data.type == 'application/x-collabkit-photo' ) {
 		var display = this.selectThumb( obj, params[1] );
-		obj.getFile(display.src, function(stream, err) {
-			callback( stream, display.type, err );
+		obj.findFile(display.src, function(blobId, err) {
+			callback( blobId, display.type, err );
 		}, 'stream');
 	} else {
 		callback( null, null, "Cannot load photo of non-photo object" );
