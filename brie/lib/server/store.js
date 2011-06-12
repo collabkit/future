@@ -103,6 +103,36 @@ var makeBlob = function() {
 	};
 }();
 
+var blobCache = function() {
+	var max = 1000,
+		keys = [],
+		vals = {};
+	return {
+		get: function( key, callback ) {
+			if ( key in vals ) {
+				console.log('cache hit: ' + key);
+				callback( vals[key], null );
+			} else {
+				console.log('cache miss: ' + key);
+				callback( null, null );
+			}
+		},
+		set: function( key, buffer ) {
+			console.log('cache set: ' + key);
+			if ( !( key in vals ) ) {
+				keys.push( key );
+				if ( keys.length > max ) {
+					// Drop off some unused bit.
+					var garbage = keys.shift();
+					console.log('cache trim: ' + garbage);
+					delete vals[garbage];
+				}
+			}
+			vals[key] = buffer;
+		}
+	};
+}();
+
 /**
  * Asynchronously fetch a file blob via a callback.
  *
@@ -112,33 +142,56 @@ var makeBlob = function() {
  * @throws exception if no valid blob file entry
  */
 Store.prototype.getBlob = function(id, callback, format) {
+	var store = this;
+	var key = 'blob:' + id;
 	if ( format == 'id' ) {
 		// High-level caller only needs the id. Return immediately.
 		callback( id, null );
 		return;
 	}
-	var stream = this.streamBlob(id);
-	if ( format == 'stream' ) {
-		// High-level caller is taking the raw stream; fire it off!
-		callback( stream, null );
-		return;
-	}
-	var buffer = new Buffer(0);
-	stream.on('data', function(chunk) {
-		var next = new Buffer(buffer.length + chunk.length);
-		buffer.copy(next, 0);
-		chunk.copy(next, buffer.length);
-		buffer = next;
-	});
-	stream.on('end', function() {
-		try {
-			var data = parseBlob(buffer, format);
-			callback(data, null);
-			buffer = null;
-		} catch (e) {
-			callback(null, e);
+	var complete = function( buffer, err ) {
+		var data = null;
+		if ( buffer ) {
+			try {
+				data = parseBlob(buffer, format);
+				buffer = null;
+			} catch (e) {
+				err = e;
+			}
 		}
-	});
+		callback(data, err);
+	}
+	var fetch = function() {
+		var stream = store.streamBlob(id);
+		if ( format == 'stream' ) {
+			// High-level caller is taking the raw stream; fire it off!
+			callback( stream, null );
+			return;
+		}
+		var buffer = new Buffer(0);
+		stream.on('data', function(chunk) {
+			var next = new Buffer(buffer.length + chunk.length);
+			buffer.copy(next, 0);
+			chunk.copy(next, buffer.length);
+			buffer = next;
+		});
+		stream.on('end', function() {
+			blobCache.set( key, buffer );
+			complete( buffer, null );
+		});
+	};
+	if ( format == 'stream' ) {
+		console.log('stream; skipping cache ' + id);
+		fetch();
+	} else {
+		blobCache.get( key, function( buffer, err ) {
+			if ( buffer || err ) {
+				complete( buffer, err );
+			} else {
+				fetch();
+			}
+		});
+	}
 };
 
 /**
@@ -209,33 +262,49 @@ Store.prototype.getCommit = function(id, callback) {
  */
 Store.prototype.getTree = function(id, callback) {
 	var store = this;
-	this.readGitString(['cat-file', '-p', id], function(str, err) {
-		if (str === null) {
-			if (!err) {
-				err = "got null from read";
+	var key = 'tree:' + id;
+	var complete = function( str ) {
+		var entries = {};
+		str.split('\n').forEach(function(line) {
+			if (line) {
+				var bits = line.split("\t");
+				var meta = bits[0].split(' ');
+				var name = bits[1];
+				entries[name] = {
+					mode: meta[0],
+					type: meta[1],
+					id: meta[2],
+					name: name
+				};
 			}
-			// error!
-			logger.fail('getTree fail: ' + err);
-			callback(null, err);
-		} else {
-			var entries = {};
-			str.split('\n').forEach(function(line) {
-				if (line) {
-					var bits = line.split("\t");
-					var meta = bits[0].split(' ');
-					var name = bits[1];
-					entries[name] = {
-						mode: meta[0],
-						type: meta[1],
-						id: meta[2],
-						name: name
-					};
+		});
+		var tree = new Tree(store, id, entries);
+		callback(tree, null);
+	};
+	var fetch = function() {
+		store.readGitString(['cat-file', '-p', id], function(str, err) {
+			if (str === null) {
+				if (!err) {
+					err = "got null from read";
 				}
-			});
-			var tree = new Tree(store, id, entries);
-			callback(tree, null);
+				// error!
+				logger.fail('getTree fail: ' + err);
+				callback(null, err);
+			} else {
+				blobCache.set( key, str );
+				complete( str );
+			}
+		});
+	};
+	blobCache.get( key, function( str, err ) {
+		if ( err ) {
+			callback( null, err );
+		} else if ( str ) {
+			complete( str );
+		} else {
+			fetch();
 		}
-	});
+	} );
 }
 
 /**
@@ -383,6 +452,7 @@ Store.prototype.callGit = function(args) {
 	} else {
 		logger.warn('Warning: no git repo path given.');
 	}
+	console.log(args.join(' '));
 	logger.trace('git', args);
 	var proc = require('child_process').spawn('git', args, opts);
 	var err = '';
