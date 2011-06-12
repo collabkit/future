@@ -1,7 +1,8 @@
 var util = require( 'util' ),
 	events = require( 'events' ),
 	logger = require( '../logger' ).create( 'MediaProvider' ),
-	Squisher = require('../../shared/squisher').Squisher;
+	Squisher = require('../../shared/squisher').Squisher,
+	grout = require('../../shared/grout');
 
 /**
  * URL patterns
@@ -80,50 +81,131 @@ MediaProvider.prototype.handleGet = function( req, res, id, params ) {
 		res.writeHead( code || 500, {'Content-Type': 'text/plain'});
 		res.end( 'Error: ' + msg );
 	};
+	var media = this;
 	var store = this.store;
-	store.getObject( id, function(obj, err) {
+	store.getObject( id, function( obj, err ) {
 		if ( err ) {
 			fail( err );
-			return;
 		}
-		var data = obj.data;
-		if (data.type == 'application/x-collabkit-photo') {
-			if (params.length == 0) {
-				params = ['embed'];
-			}
-			var size = params[1] || 'original',
-				photo = data.photo,
-				display;
-			if (photo.thumbs && size in photo.thumbs) {
-				display = photo.thumbs[size];
-			} else {
-				display = photo;
-			}
-			if (params[0] == 'embed') {
-				res.writeHead( 200, {'Content-Type': 'text/html'});
-				res.end(
-					'<div class="collabkit-photo size-' + size + ' collabkit-object-' + id + '">' +
-						'<img src="/:media/' + id + '/photo/' + size + '" ' +
-							'width="' + display.width + '" ' +
-							'height="' + display.height + '" />' +
-					'</div>'
-				);
-			} else if (params[0] == 'photo') {
-				obj.getFile(display.src, function(stream, err) {
-					if ( err ) {
-						fail( err );
-					} else {
-						res.writeHead( 200, {'Content-Type': photo.display});
-						stream.pipe( res );
-					}
-				}, 'stream');
-			} else {
-				fail( 'Invalid media method ' + params[0] + ' on photo object.' );
-			}
+		var mode = params[0] || 'embed';
+		if ( mode == 'embed' ) {
+			// HTML embed display
+			media.renderEmbed( obj, params, function( html, err ) {
+				if ( err ) {
+					fail( err );
+				} else {
+					res.writeHead( 200, {'Content-Type': 'text/html'});
+					res.end( html );
+				}
+			} );
+		} else if ( mode == 'photo' ) {
+			// Return an image
+			media.renderPhoto( obj, params, function( stream, type, err ) {
+				if ( err ) {
+					fail( err );
+				} else {
+					res.writeHead( 200, {'Content-Type': type});
+					stream.pipe( res );
+				}
+			})
 		} else {
-			fail( 'Invalid object type' );
+			fail( 'Invalid media method ' + params[0] + ' on photo object.' );
 		}
 	});
+};
+
+/**
+ * Render an object as an HTML fragment
+ * Return a string to the caller
+ *
+ * @param {CollabKitObject} obj
+ * @param {object} params
+ * @param {function(html, err)} callback
+ */
+MediaProvider.prototype.renderEmbed = function( obj, params, callback ) {
+	var media = this, store = this.store;
+	var data = obj.data, id = obj.version;
+	if (data.type == 'application/x-collabkit-photo') {
+		var display = media.selectThumb( obj, params[1] );
+		callback(
+			'<div class="collabkit-photo size-' + display.size + ' collabkit-object-' + id + '">' +
+				'<img src="/:media/' + id + '/photo/' + display.size + '" ' +
+					'width="' + display.width + '" ' +
+					'height="' + display.height + '" />' +
+			'</div>',
+			null
+		);
+	} else if (data.type == 'application/x-collabkit-library') {
+		var size = 'thumb';
+		//var html = '<div class="collabkit-library size-' + size + ' collabkit-object-' + id + '">';
+		var html = '';
+		var i = 0;
+		var items = data.library.items;
+		var step = function() {
+			if (i < items.length) {
+				var id = items[i];
+				store.getObject( id, function( obj, err ) {
+					if ( err ) {
+						callback( null, err );
+					} else {
+						media.renderEmbed( obj, params, function( itemHtml ) {
+							html += '<div class="photo-entry">';
+							html += itemHtml;
+							html += '</div>';
+							i++;
+							step();
+						});
+					}
+				});
+			} else {
+				//html += '</div>';
+				callback( html, null );
+			}
+		};
+		step();
+	} else {
+		callback( null, 'Invalid object type' );
+	}
+};
+
+/**
+ * Fetch or render an image file display of this object
+ * Return it to caller as a stream and a content type.
+ *
+ * @param {CollabKitObject} obj
+ * @param {object} params
+ * @param {function(stream, contentType, err)} callback
+ */
+MediaProvider.prototype.renderPhoto = function( obj, params, callback ) {
+	if ( obj.data.type == 'application/x-collabkit-photo' ) {
+		var display = this.selectThumb( obj, params[1] );
+		obj.getFile(display.src, function(stream, err) {
+			callback( stream, display.type, err );
+		}, 'stream');
+	} else {
+		callback( null, null, "Cannot load photo of non-photo object" );
+	}
+};
+
+/**
+ * Select either the main image size or a thumbnail based on requested size
+ *
+ * @param {CollabKitObject} obj
+ * @param {String} size
+ * @return {object} with size & source file name
+ */
+MediaProvider.prototype.selectThumb = function( obj, size ) {
+	var size = size || 'original',
+		photo = obj.data.photo,
+		display;
+	if (photo.thumbs && size in photo.thumbs) {
+		display = photo.thumbs[size];
+	} else {
+		display = photo;
+	}
+	return grout.mix( {
+		size: size
+	}, display );
 };
 
 /**

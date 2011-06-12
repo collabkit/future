@@ -51,14 +51,14 @@ function Service( options ) {
 	};
 	
 	/* Initialization */
-	
+	var latency = options.latency;
 	server.on( 'request', function( req, res ) {
 		// URL Parsing
 		var url = require( 'url' ).parse( req.url );
 		if ( routing.source in url ) {
 			var matches = url[routing.source].match( routing.pattern );
 			if ( matches !== null ) {
-				for ( target in routing.targets ) {
+				for ( var target in routing.targets ) {
 					if ( typeof matches[routing.targets[target]] === 'string' ) {
 						url[target] = matches[routing.targets[target]];
 					}
@@ -77,7 +77,15 @@ function Service( options ) {
 		}
 		req.parsedUrl = url;
 		// Sub-request event triggering
-		server.emit( 'request.' + url.service, req, res );
+		var ping = function() {
+			server.emit( 'request.' + url.service, req, res );
+		}
+		if ( latency ) {
+			// Hack to simulate connection latency by delaying response processing
+			setTimeout( ping, latency );
+		} else {
+			ping();
+		}
 	} );
 	server.listen( options.port );
 }

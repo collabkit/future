@@ -368,11 +368,31 @@ Class( 'Gallery', {
 		},
 		/**
 		 * @param {jQuery} target
-		 * @param {String} viewUrl
+		 * @param {String} id
 		 */
-		'showThumb': function(target, id) {
+		'showThumb': function(target, id, callback) {
 		   target.data('collabkit-id', id);
-		   target.load('/:media/' + id + '/embed/thumb');
+		   target.load('/:media/' + id + '/embed/thumb', callback);
+		},
+		/**
+		 * @param {jQuery} target
+		 * @param {String} id
+		 */
+		'showFullLibrary': function(target, id, callback) {
+		   // target.data('collabkit-id', id);
+		   target.load('/:media/' + id + '/embed/thumb', function() {
+			   target.find('.collabkit-photo').each(function() {
+				   var $obj = $(this);
+				   var match = /collabkit-object-([0-9a-f]+)/.exec( $obj.attr( 'class' ) );
+				   if (match) {
+					   var id = match[1];
+					   $obj.closest('.photo-entry').data( 'collabkit-id', id );
+				   }
+			   });
+			   if ( callback ) {
+				   callback()
+			   }
+		   });
 		},
 		'updateToolbar': function() {
 			// These buttons need something selected to operate on.
@@ -537,6 +557,7 @@ Class( 'Gallery', {
 			}
 		},
 		'showLibrary': function(commitInfo) {
+			var self = this;
 			var data = commitInfo.data;
 			if (data.type != 'application/x-collabkit-library') {
 				alert('invalid collabkit library data');
@@ -546,23 +567,33 @@ Class( 'Gallery', {
 			this.lib = this.library.data;
 	
 			this.showMeta();
+			var done = function() {
+				self.restoreSelection();
+				self.updateToolbar();
+			};
 
-			// Rearrange without having to re-created already existing thumbs
 			var $mediatest = $('#app-gallery');
-			var $newThumbs = $('<div></div>');
-			for ( var i = 0; i < this.lib.library.items.length; i++ ) {
-				var id = this.lib.library.items[i];
-				var $existingThumb = $mediatest.find( '.photo-entry > .collabkit-object-' + id );
-				if ( $existingThumb.length ) {
-					$newThumbs.append( $existingThumb.parent().detach() );
-				} else {
-					var $newThumb = $('<div class="photo-entry"></div>').appendTo( $newThumbs );
-					this.showThumb( $newThumb, id );
+			if ( $mediatest.find( '.photo-entry' ).length == 0 ) {
+				// Load a bunch in a batch
+				this.showFullLibrary( $mediatest, commitInfo.id, function() {
+					done();
+				});
+			} else {
+				// Rearrange without having to re-created already existing thumbs
+				var $newThumbs = $('<div></div>');
+				for ( var i = 0; i < this.lib.library.items.length; i++ ) {
+					var id = this.lib.library.items[i];
+					var $existingThumb = $mediatest.find( '.photo-entry > .collabkit-object-' + id );
+					if ( $existingThumb.length ) {
+						$newThumbs.append( $existingThumb.parent().detach() );
+					} else {
+						var $newThumb = $('<div class="photo-entry"></div>').appendTo( $newThumbs );
+						this.showThumb( $newThumb, id );
+					}
 				}
+				$mediatest.empty().append( $newThumbs.children() );
+				done();
 			}
-			$mediatest.empty().append( $newThumbs.children() );
-			this.restoreSelection();
-			this.updateToolbar();
 		},
 		'showMeta': function() {
 			$('#app-version').text('Version: ' + this.library.id + ' (parents: ' + this.library.parents.join('') + ')');
