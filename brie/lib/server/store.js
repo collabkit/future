@@ -103,6 +103,36 @@ var makeBlob = function() {
 	};
 }();
 
+var blobCache = function() {
+	var max = 1000,
+		keys = [],
+		vals = {};
+	return {
+		get: function( key, callback ) {
+			if ( key in vals ) {
+				logger.trace('cache hit: ' + key);
+				callback( vals[key], null );
+			} else {
+				logger.trace('cache miss: ' + key);
+				callback( null, null );
+			}
+		},
+		set: function( key, buffer ) {
+			logger.trace('cache set: ' + key);
+			if ( !( key in vals ) ) {
+				keys.push( key );
+				if ( keys.length > max ) {
+					// Drop off some unused bit.
+					var garbage = keys.shift();
+					logger.trace('cache trim: ' + garbage);
+					delete vals[garbage];
+				}
+			}
+			vals[key] = buffer;
+		}
+	};
+}();
+
 /**
  * Asynchronously fetch a file blob via a callback.
  *
@@ -112,33 +142,56 @@ var makeBlob = function() {
  * @throws exception if no valid blob file entry
  */
 Store.prototype.getBlob = function(id, callback, format) {
+	var store = this;
+	var key = 'blob:' + id;
 	if ( format == 'id' ) {
 		// High-level caller only needs the id. Return immediately.
 		callback( id, null );
 		return;
 	}
-	var stream = this.streamBlob(id);
-	if ( format == 'stream' ) {
-		// High-level caller is taking the raw stream; fire it off!
-		callback( stream, null );
-		return;
-	}
-	var buffer = new Buffer(0);
-	stream.on('data', function(chunk) {
-		var next = new Buffer(buffer.length + chunk.length);
-		buffer.copy(next, 0);
-		chunk.copy(next, buffer.length);
-		buffer = next;
-	});
-	stream.on('end', function() {
-		try {
-			var data = parseBlob(buffer, format);
-			callback(data, null);
-			buffer = null;
-		} catch (e) {
-			callback(null, e);
+	var complete = function( buffer, err ) {
+		var data = null;
+		if ( buffer ) {
+			try {
+				data = parseBlob(buffer, format);
+				buffer = null;
+			} catch (e) {
+				err = e;
+			}
 		}
-	});
+		callback(data, err);
+	}
+	var fetch = function() {
+		var stream = store.streamBlob(id);
+		if ( format == 'stream' ) {
+			// High-level caller is taking the raw stream; fire it off!
+			callback( stream, null );
+			return;
+		}
+		var buffer = new Buffer(0);
+		stream.on('data', function(chunk) {
+			var next = new Buffer(buffer.length + chunk.length);
+			buffer.copy(next, 0);
+			chunk.copy(next, buffer.length);
+			buffer = next;
+		});
+		stream.on('end', function() {
+			blobCache.set( key, buffer );
+			complete( buffer, null );
+		});
+	};
+	if ( format == 'stream' ) {
+		logger.trace('stream; skipping cache ' + id);
+		fetch();
+	} else {
+		blobCache.get( key, function( buffer, err ) {
+			if ( buffer || err ) {
+				complete( buffer, err );
+			} else {
+				fetch();
+			}
+		});
+	}
 };
 
 /**
@@ -152,53 +205,69 @@ Store.prototype.getCommit = function(id, callback) {
 		throw 'Invalid id to Store.getCommit';
 	}
 	var store = this;
-	this.readGitString(['cat-file', 'commit', id], function(str, err) {
-		if (typeof id !== 'string') {
-			throw 'Invalid id to Store.getCommit, caught later?!';
-		}
-		if (str === null) {
-			// error!
-			callback(null, err);
-		} else {
-			/*
-			Something like this... Can have multiple 'parent' entries, is this the only one?
+	var key = 'commit:' + id;
+	var complete = function( str ) {
+		/*
+		Something like this... Can have multiple 'parent' entries, is this the only one?
 
-			tree 84f43c00099681cce788375e002c425f5bc90d64
-			parent 894ef352591fe581909c01c46047bf530e59a984
-			author Brion Vibber <brion@pobox.com> 1301870259 -0700
-			committer Brion Vibber <brion@pobox.com> 1301870259 -0700
+		tree 84f43c00099681cce788375e002c425f5bc90d64
+		parent 894ef352591fe581909c01c46047bf530e59a984
+		author Brion Vibber <brion@pobox.com> 1301870259 -0700
+		committer Brion Vibber <brion@pobox.com> 1301870259 -0700
 
-			Switch some strings from heredoc to double-quotes so xgettext picks them up.
-			*/
-			var props = {
-				parents: [], // zero or more 'parent' entries
-				description: '' // stored as text after the other stuff
-			};
-			var propsDone = false;
-			str.split('\n').forEach(function(line) {
-				if (propsDone) {
-					props.description += line;
-				} else if (line == '') {
-					propsDone = true;
-				} else {
-					var pos = line.indexOf(' ');
-					if (pos == -1) {
-						throw "Unexpected commit line format: " + line;
-					}
-					var prop = line.substr(0, pos);
-					var val = line.substr(pos + 1);
-					if (prop == 'parent') {
-						props.parents.push(val);
-					} else {
-						props[prop] = val;
-					}
+		Switch some strings from heredoc to double-quotes so xgettext picks them up.
+		*/
+		var props = {
+			parents: [], // zero or more 'parent' entries
+			description: '' // stored as text after the other stuff
+		};
+		var propsDone = false;
+		str.split('\n').forEach(function(line) {
+			if (propsDone) {
+				props.description += line;
+			} else if (line == '') {
+				propsDone = true;
+			} else {
+				var pos = line.indexOf(' ');
+				if (pos == -1) {
+					throw "Unexpected commit line format: " + line;
 				}
-			});
-			logger.trace('Loading commit from:', id, props);
-			var commit = new Commit(store, id, props);
-			callback(commit, null);
+				var prop = line.substr(0, pos);
+				var val = line.substr(pos + 1);
+				if (prop == 'parent') {
+					props.parents.push(val);
+				} else {
+					props[prop] = val;
+				}
+			}
+		});
+		logger.trace('Loading commit from:', id, props);
+		var commit = new Commit(store, id, props);
+		callback(commit, null);
+	};
+	var fetch = function() {
+		store.readGitString(['cat-file', 'commit', id], function(str, err) {
+			if (typeof id !== 'string') {
+				throw 'Invalid id to Store.getCommit, caught later?!';
+			}
+			if (str === null) {
+				// error!
+				callback(null, err);
+			} else {
+				blobCache.set( key, str );
+				complete( str );
+			}
+		});
+	};
+	blobCache.get( key, function( str, err ) {
+		if ( err ) {
+			callback( null, err );
+		} else if ( str ) {
+			complete( str );
+		} else {
+			fetch();
 		}
-	});
+	} );
 }
 
 /**
@@ -209,33 +278,49 @@ Store.prototype.getCommit = function(id, callback) {
  */
 Store.prototype.getTree = function(id, callback) {
 	var store = this;
-	this.readGitString(['cat-file', '-p', id], function(str, err) {
-		if (str === null) {
-			if (!err) {
-				err = "got null from read";
+	var key = 'tree:' + id;
+	var complete = function( str ) {
+		var entries = {};
+		str.split('\n').forEach(function(line) {
+			if (line) {
+				var bits = line.split("\t");
+				var meta = bits[0].split(' ');
+				var name = bits[1];
+				entries[name] = {
+					mode: meta[0],
+					type: meta[1],
+					id: meta[2],
+					name: name
+				};
 			}
-			// error!
-			logger.fail('getTree fail: ' + err);
-			callback(null, err);
-		} else {
-			var entries = {};
-			str.split('\n').forEach(function(line) {
-				if (line) {
-					var bits = line.split("\t");
-					var meta = bits[0].split(' ');
-					var name = bits[1];
-					entries[name] = {
-						mode: meta[0],
-						type: meta[1],
-						id: meta[2],
-						name: name
-					};
+		});
+		var tree = new Tree(store, id, entries);
+		callback(tree, null);
+	};
+	var fetch = function() {
+		store.readGitString(['cat-file', '-p', id], function(str, err) {
+			if (str === null) {
+				if (!err) {
+					err = "got null from read";
 				}
-			});
-			var tree = new Tree(store, id, entries);
-			callback(tree, null);
+				// error!
+				logger.fail('getTree fail: ' + err);
+				callback(null, err);
+			} else {
+				blobCache.set( key, str );
+				complete( str );
+			}
+		});
+	};
+	blobCache.get( key, function( str, err ) {
+		if ( err ) {
+			callback( null, err );
+		} else if ( str ) {
+			complete( str );
+		} else {
+			fetch();
 		}
-	});
+	} );
 }
 
 /**
