@@ -1,5 +1,0 @@
-{
-	"name" : "jquery.ui",
-	"description" : "jQuery UI",
-	"main" : "./jquery-ui-1.8.12.custom.js"
-}

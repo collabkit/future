@@ -77,3 +77,85 @@
 #app-version {
 	margin: 1em;
 }
+
+/* GridList */
+
+// Mixins
+
+.user-select(@mode: none) {
+	-moz-user-select: @mode;
+	-khtml-user-select: @mode;
+	-webkit-user-select: @mode;
+	user-select: @mode;
+}
+.user-drag(@mode: element) {
+	-webkit-user-drag: element;
+	-khtml-user-drag: element;
+}
+
+// Browser Patches
+
+*[draggable=true] {
+	.user-select(none);
+	.user-drag(element);
+}
+
+// Styles
+
+.ux-gridlist {
+	.user-select(none);
+	position: absolute;
+	overflow-x: hidden;
+	background-color: #ffffff;
+	pointer: default;
+	
+	&-marquee {
+		position: absolute;
+		display: none;
+		border: solid 1px #99cc99;
+		background-color: #eeffee;
+		opacity: 0.5;
+	}
+	&.ux-gridlist-dragging-over {
+		background-color: #eeeeee;
+	}
+	&-item {
+		position: absolute;
+		display: block;
+		padding: 0.5em;
+		
+		&-frame {
+			border: solid 0.1em #cccccc;
+			border-radius: 0.5em;
+			padding: 0.5em;
+			background-color: #ffffff;
+			-webkit-box-shadow: 0px 0.125em 0.5em #cccccc;
+			-moz-box-shadow: 0px 0.125em 0.5em #cccccc;
+			box-shadow: 0px 0.125em 0.5em #cccccc;
+		}
+		
+		&-frame img {
+			display: block;
+			margin: -1.1em;
+			padding: 1.1em;
+		}
+		
+		&.ux-gridlist-dragging .ux-gridlist-item-frame {
+			opacity: 0.5;
+			border-style: dashed;
+		}
+		
+		&.ux-gridlist-dragging img {
+			opacity: 0.25;
+		}
+		
+		&.ux-gridlist-selected {
+			z-index: 1000;
+		}
+		
+		&.ux-gridlist-selected .ux-gridlist-item-frame {
+			border-color: #99cc99;
+			background-color: #eeffee;
+		}
+	}
+}

@@ -14,17 +14,18 @@ var util = require( 'util' ),
  * GET /:media/[branch-name|commit-id]
  *	Returns HTML fragment showing the object full-sizeish.
  *
- * GET /:media/[branch-name|commit-id]/embed
- * GET /:media/[branch-name|commit-id]/embed/thumb
- * GET /:media/[branch-name|commit-id]/embed/medium
- * GET /:media/[branch-name|commit-id]/embed/large
- *	Returns HTML fragment showing a thumbnail, medium, or large view of the object.
+ * GET /:media/[branch-name|commit-id]/list
+ * GET /:media/[branch-name|commit-id]/list/thumb
+ * GET /:media/[branch-name|commit-id]/list/medium
+ * GET /:media/[branch-name|commit-id]/list/large
+ *	Returns JSON array containing information about photos in library
  *
  * GET /:media/[branch-name|commit-id]/photo
  * GET /:media/[branch-name|commit-id]/photo/thumb
  * GET /:media/[branch-name|commit-id]/photo/medium
  * GET /:media/[branch-name|commit-id]/photo/large
- *  Return a JPEG, PNG, or GIF image at original, thumb (128x128), medium (640x480), or large (1280x960) sizes.
+ *  Return a JPEG, PNG, or GIF image at original, thumb (128x128), medium (640x480), or large
+ *  (1280x960) sizes.
  */
 function MediaProvider( service ) {
 	var provider = this;
@@ -75,97 +76,78 @@ util.inherits( MediaProvider, events.EventEmitter );
  * @param {string} id
  * @param {string[]} params
  */
-MediaProvider.prototype.handleGet = function( req, res, id, params ) {
-	var fail = function( msg, code ) {
+MediaProvider.prototype.handleGet = function(req, res, id, params) {
+	var fail = function(msg, code) {
 		logger.fail('media get error: ' + msg);
-		res.writeHead( code || 500, {'Content-Type': 'text/plain'});
-		res.end( 'Error: ' + msg );
+		res.writeHead(code || 500, {'Content-Type': 'text/plain'});
+		res.end('Error: ' + msg);
 	};
-	var media = this;
-	var store = this.store;
-	store.getObject( id, function( obj, err ) {
-		if ( err ) {
-			fail( err );
+	var media = this,
+		store = this.store;
+	store.getObject(id, function(obj, err) {
+		if (err) {
+			fail(err);
 		}
-		var mode = params[0] || 'embed';
-		if ( mode == 'embed' ) {
-			// HTML embed display
-			media.renderEmbed( obj, params, function( html, err ) {
-				if ( err ) {
-					fail( err );
+		var mode = params[0] || 'list';
+		if (mode == 'list') {
+			// Return a list of 
+			media.renderList(obj, params, function(list, err) {
+				if (err) {
+					fail(err);
 				} else {
-					res.writeHead( 200, {'Content-Type': 'text/html'});
-					res.end( html );
+					res.writeHead(200, {'Content-Type': 'application/json'});
+					res.end(JSON.stringify(list));
 				}
-			} );
-		} else if ( mode == 'photo' ) {
+			});
+		} else if (mode == 'photo') {
 			// Return an image
-			media.renderPhoto( obj, params, function( stream, type, err ) {
-				if ( err ) {
-					fail( err );
+			media.renderPhoto(obj, params, function(stream, type, err) {
+				if (err) {
+					fail(err);
 				} else {
-					res.writeHead( 200, {'Content-Type': type});
-					stream.pipe( res );
+					res.writeHead(200, {'Content-Type': type});
+					stream.pipe(res);
 				}
 			})
 		} else {
-			fail( 'Invalid media method ' + params[0] + ' on photo object.' );
+			fail('Invalid media method ' + params[0] + ' on photo object.');
 		}
 	});
 };
 
-/**
- * Render an object as an HTML fragment
- * Return a string to the caller
- *
- * @param {CollabKitObject} obj
- * @param {object} params
- * @param {function(html, err)} callback
- */
-MediaProvider.prototype.renderEmbed = function( obj, params, callback ) {
-	var media = this, store = this.store;
-	var data = obj.data, id = obj.version;
-	if (data.type == 'application/x-collabkit-photo') {
-		var display = media.selectThumb( obj, params[1] );
-		callback(
-			'<div class="collabkit-photo size-' + display.size + ' collabkit-object-' + id + '">' +
-				'<img src="/:media/' + id + '/photo/' + display.size + '" ' +
-					'width="' + display.width + '" ' +
-					'height="' + display.height + '" />' +
-			'</div>',
-			null
-		);
-	} else if (data.type == 'application/x-collabkit-library') {
-		var size = 'thumb';
-		//var html = '<div class="collabkit-library size-' + size + ' collabkit-object-' + id + '">';
-		var html = '';
-		var i = 0;
-		var items = data.library.items;
-		var step = function() {
-			if (i < items.length) {
-				var id = items[i];
-				store.getObject( id, function( obj, err ) {
-					if ( err ) {
-						callback( null, err );
-					} else {
-						media.renderEmbed( obj, params, function( itemHtml ) {
-							html += '<div class="photo-entry">';
-							html += itemHtml;
-							html += '</div>';
-							i++;
-							step();
-						});
-					}
-				});
-			} else {
-				//html += '</div>';
-				callback( html, null );
-			}
-		};
-		step();
-	} else {
+MediaProvider.prototype.renderList = function(obj, params, callback) {
+	if (obj.data.type !== 'application/x-collabkit-library') {
 		callback( null, 'Invalid object type' );
 	}
+	var media = this,
+		store = this.store,
+		list = [],
+		i = 0,
+		items = obj.data.library.items,
+		step = function() {
+			if (i >= items.length) {
+				callback( list, null );
+				return;
+			}
+			store.getObject(items[i], function(obj, err) {
+				if (err) {
+					callback(null, err);
+				} else if (!obj.data.type === 'application/x-collabkit-photo') {
+					callback(null, 'Invalid child object type');
+				}
+				var thumb = media.selectThumb(obj, params[1]);
+				list.push({
+					'id': obj.version,
+					'width': thumb.width,
+					'height': thumb.height,
+					'src': '/:media/' + obj.version + '/photo'
+						+ ( params[1] ? '/' + params[1] : '' )
+				});
+				i++;
+				step();
+			});
+		};
+	step();
 };
 
 /**
@@ -176,14 +158,18 @@ MediaProvider.prototype.renderEmbed = function( obj, params, callback ) {
  * @param {object} params
  * @param {function(stream, contentType, err)} callback
  */
-MediaProvider.prototype.renderPhoto = function( obj, params, callback ) {
-	if ( obj.data.type == 'application/x-collabkit-photo' ) {
-		var display = this.selectThumb( obj, params[1] );
-		obj.getFile(display.src, function(stream, err) {
-			callback( stream, display.type, err );
-		}, 'stream');
+MediaProvider.prototype.renderPhoto = function(obj, params, callback) {
+	if (obj.data.type == 'application/x-collabkit-photo') {
+		var display = this.selectThumb(obj, params[1]);
+		obj.getFile(
+			display.src,
+			function(stream, err) {
+				callback(stream, display.type, err);
+			},
+			'stream'
+		);
 	} else {
-		callback( null, null, "Cannot load photo of non-photo object" );
+		callback(null, null, 'Cannot load photo of non-photo object');
 	}
 };
 
@@ -194,7 +180,7 @@ MediaProvider.prototype.renderPhoto = function( obj, params, callback ) {
  * @param {String} size
  * @return {object} with size & source file name
  */
-MediaProvider.prototype.selectThumb = function( obj, size ) {
+MediaProvider.prototype.selectThumb = function(obj, size) {
 	var size = size || 'original',
 		photo = obj.data.photo,
 		display;
@@ -203,9 +189,7 @@ MediaProvider.prototype.selectThumb = function( obj, size ) {
 	} else {
 		display = photo;
 	}
-	return grout.mix( {
-		size: size
-	}, display );
+	return grout.mix({'size': size}, display);
 };
 
 /**

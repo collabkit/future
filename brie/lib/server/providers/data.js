@@ -1,5 +1,6 @@
 var util = require( 'util' ),
-	events = require( 'events' );
+	events = require( 'events' ),
+	logger = require( '../logger' ).create( 'MediaProvider' );
 
 /**
  * URL patterns
@@ -72,7 +73,8 @@ function DataProvider( service ) {
 					try {
 						var data = JSON.parse(str);
 					} catch (e) {
-						callback(null, e);
+						logger.fail(e);
+						logger.trace(str);
 					} finally {
 						store.updateObjectRef('refs/heads/collabkit-library', {}, data, dumpObject);
 					}

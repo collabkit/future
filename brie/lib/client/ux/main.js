@@ -17,11 +17,13 @@ $.fn.ux = function() {
 			// Auto-initialize
 			if (args.length >= 2) {
 				model.initialize($this, args[1]);
+				args.shift();
+				args.shift();
 			} else {
 				model.initialize($this);
+				args.shift();
 			}
 			$this.attr('ux-type', type);
-			args.shift();
 		} else {
 			model = $.ux.elements[type];
 		}
@@ -58,14 +60,12 @@ $.fn.ux = function() {
  */
 $.ux = {
 	'elements': {},
-	'create': function(type, id, options) {
+	'create': function(type, options) {
 		var $element = $('<div />');
-		if ($.type(id) === 'string') {
-			$element.attr('id', id);
-		} else {
-			options = id;
+		if ('id' in options) {
+			$element.attr('id', options.id);
 		}
-		$element.ux(type, options);
+		$element.ux(type, options.init || null, options.config);
 		return $element;
 	}
 };
