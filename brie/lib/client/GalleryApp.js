@@ -146,25 +146,22 @@ GalleryApp.prototype.uploadFiles = function(files, callback) {
 		callback('No files to upload');
 		return;
 	}
-	var i = 0;
-	var uploadNextFile = function() {
+	var uploadFile = function(i) {
 		if (i >= files.length) {
 			callback();
 			return;
 		}
-		var file = files[i];
-		i++;
-		app.store.createObject(file, function(result, err) {
+		app.store.createObject(files[i], function(result, err) {
 			if (result) {
-				var photoId = result.id;
-				app.gridList.addItem({
-					'id': photoId,
-					'src': '/:media/' + photoId + '/photo/thumb',
+				app.gridList.addItems([{
+					'id': result.id,
+					'src': '/:media/' + result.id + '/photo/thumb',
 					'width': result.data.photo.thumbs.thumb.width,
 					'height': result.data.photo.thumbs.thumb.height
-				});
+				}]);
 				app.gridList.flow(true);
 				if ( i === files.length - 1 ) {
+					app.library.data.library.items = app.gridList.sequence;
 					app.store.updateObjectRef(
 						'collabkit-library',
 						app.library.data,
@@ -172,10 +169,10 @@ GalleryApp.prototype.uploadFiles = function(files, callback) {
 					);
 				}
 			}
-			uploadNextFile();
+			uploadFile(++i);
 		});
 	};
-	uploadNextFile();
+	uploadFile(0);
 };
 
 GalleryApp.prototype.updateLibrary = function(commit) {
@@ -183,57 +180,73 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 		alert('Invalid collabkit library data');
 		return;
 	}
-	
+	var fetch = true;
 	// Check the current library state and make sure it's consistent with what we've got; if not
 	// we'll refresh the view.
-	if (!this.library) {
+	if (!this.library || !this.library.data || !this.library.data.library
+			|| !this.library.data.library.items) {
 		this.library = commit;
 	} else if (this.library.id !== commit.id) {
-		var oldItems = this.library.data
-			&& this.library.data.library.items
-			&& this.library.data.library.items.join(',');
-		var newItems = commit.data.library.items.join(',');
-		if (oldItems === newItems) {
-			// Same content - update metadata
+		// Build hashes for old items
+		var oldSequenceHash = this.library.data.library.items.join('|');
+		var oldSequenceCopy = oldSequenceHash.split('|');
+		oldSequenceCopy.sort();
+		var oldSequenceSortedHash = oldSequenceCopy.join('|');
+		// Build hashes for new items
+		var newSequenceHash = commit.data.library.items.join('|');
+		var newSequenceCopy = newSequenceHash.split('|');
+		newSequenceCopy.sort();
+		var newSequenceSortedHash = newSequenceCopy.join('|');
+		// Compare hashes
+		if (oldSequenceSortedHash === newSequenceSortedHash) {
+			// Nothing new, just a meta update
+			if (oldSequenceHash !== newSequenceHash) {
+				// Same items, different order
+				this.gridList.sequenceItems(newSequenceHash.split('|'));
+				this.gridList.flow();
+			}
 			this.library = commit;
-			// Skip updating content
-			return;
+			fetch = false;
 		}
 	}
+	
 	// XXX: Update status bar
 	$('#app-version').text(
 		'Version: ' + this.library.id + ' (parents: ' + this.library.parents.join(',') + ')'
 	);
-	// Update the gridlist
-	var app = this;
-	var oldSequence = this.gridList.sequence;
-	$.ajax({
-		'url': '/:media/' + this.library.id + '/list/thumb',
-		'dataType': 'json',
-		'type': 'GET',
-		'cache': false,
-		'success': function(data) {
-			var newSequence = [];
-			if ( !oldSequence.length ) {
-				// Fill gridlist with new items
-				for (var i = 0; i < data.length; i++) {
-					newSequence.push(data[i].id);
-					app.gridList.addItem(data[i]);
-				}
-			} else {
-				for (var i = 0; i < data.length; i++) {
-					newSequence.push(data[i].id);
-					if (oldSequence.indexOf(data[i].id) === -1) {
-						// Add new item
-						app.gridList.addItem(data[i]);
+	
+	if (fetch) {
+		// Update the gridlist
+		var app = this;
+		var oldSequence = this.gridList.sequence;
+		$.ajax({
+			'url': '/:media/' + this.library.id + '/list/thumb',
+			'dataType': 'json',
+			'type': 'GET',
+			'cache': false,
+			'success': function(data) {
+				if ( !oldSequence.length ) {
+					app.gridList.addItems(data);
+				} else {
+					var newSequence = [],
+						newItems = [];
+					for (var i = 0; i < data.length; i++) {
+						newSequence.push(data[i].id);
+						// Collect a list of missing items
+						if (oldSequence.indexOf(data[i].id) === -1) {
+							newItems.push(data[i]);
+						}
 					}
+					// Add missing items
+					app.gridList.addItems(newItems);
+					// Apply new sequence
+					app.library.data.library.items = newSequence;
+					app.gridList.sequenceItems(newSequence);
 				}
+				app.gridList.flow();
 			}
-			app.library.data.library.items = newSequence;
-			app.gridList.sequenceItems(newSequence);
-			app.gridList.flow();
-		}
-	});
+		});
+	}
 };
 
 GalleryApp.prototype.runSlideshow = function(items) {

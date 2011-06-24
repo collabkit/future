@@ -3,7 +3,7 @@
  *     ux-gridlist-load
  *     ux-gridlist-reflow
  *     ux-gridlist-changeItemId [from, to]
- *     ux-gridlist-addItem [id]
+ *     ux-gridlist-addItems [items]
  *     ux-gridlist-removeItems [ids]
  *     ux-gridlist-moveItem [id]
  *     ux-gridlist-dropFile [dataTransfer]id]
@@ -47,9 +47,7 @@ function GridList($container, options) {
 	};
 	
 	// Initialize from options
-	for (var i = 0; i < this.options.items.length; i++) {
-		this.addItem(this.options.items[i]);
-	}
+	this.addItems(this.options.items);
 	
 	// Closure-safe reference to this
 	var gridList = this;
@@ -81,11 +79,6 @@ function GridList($container, options) {
 	
 	// Setup keyboard and mouse interactions
 	$(document).bind({
-		'mousedown': function(e) {
-			if (e.target === gridList.$.get(0)) {
-				return gridList.onMouseDown(e);
-			}
-		},
 		'mouseup': function(e) {
 			return gridList.onMouseUp(e);
 		},
@@ -96,6 +89,9 @@ function GridList($container, options) {
 	
 	// Setup drag and drop interactions
 	this.$.bind({
+		'mousedown': function(e) {
+			return gridList.onMouseDown(e);
+		},
 		'keydown': function(e) {
 			return gridList.onKeyDown(e);
 		},
@@ -130,84 +126,95 @@ GridList.prototype.changeItemId = function(from, to) {
 	this.$.trigger('ux-gridlist-changeItemId', [from, to]);
 };
 
-GridList.prototype.addItem = function(item) {
+GridList.prototype.addItems = function(items) {
+	if (!items.length) {
+		return;
+	}
 	var gridList = this;
-	var $item = GridList.$itemTemplate.clone().attr('ux-object-id', item.id);
-	$item.find('img')
-		.attr({
-			'src': item.src,
-			'width': item.width || 0,
-			'height': item.height || 0
-		})
-		.bind({
-			'load': function() {
-				gridList.items[item.id].width = $item.outerWidth();
-				gridList.items[item.id].height = $item.outerHeight();
-				gridList.flow(true);
-			},
-			'mousedown': function(e) {
-				if (!gridList.keys.shift) {
-					gridList.$.find('.ux-gridlist-selected').removeClass('ux-gridlist-selected');
-				}
-				$item.addClass('ux-gridlist-selected');
-				e.stopPropagation();
-			},
-			'dragstart': function(e) {
-				var dt = e.originalEvent.dataTransfer;
-				dt.dropEffect = 'move';
-				dt.effectAllowed = 'move';
-				$item.addClass( 'ux-gridlist-dragging' );
-				gridList.$placeholder = $item;
-				gridList.drag.active = true;
-				gridList.drag.width = gridList.$placeholder.width();
-				gridList.drag.height = gridList.$placeholder.height();
-				var offset = gridList.$placeholder.offset();
-				gridList.drag.offsetX = e.pageX - offset.left;
-				gridList.drag.offsetY = e.pageY - offset.top;
-				return true;
-			},
-			'dragend': function(e) {
-				gridList.$placeholder.removeClass( 'ux-gridlist-dragging' );
-				var id = gridList.$placeholder.attr('ux-object-id');
-				$left = gridList.$.find('.ux-gridlist-dragging-over-left:first');
-				if ($left.length) {
-					var target = $left.attr('ux-object-id');
-					gridList.moveItemBefore(id, target);
-				} else {
-					$right = gridList.$.find('.ux-gridlist-dragging-over-right:last');
-					if ($right.length) {
-						var target = $right.attr('ux-object-id');
-						gridList.moveItemAfter(id, target);
+	$.each(items, function(i, item) {
+		var $item = GridList.$itemTemplate.clone().attr('ux-object-id', item.id);
+		$item.find('img')
+			.attr({
+				'src': item.src,
+				'width': item.width || null,
+				'height': item.height || null
+			})
+			.bind({
+				'load': function() {
+					gridList.items[item.id].width = $item.outerWidth();
+					gridList.items[item.id].height = $item.outerHeight();
+					gridList.flow(true);
+				},
+				'mousedown': function(e) {
+					if (!gridList.keys.shift) {
+						gridList.$
+							.find('.ux-gridlist-selected')
+								.removeClass('ux-gridlist-selected');
 					}
+					$item.addClass('ux-gridlist-selected');
+					e.stopPropagation();
+				},
+				'dragstart': function(e) {
+					var dt = e.originalEvent.dataTransfer;
+					dt.dropEffect = 'move';
+					dt.effectAllowed = 'move';
+					$item.addClass( 'ux-gridlist-dragging' );
+					gridList.$placeholder = $item;
+					gridList.drag.active = true;
+					gridList.drag.width = gridList.$placeholder.width();
+					gridList.drag.height = gridList.$placeholder.height();
+					var offset = gridList.$placeholder.offset();
+					gridList.drag.offsetX = e.pageX - offset.left;
+					gridList.drag.offsetY = e.pageY - offset.top;
+					return true;
+				},
+				'dragend': function(e) {
+					gridList.$placeholder.removeClass( 'ux-gridlist-dragging' );
+					var id = gridList.$placeholder.attr('ux-object-id');
+					$left = gridList.$.find('.ux-gridlist-dragging-over-left:first');
+					if ($left.length) {
+						var target = $left.attr('ux-object-id');
+						gridList.moveItemBefore(id, target);
+					} else {
+						$right = gridList.$.find('.ux-gridlist-dragging-over-right:last');
+						if ($right.length) {
+							var target = $right.attr('ux-object-id');
+							gridList.moveItemAfter(id, target);
+						}
+					}
+					gridList.$placeholder
+						.css('opacity', 0.75)
+						.animate({'opacity': 1}, {
+							'duration': gridList.options.animationSpeed,
+							'easing': gridList.options.animationEasing,
+							'queue': true
+						});
+					gridList.drag.active = false;
+					gridList.drag.width = 0;
+					gridList.$
+						.find('.ux-gridlist-dragging-over-left,.ux-gridlist-dragging-over-right')
+							.removeClass(
+								'ux-gridlist-dragging-over-left ux-gridlist-dragging-over-right'
+							);
+					gridList.flow();
+					return false;
 				}
-				gridList.$placeholder
-					.css('opacity', 0.75)
-					.animate({'opacity': 1}, {
-						'duration': gridList.options.animationSpeed,
-						'easing': gridList.options.animationEasing,
-						'queue': true
-					});
-				gridList.drag.active = false;
-				gridList.drag.width = 0;
-				gridList.$.find('.ux-gridlist-dragging-over-left,.ux-gridlist-dragging-over-right')
-					.removeClass(
-						'ux-gridlist-dragging-over-left ux-gridlist-dragging-over-right'
-					);
-				gridList.flow();
-				return false;
-			}
-		});
-	this.items[item.id] = {
-		'$': $item,
-		'width': item.width || $item.outerWidth(),
-		'height': item.height || $item.outerHeight()
-	};
-	this.sequence.push(item.id);
-	this.$.append($item);
-	this.$.trigger('ux-gridlist-addItem', [item.id]);
+			});
+		gridList.$.append($item);
+		gridList.items[item.id] = {
+			'$': $item,
+			'width': $item.outerWidth(),
+			'height': $item.outerHeight()
+		};
+		gridList.sequence.push(item.id);
+	});
+	this.$.trigger('ux-gridlist-addItems', [items]);
 };
 
 GridList.prototype.removeItems = function(ids) {
+	if (!ids.length) {
+		return;
+	}
 	var gridList = this;
 	for (var i = 0; i < ids.length; i++) {
 		this.items[ids[i]].$.fadeOut(
@@ -299,7 +306,7 @@ GridList.prototype.flow = function(now) {
 				'top': this.grid.rows[row].top
 			};
 			if (this.flowed && !now) {
-				if (!this.$placeholder || $item.get(0) !== this.$placeholder.get(0)) {
+				if (!this.$placeholder || $item[0] !== this.$placeholder[0]) {
 					$item
 						.stop(true)
 						.animate(style, {
@@ -401,8 +408,8 @@ GridList.prototype.onDragOver = function(e) {
 			}
 		}
 	}
-	if (this.$placeholder && ($left.first().get(0) === this.$placeholder.get(0)
-			|| $right.last().get(0) === this.$placeholder.get(0))) {
+	if (this.$placeholder && ($left.first()[0] === this.$placeholder[0]
+			|| $right.last()[0] === this.$placeholder[0])) {
 		$outside = $outside.add($left).add($right);
 	} else {
 		$left.filter(':not(.ux-gridlist-dragging-over-left)')
