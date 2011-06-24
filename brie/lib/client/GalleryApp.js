@@ -12,7 +12,7 @@ function GalleryApp() {
 				}
 			});
 		},
-		'ux-gridlist-removeItem': function(e, id) {
+		'ux-gridlist-removeItems': function(e, ids) {
 			app.library.data.library.items = app.gridList.sequence;
 			app.store.updateObjectRef(
 				'collabkit-library',

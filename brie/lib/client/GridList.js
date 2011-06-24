@@ -4,7 +4,7 @@
  *     ux-gridlist-reflow
  *     ux-gridlist-changeItemId [from, to]
  *     ux-gridlist-addItem [id]
- *     ux-gridlist-removeItem [id]
+ *     ux-gridlist-removeItems [ids]
  *     ux-gridlist-moveItem [id]
  *     ux-gridlist-dropFile [dataTransfer]id]
  *     ux-gridlist-select [selection]
@@ -207,15 +207,20 @@ GridList.prototype.addItem = function(item) {
 	this.$.trigger('ux-gridlist-addItem', [item.id]);
 };
 
-GridList.prototype.removeItem = function(id) {
+GridList.prototype.removeItems = function(ids) {
 	var gridList = this;
-	this.items[id].$.fadeOut(this.options.animationSpeed, this.options.animationEasing, function() {
-		$(this).remove();
-		gridList.flow();
-	});
-	delete this.items[id];
-	this.sequence.splice(this.sequence.indexOf(id), 1);
-	this.$.trigger('ux-gridlist-removeItem', [id]);
+	for (var i = 0; i < ids.length; i++) {
+		this.items[ids[i]].$.fadeOut(
+			this.options.animationSpeed,
+			this.options.animationEasing, function() {
+				$(this).remove();
+			}
+		);
+		delete this.items[ids[i]];
+		this.sequence.splice(this.sequence.indexOf(ids[i]), 1);
+	}
+	gridList.flow();
+	this.$.trigger('ux-gridlist-removeItems', [ids]);
 };
 
 GridList.prototype.moveItemBefore = function(id, target) {
@@ -457,10 +462,7 @@ GridList.prototype.onKeyDown = function(e) {
 	this.keys.shift = e.shiftKey;
 	// Handle selection deletions
 	if (e.keyCode == 8 || e.keyCode == 46) {
-		var selection = this.getSelection();
-		for ( var i = 0; i < selection.length; i++) {
-			this.removeItem(selection[i]);
-		}
+		this.removeItems(this.getSelection());
 		e.preventDefault();
 		return false;
 	}
