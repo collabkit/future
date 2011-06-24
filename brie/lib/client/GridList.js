@@ -18,7 +18,7 @@ function GridList($container, options) {
 		'autoScrollStep': 150,
 		'items': []
 	}, options);
-	this.loaded = false;
+	this.flowed = false;
 	this.items = {};
 	this.sequence = [];
 	this.grid = {
@@ -59,8 +59,9 @@ function GridList($container, options) {
 	$(window).bind({
 		'load': function() {
 			gridList.grid.width = gridList.measure();
-			gridList.flow();
-			gridList.loaded = true;
+			if (gridList.sequence.length) {
+				gridList.flow();
+			}
 			gridList.$.trigger('ux-gridlist-load');
 		},
 		'resize': function() {
@@ -69,7 +70,9 @@ function GridList($container, options) {
 				gridList.grid.width = newWidth;
 				clearTimeout(reflowTimeout);
 				reflowTimeout = setTimeout(function() {
-					gridList.flow();
+					if (gridList.sequence.length) {
+						gridList.flow();
+					}
 				}, gridList.options.reflowDelay);
 				gridList.$.trigger('ux-gridlist-reflow');
 			}
@@ -140,7 +143,7 @@ GridList.prototype.addItem = function(item) {
 			'load': function() {
 				gridList.items[item.id].width = $item.outerWidth();
 				gridList.items[item.id].height = $item.outerHeight();
-				gridList.flow();
+				gridList.flow(true);
 			},
 			'mousedown': function(e) {
 				if (!gridList.keys.shift) {
@@ -248,7 +251,7 @@ GridList.prototype.measure = function() {
 	return width;
 };
 
-GridList.prototype.flow = function() {
+GridList.prototype.flow = function(now) {
 	var left = 0,
 		top = 0,
 		row = 0;
@@ -290,7 +293,7 @@ GridList.prototype.flow = function() {
 				'left': this.grid.rows[row].items[col].left,
 				'top': this.grid.rows[row].top
 			};
-			if (this.loaded) {
+			if (this.flowed && !now) {
 				if (!this.$placeholder || $item.get(0) !== this.$placeholder.get(0)) {
 					$item
 						.stop(true)
@@ -311,6 +314,7 @@ GridList.prototype.flow = function() {
 			}
 		}
 	}
+	this.flowed = true;
 };
 
 GridList.prototype.onDragOver = function(e) {

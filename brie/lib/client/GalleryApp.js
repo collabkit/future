@@ -29,9 +29,6 @@ function GalleryApp() {
 			// Figure out which photo(s) were moved and update the server
 			var items = app.gridList.sequence;
 			if (app.library.data.library.items.length != items.length) {
-				// oh nooooooooo
-				console.log('old items', app.library.data.library.items);
-				console.log('new items', items);
 				throw new Error('Sorting resulted in mismatched item list');
 			}
 			
@@ -157,41 +154,23 @@ GalleryApp.prototype.uploadFiles = function(files, callback) {
 		}
 		var file = files[i];
 		i++;
-
-		//var $entry = $('<div class="photo-entry"></div>');
-		//var $msg = $('<div class="collabkit-photo-loading"></div>');
-		//$('#app-gallery').append($entry.append($msg));
-
-		//$msg.text('Uploading...');
 		app.store.createObject(file, function(result, err) {
 			if (result) {
 				var photoId = result.id;
-				//$msg.text('Updating library...');
-				app.library.data.library.items.push(photoId);
-				app.store.updateObjectRef('collabkit-library', app.library.data, function(result, err) {
-					if (result) {
-						//$entry.empty()
-						//that.showThumb($entry, photoId);
-						app.gridList.addItem({
-							'id': photoId,
-							'src': '/:media/' + photoId + '/thumb'
-						});
-					} else {
-						//$msg.text('Failed to update library.');
-						//setTimeout( function() {
-						//	$entry.fadeOut( function() {
-						//		$entry.remove();
-						//	} );
-						//}, 3000 );
-					}
+				app.gridList.addItem({
+					'id': photoId,
+					'src': '/:media/' + photoId + '/photo/thumb',
+					'width': result.data.photo.thumbs.thumb.width,
+					'height': result.data.photo.thumbs.thumb.height
 				});
-			} else {
-				//$msg.text('Failed to upload.');
-				//setTimeout( function() {
-				//	$entry.fadeOut( function() {
-				//		$entry.remove();
-				//	} );
-				//}, 3000 );
+				app.gridList.flow(true);
+				if ( i === files.length - 1 ) {
+					app.store.updateObjectRef(
+						'collabkit-library',
+						app.library.data,
+						function(result, err) {}
+					);
+				}
 			}
 			uploadNextFile();
 		});
@@ -244,7 +223,7 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 			} else {
 				for (var i = 0; i < data.length; i++) {
 					newSequence.push(data[i].id);
-					if ( oldSequence.indexOf(data[i].id) === -1 ) {
+					if (oldSequence.indexOf(data[i].id) === -1) {
 						// Add new item
 						app.gridList.addItem(data[i]);
 					}
