@@ -15,7 +15,7 @@ function GridList($container, options) {
 		'reflowDelay': 150,
 		'animationSpeed': 'fast',
 		'animationEasing': 'quintEaseInOut',
-		'autoScrollStep': 150,
+		'autoScrollStep': 180,
 		'items': []
 	}, options);
 	this.flowed = false;
@@ -329,55 +329,59 @@ GridList.prototype.flow = function(now) {
 	this.flowed = true;
 };
 
+GridList.prototype.handleAutoScroll = function(top) {
+	if ( this.autoScroll.active ) {
+		return;
+	}
+	var scrollTop = this.$.scrollTop();
+	var height = this.$[0].scrollHeight;
+	var view = this.$.outerHeight();
+	var autoScrollBorder = view * 0.1;
+	if (view < height) {
+		var gridList = this;
+		if (top < scrollTop + autoScrollBorder) {
+			// Scroll up
+			this.autoScroll.active = true;
+			this.$.scrollTo(
+				'-=' + this.options.autoScrollStep + 'px',
+				{
+					'axis': 'y',
+					'duration': this.options.animationSpeed,
+					'easing': this.options.animationEasing,
+					'onAfter': function() {
+						gridList.autoScroll.active = false;
+					}
+				}
+			);
+		} else if (top > ( scrollTop + view ) - autoScrollBorder) {
+			// Scroll down
+			this.autoScroll.active = true;
+			this.$.scrollTo(
+				'+=' + this.options.autoScrollStep + 'px',
+				{
+					'axis': 'y',
+					'duration': this.options.animationSpeed,
+					'easing': this.options.animationEasing,
+					'onAfter': function() {
+						gridList.autoScroll.active = false;
+					}
+				}
+			);
+		}
+	}
+};
+
 GridList.prototype.onDragOver = function(e) {
 	if (e.dataTransfer && typeof e.dataTransfer.files === 'object') {
 		e.preventDefault();
 		return false;
 	}
 	// This fires over and over, like mousemove
-	var containerOffset = this.$.offset();
-	var left = e.pageX - containerOffset.left,
-		top = e.pageY - containerOffset.top;
+	var offset = this.$.offset();
+	var left = e.pageX - offset.left,
+		top = e.pageY - offset.top + this.$.scrollTop();
 	
-	// Auto-scroll
-	if ( !this.autoScroll.active ) {
-		var scrollTop = this.$.scrollTop();
-		var height = this.$.outerHeight();
-		var view = $(window).height();
-		var autoScrollBorder = view * 0.2;
-		if (view < height) {
-			var gridList = this;
-			if (top < scrollTop + autoScrollBorder) {
-				// Scroll up
-				this.autoScroll.active = true;
-				this.$.scrollTo(
-					'-=' + this.options.autoScrollStep + 'px',
-					{
-						'axis': 'y',
-						'duration': this.options.animationSpeed,
-						'easing': this.options.animationEasing,
-						'onAfter': function() {
-							gridList.autoScroll.active = false;
-						}
-					}
-				);
-			} else if (top > ( scrollTop + view ) - autoScrollBorder) {
-				// Scroll down
-				this.autoScroll.active = true;
-				this.$.scrollTo(
-					'+=' + this.options.autoScrollStep + 'px',
-					{
-						'axis': 'y',
-						'duration': this.options.animationSpeed,
-						'easing': this.options.animationEasing,
-						'onAfter': function() {
-							gridList.autoScroll.active = false;
-						}
-					}
-				);
-			}
-		}
-	}
+	this.handleAutoScroll(top);
 	
 	// Only continue when the mouse moves
 	if ( this.drag.position && left === this.drag.position.left
@@ -483,9 +487,12 @@ GridList.prototype.onMouseDown = function(e) {
 	this.$.find('.ux-gridlist-selected').removeClass('ux-gridlist-selected');
 	this.$.trigger('ux-gridlist-select', [[]]);
 	if (e.button === 0) {
+		var offset = this.$.offset();
 		this.marquee.active = true;
-		this.marquee.left = e.layerX;
-		this.marquee.top = e.layerY;
+		this.marquee.left = e.pageX - offset.left;
+		this.marquee.top = e.pageY - offset.top + this.$.scrollTop();
+		e.stopPropagation();
+		return false;
 	}
 };
 
@@ -518,6 +525,7 @@ GridList.prototype.onMouseMove = function(e) {
 				this.$.width() - 5
 			),
 			y = Math.min(Math.max(e.pageY - offset.top, 5), scrollHeight - 5);
+		this.handleAutoScroll(y);
 		if (x < this.marquee.left) {
 			if (y < this.marquee.top) {
 				// Up and left
