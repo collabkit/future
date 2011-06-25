@@ -25,14 +25,10 @@ function GalleryApp() {
 			);
 		},
 		'ux-gridlist-moveItem': function() {
-			// 'change' triggers during UI operations; 'update' only at end.
-			// Figure out which photo(s) were moved and update the server
 			var items = app.gridList.sequence;
 			if (app.library.data.library.items.length != items.length) {
 				throw new Error('Sorting resulted in mismatched item list');
 			}
-			
-			// Store them new sorted items!
 			app.library.data.library.items = items;
 			app.store.updateObjectRef('collabkit-library', app.library.data, function(result, err) {
 				if (err) {
@@ -46,67 +42,96 @@ function GalleryApp() {
 			$(this).focus();
 		}
 	});
-	this.$toolbar = $('#app-toolbar').ux('toolbar', { 'config': {
-		'contents': [
- 			$.ux.create( 'toolbarGroup', {'id': 'app-toolbar-gallery', 'config': {
- 				'label': 'Gallery',
- 				'icon': 'gallery',
- 				'contents': [
- 					$.ux.create( 'toolbarUploadButton', {'id':'app-toolbar-import', 'config':{
- 						'label': 'Import',
- 						'icon': 'folder',
- 						'multiple': true
- 					}})
- 					.bind('ux.execute', function(event, data) {
- 						// This version requires FileAPI: Firefox 3.5+ and Chrome ok
- 						if (data.input.files && data.input.files.length > 0) {
- 							app.uploadFiles(data.input.files, function() {
- 								// Clear it out...
- 								$(data.input).val('');
- 							});
- 						}
- 					}),
- 					$.ux.create('toolbarButton', {'id': 'app-toolbar-slideshow', 'config': {
- 						'label': 'Slideshow',
- 						'icon': 'slideshow',
- 					}})
- 					.bind('ux.execute', function() {
- 						app.runSlideshow(app.gridList.sequence);
- 					})
- 				]
- 			}}),
- 			$.ux.create('toolbarGroup', {'id': 'app-toolbar-picture', 'config': {
- 				'label': 'Picture',
- 				'icon': 'block',
- 				'contents': [
- 					$.ux.create('toolbarButton', {'id': 'app-toolbar-moveup', 'config': {
- 						'label': 'Move up',
- 						'icon': 'up',
- 					}})
- 					.bind('ux.execute', function() {
- 						// Move selection up
- 						//app.doMovePhotos(-1);
- 					}),
- 					$.ux.create('toolbarButton', {'id': 'app-toolbar-movedown', 'config': {
- 						'label': 'Move down',
- 						'icon': 'down',
- 					}})
- 					.bind('ux.execute', function() {
- 						// Move selection down
- 						//app.doMovePhotos(1);
- 					}),
- 					$.ux.create('toolbarButton', {'id': 'app-toolbar-delete', 'config': {
- 						'label': 'Delete',
- 						'icon': 'delete',
- 					}})
- 					.bind('ux.execute', function() {
- 						// Delete selection
- 						//app.deleteSelected();
- 					})
- 				]
- 			}})
- 		]
- 	}});
+	
+	this.$toolbar = $('#app-toolbar').ux('toolbar', {
+		'set': {
+			'contents': [
+	 			$('<div></div>').ux('toolbarGroup', {
+	 				'set': {
+		 				'id': 'app-toolbar-gallery',
+		 				'label': 'Gallery',
+		 				'icon': 'gallery',
+		 				'contents': [
+		 					$('<div></div>').ux( 'toolbarUploadButton', {
+			 					'set':{
+			 						'id':'app-toolbar-import',
+			 						'label': 'Import',
+			 						'icon': 'folder',
+			 						'multiple': true
+			 					},
+			 					'bind': {
+			 						'ux-toolbarUploadButton-execute': function(event, data) {
+				 						app.uploadFiles(data.input.files, function(err) {
+				 							if (err) {
+				 								alert(err);
+				 							}
+				 						});
+				 					}
+			 					}
+		 					}),
+		 					$('<div></div>').ux('toolbarButton', {
+			 					'set': {
+			 						'id': 'app-toolbar-slideshow',
+			 						'label': 'Slideshow',
+			 						'icon': 'slideshow',
+			 					},
+			 					'bind': {
+			 						'ux-toolbarButton-execute': function() {
+				 						app.runSlideshow(app.gridList.sequence);
+				 					}
+			 					}
+		 					})
+		 				]
+	 				}
+	 			}),
+	 			$('<div></div>').ux('toolbarGroup', {
+	 				'set': {
+		 				'id': 'app-toolbar-picture',
+		 				'label': 'Picture',
+		 				'icon': 'block',
+		 				'contents': [
+		 					$('<div></div>').ux('toolbarButton', {
+		 						'set': {
+			 						'id': 'app-toolbar-moveup',
+			 						'label': 'Move up',
+			 						'icon': 'up',
+			 					},
+			 					'bind': {
+			 						'ux-toolbarButton-execute': function() {
+				 						// Move selection up
+				 					}
+			 					}
+		 					}),
+		 					$('<div></div>').ux('toolbarButton', {
+			 					'set': {
+			 						'id': 'app-toolbar-movedown',
+			 						'label': 'Move down',
+			 						'icon': 'down',
+			 					},
+			 					'bind': {
+			 						'ux-toolbarButton-execute': function() {
+				 						// Move selection down
+				 					}
+			 					}
+		 					}),
+		 					$('<div></div>').ux('toolbarButton', {
+		 						'set': {
+			 						'id': 'app-toolbar-delete',
+			 						'label': 'Delete',
+			 						'icon': 'delete',
+			 					},
+			 					'bind': {
+			 						'ux-toolbarButton-execute': function() {
+			 							// Delete selection
+			 						}
+			 					}
+		 					})
+		 				]
+		 			}
+	 			})
+	 		]
+		}
+	});
 	
 	// Load the initial library data
 	$.get('/:data/collabkit-library', function(data, xhr) {

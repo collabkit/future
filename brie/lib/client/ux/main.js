@@ -1,5 +1,32 @@
 /**
  * jQuery initialization and configuration interface
+ * 
+ * Initialization
+ * 
+ * $('...').ux('element-type');
+ * 
+ * $('...').ux('element-type', {
+ *     'set': { configuration key/value pairs },
+ *     'bind': { event/function pairs }
+ * });
+ * 
+ * Single operation
+ * 
+ * $('...').ux('get', 'config-key');
+ * $('...').ux('set', 'config-key', 'config-value');
+ * $('...').ux('bind', 'event-name', function );
+ * $('...').ux('unbind', 'event-name', function );
+ * 
+ * Multiple operations
+ * 
+ * $('...').ux('set', { key value pairs });
+ * $('...').ux('bind', { event/function pairs });
+ * $('...').ux('unbind', { event/function pairs });
+ * $('...').ux({
+ *     'set': { configuration key/value pairs },
+ *     'bind': { event/function pairs },
+ *     'unbind': { event/function pairs },
+ * });
  */
 $.fn.ux = function() {
 	var args = $.makeArray(arguments),
@@ -7,45 +34,71 @@ $.fn.ux = function() {
 	$(this).each( function() {
 		var $this = $(this),
 			model,
-			type = $this.attr('ux-type');
+			type = $this.attr('ux-type'),
+			operations;
 		if (!type && args.length) {
+			// Element is not yet initialized, accept type from first parameter
 			type = args[0];
-			model = $.ux.elements[type];
+			// Validate type
 			if (!(type in $.ux.elements)) {
 				throw "Unkonwn UX element type error. " + type + " is not a valid element type.";
 			}
-			// Auto-initialize
-			if (args.length >= 2) {
-				model.initialize($this, args[1]);
-				args.shift();
-				args.shift();
-			} else {
-				model.initialize($this);
-				args.shift();
-			}
+			// Store type in attribute
 			$this.attr('ux-type', type);
-		} else {
+			// Shortcut to model
 			model = $.ux.elements[type];
+			// Initialize element
+			model.init($this);
+			// Accept operations from second argument
+			if (args.length === 2 && $.isPlainObject(args[1])) {
+				operations = args[1];
+			}
+		} else {
+			// Shortcut to model
+			model = $.ux.elements[type];
+			// Handle $('...').ux('operation type', 'operation key', value); calling method
+			if (args.length === 3 && typeof args[0] === 'string' && typeof args[1] === 'string') {
+				operations = {};
+				operations[args[0]] = {};
+				operations[args[0]][args[1]] = args[2];
+			}
+			// Handle $('...').ux('operation type', operations or value); calling method
+			else if (args.length === 2 && typeof args[0] === 'string') {
+				operations = {};
+				operations[args[0]] = args[1];
+			}
+			// Handle $('...').ux({ list of operations grouped by type }); calling method
+			else if (args.length === 1 && $.isPlainObject(args[0])) {
+				operations = args[0];
+			}
 		}
-		if (args.length) {
-			// Configure
-			var config = args[0];
-			if ($.isPlainObject(config)) {
-				for (var key in config) {
-					if (key in model.setters) {
-						model.setters[key]($this, config[key]);
-					}
-				}
-			} else if ($.type(config) === 'string') {
-				if (args.length >= 2) {
-					if (config in model.setters) {
-						model.setters[config]($this, args[1]);
-					}
-				} else {
-					if (config in model.getters) {
-						result = model.getters[config]($this);
-						return false;
-					}
+		if (operations) {
+			for (method in operations) {
+				var operation = operations[method];
+				switch (method) {
+					case 'get':
+						if (operation in model.get) {
+							result = model.get[operation]($this);
+							return false;
+						}
+						break;
+					case 'set':
+						for (var key in operation) {
+							if (key in model.set) {
+								model.set[key]($this, operation[key]);
+							}
+						}
+						break;
+					case 'bind':
+						for (var key in operation) {
+							$this.bind(key, operation[key]);
+						}
+						break;
+					case 'unbind':
+						for (var key in operation) {
+							$this.unbind(key, operation[key]);
+						}
+						break;
 				}
 			}
 		}
@@ -59,29 +112,27 @@ $.fn.ux = function() {
  * By sharing these static functions globally we can greatly reduce memory overhead.
  */
 $.ux = {
-	'elements': {},
-	'create': function(type, options) {
-		var $element = $('<div />');
-		if ('id' in options) {
-			$element.attr('id', options.id);
-		}
-		$element.ux(type, options.init || null, options.config);
-		return $element;
-	}
+	'elements': {}
 };
 
 $.ux.elements.toolbar = {
-	'initialize': function($this) {
+	'init': function($this) {
 		$this
 			.addClass('ux-toolbar')
 			.append('<div class="ux-toolbar-contents"></div>');
 	},
-	'getters': {
+	'get': {
+		'id': function($this) {
+			return $this.attr('id');
+		},
 		'contents': function($this) {
 			return $this.find('.ux-toolbar-contents');
 		}
 	},
-	'setters': {
+	'set': {
+		'id': function($this, val) {
+			$this.attr('id', val);
+		},
 		'contents': function($this, val) {
 			var $contents = $this.find('.ux-toolbar-contents');
 			$contents.empty();
@@ -97,13 +148,16 @@ $.ux.elements.toolbar = {
 };
 
 $.ux.elements.toolbarGroup = {
-	'initialize': function($this) {
+	'init': function($this) {
 		$this
 			.addClass('ux-toolbarGroup')
 			.append('<div class="ux-toolbarGroup-label"></div>'
 					+ '<div class="ux-toolbarGroup-contents"></div>');
 	},
-	'getters': {
+	'get': {
+		'id': function($this) {
+			return $this.attr('id');
+		},
 		'label': function($this) {
 			return $this.find('.ux-toolbarGroup-label').text();
 		},
@@ -114,7 +168,10 @@ $.ux.elements.toolbarGroup = {
 			return $this.find('.ux-toolbarGroup-contents');
 		}
 	},
-	'setters': {
+	'set': {
+		'id': function($this, val) {
+			$this.attr('id', val);
+		},
 		'label': function($this, val) {
 			$this.find('.ux-toolbarGroup-label').text(val);
 		},
@@ -140,17 +197,20 @@ $.ux.elements.toolbarGroup = {
 };
 
 $.ux.elements.toolbarButton = {
-	'initialize': function($this) {
+	'init': function($this) {
 		$this
 			.addClass('ux-toolbarButton')
 			.append('<div class="ux-toolbarButton-label"></div>')
 			.click(function() {
 				if ($this.is(':not([ux-disabled])')) {
-					$this.triggerHandler('ux.execute');
+					$this.triggerHandler('ux-toolbarButton-execute');
 				}
 			});
 	},
-	'getters': {
+	'get': {
+		'id': function($this) {
+			return $this.attr('id');
+		},
 		'label': function($this) {
 			return $this.find('.ux-toolbarButton-label').text();
 		},
@@ -161,7 +221,10 @@ $.ux.elements.toolbarButton = {
 			return $this.attr('ux-disabled') === 'disabled';
 		}
 	},
-	'setters': {
+	'set': {
+		'id': function($this, val) {
+			$this.attr('id', val);
+		},
 		'label': function($this, val) {
 			$this.find('.ux-toolbarButton-label').text(val);
 		},
@@ -183,7 +246,7 @@ $.ux.elements.toolbarButton = {
 };
 
 $.ux.elements.toolbarUploadButton = {
-	'initialize': function($this) {
+	'init': function($this) {
 		var id = 'ux-toolbarUploadButton-' + $('input:file').length;
 		$this
 			.addClass('ux-toolbarButton')
@@ -197,11 +260,17 @@ $.ux.elements.toolbarUploadButton = {
 				.end()
 			.change(function() {
 				if ($this.is(':not([ux-disabled])')) {
-					$this.triggerHandler('ux.execute', {'input': $this.find('input:file').get(0)});
+					$this.triggerHandler(
+						'ux-toolbarUploadButton-execute',
+						{'input': $this.find('input:file').get(0)}
+					);
 				}
 			});
 	},
-	'getters': {
+	'get': {
+		'id': function($this) {
+			return $this.attr('id');
+		},
 		'label': function($this) {
 			return $this.find('.ux-toolbarButton-label').text();
 		},
@@ -215,7 +284,10 @@ $.ux.elements.toolbarUploadButton = {
 			return !!$this.find('input:file').attr('multiple');
 		}
 	},
-	'setters': {
+	'set': {
+		'id': function($this, val) {
+			$this.attr('id', val);
+		},
 		'label': function($this, val) {
 			$this.find('.ux-toolbarButton-label').text(val);
 		},
