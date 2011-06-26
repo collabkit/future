@@ -11,6 +11,7 @@
  */
 function GridList($container, options) {
 	this.$ = $container.addClass('ux-gridlist');
+	this.$grid = $('<div class="ux-gridlist-grid"></div>').appendTo(this.$);
 	this.options = $.extend({
 		'reflowDelay': 150,
 		'animationSpeed': 'fast',
@@ -37,7 +38,7 @@ function GridList($container, options) {
 		'active': false,
 		'top': 0,
 		'left': 0,
-		'$': $('<div class="ux-gridlist-marquee"></div>').appendTo(this.$)
+		'$': $('<div class="ux-gridlist-marquee"></div>').appendTo(this.$grid)
 	};
 	this.keys = {
 		'shift': false
@@ -200,7 +201,7 @@ GridList.prototype.addItems = function(items) {
 					return false;
 				}
 			});
-		gridList.$.append($item);
+		gridList.$grid.append($item);
 		gridList.items[item.id] = {
 			'$': $item,
 			'width': $item.outerWidth(),
@@ -257,24 +258,25 @@ GridList.prototype.sequenceItems = function(sequence) {
 };
 
 GridList.prototype.measure = function() {
-	var $ruler = GridList.$ruler.appendTo(this.$);
+	var $ruler = GridList.$ruler.appendTo(this.$grid);
 	var width = $ruler.innerWidth();
 	$ruler.detach();
 	return width;
 };
 
 GridList.prototype.flow = function(now) {
-	var left = 0,
-		top = 0,
+	var pad = 10,
+		left = pad,
+		top = pad,
 		row = 0;
 	this.grid.rows = [{
 		'items': [],
-		'top': 0,
+		'top': top,
 		'height': 0
 	}];
 	for (var i = 0; i < this.sequence.length; i++) {
 		var item = this.items[this.sequence[i]];
-		if (left + item.width <= this.grid.width) {
+		if (left + item.width + pad <= this.grid.width) {
 			this.grid.rows[row].height = Math.max(this.grid.rows[row].height, item.height);
 			this.grid.rows[row].items.push({
 				'item': item,
@@ -283,7 +285,7 @@ GridList.prototype.flow = function(now) {
 			left += item.width;
 		} else {
 			row++;
-			left = 0;
+			left = pad;
 			top += item.height;
 			this.grid.rows[row] = {
 				'items':[{
@@ -296,7 +298,13 @@ GridList.prototype.flow = function(now) {
 			left += item.width;
 		}
 	}
-	var bottom = top + this.grid.rows[this.grid.rows.length - 1].height;
+	var bottom = top + this.grid.rows[this.grid.rows.length - 1].height + pad;
+	if (this.$grid.height() != bottom) {
+		this.$grid.animate({'height': bottom}, {
+			'duration': this.options.animationSpeed,
+			'easing': this.options.animationEasing
+		});
+	}
 	for (var row = 0; row < this.grid.rows.length; row++) {
 		for (var col = 0; col < this.grid.rows[row].items.length; col++) {
 			var $item = this.grid.rows[row].items[col].item.$;
@@ -334,7 +342,7 @@ GridList.prototype.handleAutoScroll = function(top) {
 		return;
 	}
 	var scrollTop = this.$.scrollTop();
-	var height = this.$[0].scrollHeight;
+	var height = this.$grid.outerHeight();
 	var view = this.$.outerHeight();
 	var autoScrollBorder = view * 0.1;
 	if (view < height) {
@@ -394,10 +402,10 @@ GridList.prototype.onDragOver = function(e) {
 		$right = $([]),
 		$outside = $([]);
 	for (var row = 0; row < this.grid.rows.length; row++) {
-		if (top > this.grid.rows[row].top
-				&& (row === this.grid.rows.length - 1
-						|| top < this.grid.rows[row].top
-							+ this.grid.rows[row].height)) {
+		if ((row === 0 && top < this.grid.rows[row].top + this.grid.rows[row].height )
+				|| (top > this.grid.rows[row].top
+						&& (row === this.grid.rows.length - 1
+								|| top < this.grid.rows[row].top + this.grid.rows[row].height))) {
 			for (var col = 0; col < this.grid.rows[row].items.length; col++) {
 				var halfWidth = this.grid.rows[row].items[col].item.width / 2;
 				if (left < this.grid.rows[row].items[col].left + halfWidth) {
@@ -455,13 +463,13 @@ GridList.prototype.onDrop = function(e) {
 	if (dt && typeof dt.files == 'object' && dt.files.length) {
 		this.$.trigger('ux-gridlist-dropFile', [dt]);
 	} else {
-		var containerOffset = this.$.offset();
-		if (this.$.find('.ux-gridlist-dragging-over-left:first,'
+		var offset = this.$grid.offset();
+		if (this.$grid.find('.ux-gridlist-dragging-over-left:first,'
 				+ '.ux-gridlist-dragging-over-right:first').length) {
 			this.$placeholder.css({
 				'margin-left': 0,
-				'left': e.pageX - this.drag.offsetX - containerOffset.left,
-				'top': e.pageY - this.drag.offsetY - containerOffset.top
+				'left': e.pageX - this.drag.offsetX - offset.left,
+				'top': e.pageY - this.drag.offsetY - offset.top
 			});
 		}
 	}
@@ -484,13 +492,13 @@ GridList.prototype.onKeyUp = function(e) {
 };
 
 GridList.prototype.onMouseDown = function(e) {
-	this.$.find('.ux-gridlist-selected').removeClass('ux-gridlist-selected');
-	this.$.trigger('ux-gridlist-select', [[]]);
-	if (e.button === 0) {
-		var offset = this.$.offset();
+	if (e.button === 0 && e.layerX < this.$grid.innerWidth()) {
+		this.$grid.find('.ux-gridlist-selected').removeClass('ux-gridlist-selected');
+		this.$.trigger('ux-gridlist-select', [[]]);
+		var offset = this.$grid.offset();
 		this.marquee.active = true;
 		this.marquee.left = e.pageX - offset.left;
-		this.marquee.top = e.pageY - offset.top + this.$.scrollTop();
+		this.marquee.top = e.pageY - offset.top;
 		e.stopPropagation();
 		return false;
 	}
@@ -498,7 +506,7 @@ GridList.prototype.onMouseDown = function(e) {
 
 GridList.prototype.getSelection = function(e) {
 	var selection = [];
-	this.$.find('.ux-gridlist-selected').each(function() {
+	this.$grid.find('.ux-gridlist-selected').each(function() {
 		selection.push($(this).attr('ux-object-id'));
 	});
 	return selection;
@@ -506,25 +514,20 @@ GridList.prototype.getSelection = function(e) {
 
 GridList.prototype.onMouseUp = function(e) {
 	this.$.trigger('ux-gridlist-select', [this.getSelection()]);
-	this.marquee.active = false;
-	this.marquee.$.hide();
+	if (this.marquee.active) {
+		this.marquee.active = false;
+		this.marquee.$.hide();
+	}
 };
 
 GridList.prototype.onMouseMove = function(e) {
 	if (this.marquee.active) {
 		var offset = this.$.offset();
 		offset.top -= this.$.scrollTop();
-		var $last = this.$.find('> .ux-gridlist-item:last'),
-			scrollHeight = Math.max(
-				this.$.height(),
-				$last.position().top + $last.outerHeight() + this.$.scrollTop()
-			),
+		var $last = this.$grid.find('> .ux-gridlist-item:last'),
 			style,
-			x = Math.min(
-				Math.max(e.pageX - offset.left, 5),
-				this.$.width() - 5
-			),
-			y = Math.min(Math.max(e.pageY - offset.top, 5), scrollHeight - 5);
+			x = Math.min(Math.max(e.pageX - offset.left, 0), this.$grid.width()),
+			y = Math.min(Math.max(e.pageY - offset.top, 0), this.$grid.height());
 		this.handleAutoScroll(y);
 		if (x < this.marquee.left) {
 			if (y < this.marquee.top) {

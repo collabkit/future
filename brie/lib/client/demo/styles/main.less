@@ -7,7 +7,7 @@
 	overflow-x: hidden;
 	background-color: transparent;
 }
-.dragover {
+#app-gallery.dragover {
 	background-color: rgba(204,255,204,0.25);
 }
 
@@ -110,8 +110,12 @@
 	.user-select(none);
 	position: absolute;
 	overflow-x: hidden;
-	background-color: #ffffff;
-	cursor: default;
+	overflow-y: auto;
+	
+	&-grid {
+		cursor: default;
+		overflow: hidden;
+	}
 	
 	&-marquee {
 		position: absolute;
@@ -119,6 +123,7 @@
 		border: solid 1px #99cc99;
 		background-color: #eeffee;
 		opacity: 0.5;
+		z-index: 3;
 	}
 	&.ux-gridlist-dragging-over {
 		background-color: #eeeeee;
@@ -127,6 +132,7 @@
 		position: absolute;
 		display: block;
 		padding: 0.5em;
+		z-index: 1;
 		
 		&-frame {
 			border: solid 0.1em #cccccc;
@@ -148,9 +154,9 @@
 			opacity: 0.75;
 			border-style: dashed;
 		}
-				
+		
 		&.ux-gridlist-selected {
-			z-index: 1000;
+			z-index: 2;
 		}
 		
 		&.ux-gridlist-selected .ux-gridlist-item-frame {

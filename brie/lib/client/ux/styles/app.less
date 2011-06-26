@@ -125,13 +125,19 @@ div, ul, li {
 	margin-left: -1.5em;
 }
 
-#app-body {
+#app-body,
+#app-body-mask {
 	position: absolute;
 	top: 6em;
 	left: 0;
 	right: 0;
 	bottom: 3em;
-	overflow: auto;
+	overflow: hidden;
+}
+
+#app-body-mask {
+	z-index: 1000;
+	pointer-events: none;
 	background-image: url(../graphics/themes/green/glow-down.svg), url(../graphics/themes/green/glow-up.svg);
 	background-repeat: repeat-x;
 	background-position: top left, bottom left;
