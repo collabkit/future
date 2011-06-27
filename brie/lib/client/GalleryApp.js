@@ -2,173 +2,174 @@ function GalleryApp() {
 	var app = this;
 	this.library = null;
 	this.store = new ObjectStore();
-	this.$gridList = $('#app-gallery');
-	this.gridList = new GridList(this.$gridList);
-	this.$gridList.bind({
-		'ux-gridlist-dropFile': function(e, dataTransfer) {
-			app.updateToolbar();
-			app.uploadFiles(dataTransfer.files, function(err) {
-				if (err) {
-					alert(err);
-				}
-			});
-		},
-		'ux-gridlist-removeItems': function(e, items, origin) {
-			app.updateToolbar();
-			if (origin === 'user') {
-				app.library.data.library.items = app.gridList.sequence;
-				app.store.updateObjectRef(
-					'collabkit-library',
-					app.library.data,
-					function(result, err) {
-						if (err) {
-							alert(err);
-						} else {
-							app.updateLibrary(result);
-						}
+	this.gridList = $('#app-gallery')
+		.initialize('gridList')
+		.bind({
+			'ux-gridlist-dropFile': function(e, dataTransfer) {
+				app.updateToolbar();
+				app.uploadFiles(dataTransfer.files, function(err) {
+					if (err) {
+						alert(err);
 					}
-				);
-			}
-		},
-		'ux-gridlist-sequenceItems': function(e, sequence, origin) {
-			app.updateToolbar();
-			if (origin === 'user') {
-				if (app.library.data.library.items.length != sequence.length) {
-					throw 'Sorting resulted in mismatched item list';
-				}
-				app.library.data.library.items = sequence;
-				app.store.updateObjectRef(
-					'collabkit-library',
-					app.library.data,
-					function(result, err) {
-						if (err) {
-							alert(err);
-						} else {
-							app.updateLibrary(result);
+				});
+			},
+			'ux-gridlist-removeItems': function(e, items, origin) {
+				app.updateToolbar();
+				if (origin === 'user') {
+					app.library.data.library.items = app.gridList.sequence;
+					app.store.updateObjectRef(
+						'collabkit-library',
+						app.library.data,
+						function(result, err) {
+							if (err) {
+								alert(err);
+							} else {
+								app.updateLibrary(result);
+							}
 						}
+					);
+				}
+			},
+			'ux-gridlist-sequenceItems': function(e, sequence, origin) {
+				app.updateToolbar();
+				if (origin === 'user') {
+					if (app.library.data.library.items.length != sequence.length) {
+						throw 'Sorting resulted in mismatched item list';
 					}
-				);
+					app.library.data.library.items = sequence;
+					app.store.updateObjectRef(
+						'collabkit-library',
+						app.library.data,
+						function(result, err) {
+							if (err) {
+								alert(err);
+							} else {
+								app.updateLibrary(result);
+							}
+						}
+					);
+				}
+			},
+			'ux-gridlist-select': function() {
+				app.updateToolbar();
+			},
+			'mousedown': function() {
+				$(this).focus();
 			}
-		},
-		'ux-gridlist-select': function() {
-			app.updateToolbar();
-		},
-		'mousedown': function() {
-			$(this).focus();
-		}
-	});
-	
-	this.$toolbar = $('#app-toolbar').ux('toolbar', {
-		'set': {
+		})
+		.ux();
+	this.toolbar = $('#app-toolbar')
+		.initialize('toolbar')
+		.config({
 			'contents': [
-	 			$('<div></div>').ux('toolbarGroup', {
-	 				'set': {
-		 				'id': 'app-toolbar-gallery',
-		 				'label': 'Gallery',
-		 				'icon': 'gallery',
-		 				'contents': [
-		 					$('<div></div>').ux( 'toolbarUploadButton', {
-			 					'set':{
-			 						'id':'app-toolbar-import',
-			 						'label': 'Import',
-			 						'icon': 'folder',
-			 						'multiple': true
-			 					},
-			 					'bind': {
+	  			$('<div></div>')
+	  				.initialize('toolbarGroup')
+	  				.config({
+		  				'id': 'app-toolbar-gallery',
+		  				'label': 'Gallery',
+		  				'icon': 'gallery',
+		  				'contents': [
+		  					$('<div></div>')
+		  						.initialize('toolbarUploadButton')
+		  						.config({
+			  						'id':'app-toolbar-import',
+			  						'label': 'Import',
+			  						'icon': 'folder',
+			  						'multiple': true
+			 					})
+			 					.bind({
 			 						'ux-toolbarUploadButton-execute': function(event, data) {
-				 						app.uploadFiles(data.input.files, function(err) {
-				 							if (err) {
-				 								alert(err);
-				 							}
-				 						});
-				 					}
-			 					}
-		 					}),
-		 					$('<div></div>').ux('toolbarButton', {
-			 					'set': {
-			 						'id': 'app-toolbar-slideshow',
-			 						'label': 'Slideshow',
-			 						'icon': 'slideshow',
-			 					},
-			 					'bind': {
-			 						'ux-toolbarButton-execute': function() {
-				 						app.runSlideshow(app.gridList.sequence);
-				 					}
-			 					}
-		 					})
-		 				]
-	 				}
-	 			}),
-	 			$('<div></div>').ux('toolbarGroup', {
-	 				'set': {
-		 				'id': 'app-toolbar-picture',
-		 				'label': 'Picture',
-		 				'icon': 'block',
-		 				'contents': [
-		 					$('<div></div>').ux('toolbarButton', {
-		 						'set': {
-			 						'id': 'app-toolbar-moveup',
-			 						'label': 'Move up',
-			 						'icon': 'up',
-			 					},
-			 					'bind': {
-			 						'ux-toolbarButton-execute': function() {
-			 							var sel = app.gridList.getSelection();
-			 							if (sel.length) {
-				 							var seq = app.gridList.sequence,
-				 							targetIndex = app.gridList.sequence.indexOf(sel[0]) - 1;
-				 							if (targetIndex > -1) {
-					 							app.gridList.moveItemsBefore(sel, seq[targetIndex]);
-				 							} else {
-					 							app.gridList.moveItemsBefore(sel);
-				 							}
-				 							app.gridList.flow();
-			 							}
-				 					}
-			 					}
-		 					}),
-		 					$('<div></div>').ux('toolbarButton', {
-			 					'set': {
-			 						'id': 'app-toolbar-movedown',
-			 						'label': 'Move down',
-			 						'icon': 'down',
-			 					},
-			 					'bind': {
-			 						'ux-toolbarButton-execute': function() {
-			 							var sel = app.gridList.getSelection();
-			 							if (sel.length) {
-				 							var seq = app.gridList.sequence,
-				 								targetIndex = app.gridList.sequence.indexOf(
-				 									sel[sel.length - 1]
-				 								) + 1;
-				 							if (targetIndex < seq.length - 1) {
-					 							app.gridList.moveItemsAfter(sel, seq[targetIndex]);
-				 							} else {
-					 							app.gridList.moveItemsAfter(sel);
-				 							}
-				 							app.gridList.flow();
-			 							}
-				 					}
-			 					}
-		 					}),
-		 					$('<div></div>').ux('toolbarButton', {
-		 						'set': {
-			 						'id': 'app-toolbar-remove',
-			 						'label': 'Remove',
-			 						'icon': 'remove',
-			 					},
-			 					'bind': {
-			 						'ux-toolbarButton-execute': function() {
-			 							app.gridList.removeItems(app.gridList.getSelection());
-			 						}
-			 					}
-		 					})
-		 				]
-		 			}
-	 			})
-	 		]
-		}
-	});
+			 	 						app.uploadFiles(data.input.files, function(err) {
+			 	 							if (err) {
+			 	 								alert(err);
+			 	 							}
+			 	 						});
+			 	 					}
+			 					}),
+		  					$('<div></div>')
+			  					.initialize('toolbarButton')
+			  					.config({
+			  						'id': 'app-toolbar-slideshow',
+			  						'label': 'Slideshow',
+			  						'icon': 'slideshow',
+			  					})
+			  					.bind({
+			  						'ux-toolbarButton-execute': function() {
+			 	 						app.runSlideshow(app.gridList.sequence);
+			 	 					}
+			  					})
+		  				]
+	  				}),
+	  			$('<div></div>')
+	  				.initialize('toolbarGroup')
+	  				.config({
+	 	 				'id': 'app-toolbar-picture',
+	 	 				'label': 'Picture',
+	 	 				'icon': 'block',
+	 	 				'contents': [
+	 	 					$('<div></div>')
+	 	 						.initialize('toolbarButton')
+	 	 						.config({
+	 		 						'id': 'app-toolbar-moveup',
+	 		 						'label': 'Move up',
+	 		 						'icon': 'up',
+	 	 						})
+	 	 						.bind({
+	 		 						'ux-toolbarButton-execute': function() {
+	 		 							var sel = app.gridList.getSelection();
+	 		 							if (sel.length) {
+	 			 							var seq = app.gridList.sequence,
+	 			 							targetIndex = app.gridList.sequence.indexOf(sel[0]) - 1;
+	 			 							if (targetIndex > -1) {
+	 				 							app.gridList.moveItemsBefore(sel, seq[targetIndex]);
+	 			 							} else {
+	 				 							app.gridList.moveItemsBefore(sel);
+	 			 							}
+	 			 							app.gridList.flow();
+	 		 							}
+	 			 					}
+	 		 					}),
+	 	 					$('<div></div>')
+	 	 						.initialize('toolbarButton')
+	 	 						.config({
+	 		 						'id': 'app-toolbar-movedown',
+	 		 						'label': 'Move down',
+	 		 						'icon': 'down'
+	 	 						})
+	 	 						.bind({
+	 	 							'ux-toolbarButton-execute': function() {
+	 		 							var sel = app.gridList.getSelection();
+	 		 							if (sel.length) {
+	 			 							var seq = app.gridList.sequence,
+	 			 								targetIndex = app.gridList.sequence.indexOf(
+	 			 									sel[sel.length - 1]
+	 			 								) + 1;
+	 			 							if (targetIndex < seq.length - 1) {
+	 				 							app.gridList.moveItemsAfter(sel, seq[targetIndex]);
+	 			 							} else {
+	 				 							app.gridList.moveItemsAfter(sel);
+	 			 							}
+	 			 							app.gridList.flow();
+	 		 							}
+	 			 					}
+	 	 						}),
+	 	 					$('<div></div>')
+	 	 						.initialize('toolbarButton')
+	 	 						.config({
+		 	 						'id': 'app-toolbar-remove',
+		 	 						'label': 'Remove',
+		 	 						'icon': 'remove',
+		 	 					})
+		 	 					.bind({
+		 	 						'ux-toolbarButton-execute': function() {
+		 	 							app.gridList.removeItems(app.gridList.getSelection());
+		 	 						}
+		 	 					})
+	 	 				]
+		  			})
+	  		]
+		})
+		.ux();
 	
 	// Load the initial library data
 	$.get('/:data/collabkit-library', function(data, xhr) {
@@ -204,7 +205,7 @@ GalleryApp.prototype.updateToolbar = function() {
 		}
 	}
 	for (var tool in disable) {
-		this.$toolbar.find('#app-toolbar-' + tool).ux('set', 'disabled', disable[tool]);
+		this.toolbar.$.find('#app-toolbar-' + tool).config('disabled', disable[tool]);
 	}
 };
 

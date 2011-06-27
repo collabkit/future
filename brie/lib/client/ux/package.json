@@ -1,7 +1,6 @@
 {
-	"name" : "collabkit-ux",
-	"description" : "User experience.",
+	"name" : "collabKit-ux",
+	"description" : "User experience library.",
 	"author" : "Trevor Parscal <trevorparscal@gmail.com>",
-	"main" : "./main.js"
+	"main" : "./ux.js"
 }
-

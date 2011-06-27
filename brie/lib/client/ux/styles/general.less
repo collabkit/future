@@ -1,3 +1,9 @@
+// Imports
+
+@import "common.less";
+
+// Styles
+
 h1 {
 	font-size: 2em;
 }
@@ -53,4 +59,10 @@ pre, code, kbd, tt {
 
 ::-moz-focus-inner {
 	border: 0;
+}
+
+*[draggable=true] {
+	.user-select(none);
+	-webkit-user-drag: element;
+	-khtml-user-drag: element;
 }
