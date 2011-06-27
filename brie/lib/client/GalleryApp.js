@@ -6,6 +6,7 @@ function GalleryApp() {
 	this.gridList = new GridList(this.$gridList);
 	this.$gridList.bind({
 		'ux-gridlist-dropFile': function(e, dataTransfer) {
+			app.updateToolbar();
 			app.uploadFiles(dataTransfer.files, function(err) {
 				if (err) {
 					alert(err);
@@ -13,6 +14,7 @@ function GalleryApp() {
 			});
 		},
 		'ux-gridlist-removeItems': function(e, ids) {
+			app.updateToolbar();
 			app.library.data.library.items = app.gridList.sequence;
 			app.store.updateObjectRef(
 				'collabkit-library',
@@ -25,6 +27,7 @@ function GalleryApp() {
 			);
 		},
 		'ux-gridlist-moveItems': function() {
+			app.updateToolbar();
 			var items = app.gridList.sequence;
 			if (app.library.data.library.items.length != items.length) {
 				throw new Error('Sorting resulted in mismatched item list');
@@ -35,6 +38,7 @@ function GalleryApp() {
 					alert(err);
 				} else {
 					app.updateLibrary(result);
+					app.updateToolbar();
 				}
 			});
 		},
@@ -167,32 +171,32 @@ function GalleryApp() {
 GalleryApp.prototype.updateToolbar = function() {
 	var sel = this.gridList.getSelection();
 	var seq = this.gridList.sequence;
-	var tools = {
-			'moveup': !(sel.length && sel[0] === seq[0]),
-			'movedown': !(sel.length && sel[sel.length - 1] === seq[seq.length - 1]),
-			'remove': !!sel.length
+	var disable = {
+			'moveup': (!sel.length || sel[0] === seq[0]),
+			'movedown': (!sel.length || sel[sel.length - 1] === seq[seq.length - 1]),
+			'remove': !sel.length
 		}
 	if (sel.length > 1) {
-		if (!tools.moveup) {
+		if (disable.moveup) {
 			for (var i = 1; i < sel.length; i++) {
 				if (sel[i] !== seq[i]) {
-					tools.moveup = true;
-					tools.movedown = true;
+					disable.moveup = false;
+					disable.movedown = false;
 					break;
 				}
 			}
-		} else if (!tools.movedown) {
+		} else if (disable.movedown) {
 			for (var i = 2; i <= sel.length; i++) {
 				if (sel[sel.length - i] !== seq[seq.length - i]) {
-					tools.moveup = true;
-					tools.movedown = true;
+					disable.moveup = false;
+					disable.movedown = false;
 					break;
 				}
 			}
 		}
 	}
-	for (var tool in tools) {
-		this.$toolbar.find('#app-toolbar-' + tool).ux('set', 'disabled', !tools[tool]);
+	for (var tool in disable) {
+		this.$toolbar.find('#app-toolbar-' + tool).ux('set', 'disabled', disable[tool]);
 	}
 };
 

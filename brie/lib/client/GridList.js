@@ -407,11 +407,8 @@ GridList.prototype.handleAutoScroll = function(top) {
 };
 
 GridList.prototype.onDragOver = function(e) {
-	var dt = e.originalEvent.dataTransfer;
-	if (dt && typeof dt.files === 'object') {
+	if (!this.drag.active) {
 		this.$.addClass('ux-gridlist-draggingOver');
-		e.preventDefault();
-		return false;
 	}
 	// This fires over and over, like mousemove
 	var offset = this.$.offset();
@@ -488,17 +485,19 @@ GridList.prototype.onDragOver = function(e) {
 };
 
 GridList.prototype.onDragLeave = function(e) {
-	var dt = e.originalEvent.dataTransfer;
-	if (dt && typeof dt.files === 'object') {
+	if (!this.drag.active) {
 		this.$.removeClass('ux-gridlist-draggingOver');
 	}
+	return false;
 };
 
 GridList.prototype.onDrop = function(e) {
+	if (!this.drag.active) {
+		this.$.removeClass('ux-gridlist-draggingOver');
+	}
 	var dt = e.originalEvent.dataTransfer;
 	if (dt && typeof dt.files == 'object' && dt.files.length) {
 		this.$.trigger('ux-gridlist-dropFile', [dt]);
-		this.$.removeClass('ux-gridlist-draggingOver');
 	} else {
 		var offset = this.$grid.offset();
 		if (this.$grid.find('.ux-gridlist-dragging-over-left:first,'
