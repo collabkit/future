@@ -2,11 +2,11 @@
  * Events
  *     ux-gridlist-load
  *     ux-gridlist-reflow
- *     ux-gridlist-changeItemId [from, to]
- *     ux-gridlist-addItems [items]
- *     ux-gridlist-removeItems [ids]
- *     ux-gridlist-moveItems [id]
- *     ux-gridlist-dropFile [dataTransfer]id]
+ *     ux-gridlist-changeItemId [from, to, origin]
+ *     ux-gridlist-addItems [items, origin]
+ *     ux-gridlist-removeItems [ids, origin]
+ *     ux-gridlist-sequenceItems [sequence, origin]
+ *     ux-gridlist-dropFile [dataTransfer]
  *     ux-gridlist-select [selection]
  */
 function GridList($container, options) {
@@ -119,15 +119,15 @@ GridList.$ruler = $('<div></div>');
 
 /* Methods */
 
-GridList.prototype.changeItemId = function(from, to) {
+GridList.prototype.changeItemId = function(from, to, origin) {
 	this.items[from].$.attr('ux-object-id', to);
 	this.items[to] = this.items[from];
 	delete this.items[from]
 	this.sequence.splice(this.sequence.indexOf(from), 1, to);
-	this.$.trigger('ux-gridlist-changeItemId', [from, to]);
+	this.$.trigger('ux-gridlist-changeItemId', [from, to, origin]);
 };
 
-GridList.prototype.addItems = function(items) {
+GridList.prototype.addItems = function(items, origin) {
 	if (!items.length) {
 		return;
 	}
@@ -156,6 +156,14 @@ GridList.prototype.addItems = function(items) {
 					e.stopPropagation();
 				},
 				'dragstart': function(e) {
+					$item.prepend(
+						$('<div class="ux-gridlist-mask"></div>')
+							.fadeTo(
+								gridList.options.animationSpeed,
+								0.75,
+								gridList.options.animationEasing
+							)
+					);
 					var dt = e.originalEvent.dataTransfer;
 					dt.dropEffect = 'move';
 					dt.effectAllowed = 'move';
@@ -170,26 +178,20 @@ GridList.prototype.addItems = function(items) {
 					return true;
 				},
 				'dragend': function(e) {
+					$item.find('.ux-gridlist-mask').remove();
 					gridList.$placeholder.removeClass( 'ux-gridlist-dragging' );
 					var id = gridList.$placeholder.attr('ux-object-id');
 					$left = gridList.$.find('.ux-gridlist-dragging-over-left:first');
 					if ($left.length) {
 						var target = $left.attr('ux-object-id');
-						gridList.moveItemsBefore([id], target);
+						gridList.moveItemsBefore([id], target, 'user');
 					} else {
 						$right = gridList.$.find('.ux-gridlist-dragging-over-right:last');
 						if ($right.length) {
 							var target = $right.attr('ux-object-id');
-							gridList.moveItemsAfter([id], target);
+							gridList.moveItemsAfter([id], target, 'user');
 						}
 					}
-					gridList.$placeholder
-						.css('opacity', 0.75)
-						.animate({'opacity': 1}, {
-							'duration': gridList.options.animationSpeed,
-							'easing': gridList.options.animationEasing,
-							'queue': true
-						});
 					gridList.drag.active = false;
 					gridList.drag.width = 0;
 					gridList.$
@@ -209,10 +211,10 @@ GridList.prototype.addItems = function(items) {
 		};
 		gridList.sequence.push(item.id);
 	});
-	this.$.trigger('ux-gridlist-addItems', [items]);
+	this.$.trigger('ux-gridlist-addItems', [items, origin]);
 };
 
-GridList.prototype.removeItems = function(ids) {
+GridList.prototype.removeItems = function(ids, origin) {
 	if (!ids.length) {
 		return;
 	}
@@ -232,47 +234,53 @@ GridList.prototype.removeItems = function(ids) {
 			}
 		);
 		gridList.flow();
-		this.$.trigger('ux-gridlist-removeItems', [ids]);
+		this.$.trigger('ux-gridlist-removeItems', [ids, origin]);
 	}
 };
 
-GridList.prototype.moveItemsBefore = function(ids, target) {
+GridList.prototype.moveItemsBefore = function(ids, target, origin) {
 	if (typeof target === 'undefined') {
 		target = this.sequence[0];
 	}
+	if (ids.indexOf(target) >= 0) {
+		ids.splice(ids.indexOf(target), 1);
+		this.moveItemsAfter(ids, target);
+		return;
+	}
 	var $sel = $([]);
 	for (var i = 0; i < ids.length; i++) {
-		if (ids[i] !== target) {
-			$sel = $sel.add(this.items[ids[i]].$);
-			this.sequence.splice(this.sequence.indexOf(ids[i]), 1);
-			this.sequence.splice(this.sequence.indexOf(target), 0, ids[i]);
-		}
+		$sel = $sel.add(this.items[ids[i]].$);
+		this.sequence.splice(this.sequence.indexOf(ids[i]), 1);
+		this.sequence.splice(this.sequence.indexOf(target), 0, ids[i]);
 	}
 	if ($sel.length) {
 		$sel.detach().insertBefore(this.items[target].$);
-		this.$.trigger('ux-gridlist-moveItems', [ids]);
+		this.$.trigger('ux-gridlist-sequenceItems', [this.sequence, origin]);
 	}
 };
 
-GridList.prototype.moveItemsAfter = function(ids, target) {
+GridList.prototype.moveItemsAfter = function(ids, target, origin) {
 	if (typeof target === 'undefined') {
 		target = this.sequence[this.sequence.length - 1];
 	}
+	if (ids.indexOf(target) >= 0) {
+		ids.splice(ids.indexOf(target), 1);
+		this.moveItemsBefore(ids, target);
+		return;
+	}
 	var $sel = $([]);
 	for (var i = ids.length - 1; i >= 0; i--) {
-		if (ids[i] !== target) {
-			$sel = $sel.add(this.items[ids[i]].$);
-			this.sequence.splice(this.sequence.indexOf(ids[i]), 1);
-			this.sequence.splice(this.sequence.indexOf(target) + 1, 0, ids[i]);
-		}
+		$sel = $sel.add(this.items[ids[i]].$);
+		this.sequence.splice(this.sequence.indexOf(ids[i]), 1);
+		this.sequence.splice(this.sequence.indexOf(target) + 1, 0, ids[i]);
 	}
 	if ($sel.length) {
 		$sel.detach().insertAfter(this.items[target].$);
-		this.$.trigger('ux-gridlist-moveItems', [ids]);
+		this.$.trigger('ux-gridlist-sequenceItems', [this.sequence, origin]);
 	}
 };
 
-GridList.prototype.sequenceItems = function(sequence) {
+GridList.prototype.sequenceItems = function(sequence, origin) {
 	if (this.sequence.length !== sequence.length) {
 		throw 'Invalid sequence error. The new sequence contains the wrong number of items.';
 	}
@@ -282,6 +290,7 @@ GridList.prototype.sequenceItems = function(sequence) {
 		}
 	}
 	this.sequence = sequence;
+	this.$.trigger('ux-gridlist-sequenceItems', [sequence, origin]);
 };
 
 GridList.prototype.measure = function() {
@@ -341,21 +350,12 @@ GridList.prototype.flow = function(now) {
 				'top': this.grid.rows[row].top
 			};
 			if (this.flowed && !now) {
-				if (!this.$placeholder || $item[0] !== this.$placeholder[0]) {
-					$item
-						.stop(true)
-						.animate(style, {
-							'duration': this.options.animationSpeed,
-							'easing': this.options.animationEasing
-						});
-				} else {
-					$item
-						.animate(style, {
-							'duration': this.options.animationSpeed,
-							'easing': this.options.animationEasing
-						})
-						.dequeue();
-				}
+				$item
+					.stop(true)
+					.animate(style, {
+						'duration': this.options.animationSpeed,
+						'easing': this.options.animationEasing
+					});
 			} else {
 				$item.css(style);
 			}
@@ -517,7 +517,7 @@ GridList.prototype.onKeyDown = function(e) {
 	this.keys.shift = e.shiftKey;
 	// Handle selection deletions
 	if (e.keyCode == 8 || e.keyCode == 46) {
-		this.removeItems(this.getSelection());
+		this.removeItems(this.getSelection(), 'user');
 		e.preventDefault();
 		return false;
 	}

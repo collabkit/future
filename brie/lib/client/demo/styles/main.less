@@ -90,6 +90,17 @@
 		padding: 0.5em;
 		z-index: 1;
 		
+		.ux-gridlist-mask {
+			pointer-events: none;
+			position: absolute;
+			top: 0.5em;
+			left: 0.5em;
+			right: 0.5em;
+			bottom: 0.5em;
+			border-radius: 0.5em;
+			background-color: white;
+		}
+		
 		&-frame {
 			border: solid 0.1em #cccccc;
 			border-radius: 0.5em;
@@ -104,11 +115,6 @@
 			display: block;
 			margin: -1.1em;
 			padding: 1.1em;
-		}
-		
-		&.ux-gridlist-dragging .ux-gridlist-item-frame {
-			opacity: 0.75;
-			border-style: dashed;
 		}
 		
 		&.ux-gridlist-selected {

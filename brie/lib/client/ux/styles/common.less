@@ -1,5 +1,12 @@
 // Commonly used less macros.
 
+.user-select(@mode: none) {
+	-moz-user-select: @mode;
+	-khtml-user-select: @mode;
+	-webkit-user-select: @mode;
+	user-select: @mode;
+}
+
 .border-radius(@radius: 1em) {
     -webkit-border-radius: @radius;
     -moz-border-radius: @radius;

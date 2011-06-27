@@ -13,34 +13,42 @@ function GalleryApp() {
 				}
 			});
 		},
-		'ux-gridlist-removeItems': function(e, ids) {
+		'ux-gridlist-removeItems': function(e, items, origin) {
 			app.updateToolbar();
-			app.library.data.library.items = app.gridList.sequence;
-			app.store.updateObjectRef(
-				'collabkit-library',
-				app.library.data,
-				function(result, err) {
-					if (err) {
-						alert(err);
+			if (origin === 'user') {
+				app.library.data.library.items = app.gridList.sequence;
+				app.store.updateObjectRef(
+					'collabkit-library',
+					app.library.data,
+					function(result, err) {
+						if (err) {
+							alert(err);
+						} else {
+							app.updateLibrary(result);
+						}
 					}
-				}
-			);
-		},
-		'ux-gridlist-moveItems': function() {
-			app.updateToolbar();
-			var items = app.gridList.sequence;
-			if (app.library.data.library.items.length != items.length) {
-				throw new Error('Sorting resulted in mismatched item list');
+				);
 			}
-			app.library.data.library.items = items;
-			app.store.updateObjectRef('collabkit-library', app.library.data, function(result, err) {
-				if (err) {
-					alert(err);
-				} else {
-					app.updateLibrary(result);
-					app.updateToolbar();
+		},
+		'ux-gridlist-sequenceItems': function(e, sequence, origin) {
+			app.updateToolbar();
+			if (origin === 'user') {
+				if (app.library.data.library.items.length != sequence.length) {
+					throw 'Sorting resulted in mismatched item list';
 				}
-			});
+				app.library.data.library.items = sequence;
+				app.store.updateObjectRef(
+					'collabkit-library',
+					app.library.data,
+					function(result, err) {
+						if (err) {
+							alert(err);
+						} else {
+							app.updateLibrary(result);
+						}
+					}
+				);
+			}
 		},
 		'ux-gridlist-select': function() {
 			app.updateToolbar();
@@ -247,7 +255,8 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 		alert('Invalid collabkit library data');
 		return;
 	}
-	var fetch = true;
+	var app = this,
+		fetch = true;
 	// Check the current library state and make sure it's consistent with what we've got; if not
 	// we'll refresh the view.
 	if (!this.library || !this.library.data || !this.library.data.library
@@ -270,7 +279,10 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 			if (oldSequenceHash !== newSequenceHash) {
 				// Same items, different order
 				this.gridList.sequenceItems(newSequenceHash.split('|'));
+				// Update display
 				this.gridList.flow();
+				// Keep toolbar in sync
+				app.updateToolbar();
 			}
 			this.library = commit;
 			fetch = false;
@@ -283,34 +295,46 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 	);
 	
 	if (fetch) {
+		// Use new commit
+		this.library = commit;
 		// Update the gridlist
-		var app = this;
-		var oldSequence = this.gridList.sequence;
 		$.ajax({
 			'url': '/:media/' + this.library.id + '/list/thumb',
 			'dataType': 'json',
 			'type': 'GET',
 			'cache': false,
 			'success': function(data) {
-				if ( !oldSequence.length ) {
+				var oldSequence = app.gridList.sequence;
+				if (!oldSequence.length) {
 					app.gridList.addItems(data);
 				} else {
 					var newSequence = [],
-						newItems = [];
+						newItems = [],
+						deletedItems = [];
 					for (var i = 0; i < data.length; i++) {
 						newSequence.push(data[i].id);
-						// Collect a list of missing items
+						// Collect a list of new items
 						if (oldSequence.indexOf(data[i].id) === -1) {
 							newItems.push(data[i]);
 						}
 					}
-					// Add missing items
+					for (var i = 0; i < oldSequence.length; i++) {
+						// Collect a list of deleted items
+						if (newSequence.indexOf(oldSequence[i]) === -1) {
+							deletedItems.push(oldSequence[i]);
+						}
+					}
+					// Remove deleted items
+					app.gridList.removeItems(deletedItems);
+					// Add new items
 					app.gridList.addItems(newItems);
 					// Apply new sequence
-					app.library.data.library.items = newSequence;
 					app.gridList.sequenceItems(newSequence);
 				}
+				// Update display
 				app.gridList.flow();
+				// Keep toolbar in sync
+				app.updateToolbar();
 			}
 		});
 	}
@@ -328,7 +352,8 @@ GalleryApp.prototype.runSlideshow = function(items) {
 	 * Load up the photo into an <img> and call us back when done.
 	 */
 	var buildPhoto = function(id, callback) {
-		var $photo = $('<img class="slideshow-photo"/>').attr('src', '/:media/' + id + '/photo/large');
+		var $photo = $('<img class="slideshow-photo"/>')
+			.attr('src', '/:media/' + id + '/photo/large');
 		if (callback) {
 			$photo.bind('load', function() {
 				callback(this);
@@ -336,10 +361,10 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		}
 		return $photo[0];
 	};
-
+	
 	var interval = 10;
 	var index = 0;
-
+	
 	var update = function() {
 		buildPhoto(photos[index], function(img) {
 			$slideshow.find('.area').empty().append(img);
