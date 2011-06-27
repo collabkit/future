@@ -5,7 +5,7 @@ function GalleryApp() {
 	this.gridList = $('#app-gallery')
 		.initialize('gridList')
 		.bind({
-			'ux-gridlist-dropFile': function(e, dataTransfer) {
+			'ux-gridList-dropFile': function(e, dataTransfer) {
 				app.updateToolbar();
 				app.uploadFiles(dataTransfer.files, function(err) {
 					if (err) {
@@ -13,7 +13,7 @@ function GalleryApp() {
 					}
 				});
 			},
-			'ux-gridlist-removeItems': function(e, items, origin) {
+			'ux-gridList-removeItems': function(e, items, origin) {
 				app.updateToolbar();
 				if (origin === 'user') {
 					app.library.data.library.items = app.gridList.sequence;
@@ -30,7 +30,7 @@ function GalleryApp() {
 					);
 				}
 			},
-			'ux-gridlist-sequenceItems': function(e, sequence, origin) {
+			'ux-gridList-sequenceItems': function(e, sequence, origin) {
 				app.updateToolbar();
 				if (origin === 'user') {
 					if (app.library.data.library.items.length != sequence.length) {
@@ -50,7 +50,7 @@ function GalleryApp() {
 					);
 				}
 			},
-			'ux-gridlist-select': function() {
+			'ux-gridList-select': function() {
 				app.updateToolbar();
 			},
 			'mousedown': function() {
@@ -78,8 +78,8 @@ function GalleryApp() {
 			  						'multiple': true
 			 					})
 			 					.bind({
-			 						'ux-toolbarUploadButton-execute': function(event, data) {
-			 	 						app.uploadFiles(data.input.files, function(err) {
+			 						'ux-toolbarUploadButton-execute': function(e, input) {
+			 	 						app.uploadFiles(input.files, function(err) {
 			 	 							if (err) {
 			 	 								alert(err);
 			 	 							}
@@ -298,7 +298,7 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 	if (fetch) {
 		// Use new commit
 		this.library = commit;
-		// Update the gridlist
+		// Update the gridList
 		$.ajax({
 			'url': '/:media/' + this.library.id + '/list/thumb',
 			'dataType': 'json',
@@ -433,3 +433,12 @@ GalleryApp.prototype.runSlideshow = function(items) {
 	$slideshow.appendTo('body');
 	update();
 };
+
+// Create user interfaces
+var galleryApp = new GalleryApp();
+
+// Connect a session so we can get updates on inter-client state...
+var session = new Faye.Client('/:session/');
+session.subscribe('/commits', function(message) {
+	galleryApp.updateLibrary(message);
+});

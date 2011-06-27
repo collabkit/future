@@ -1,8 +1,8 @@
 // Imports
 
-@import "common.less";
-@import "general.less";
-@import "fonts.less";
+@import "ux.common.less";
+@import "ux.general.less";
+@import "ux.fonts.less";
 
 // Variables
 
@@ -35,7 +35,7 @@ div, ul, li {
 }
 
 #app-head {
-	background-image: url(../graphics/head.svg);
+	background-image: url(graphics/head.svg);
 	background-position: bottom left;
 	background-repeat: repeat-x;
 	top: 0;
@@ -43,7 +43,7 @@ div, ul, li {
 
 #app-nav,
 #app-dock {
-	background-image: url(../graphics/themes/green/bar.svg);
+	background-image: url(graphics/themes/green/bar.svg);
 	background-position: top left;
 	background-repeat: repeat-x;
 }
@@ -65,7 +65,7 @@ div, ul, li {
 	float: left;
 	width: 9em;
 	height: 2.5em;
-	background-image: url(../graphics/logo.svg);
+	background-image: url(graphics/logo.svg);
 	background-repeat: no-repeat;
 	background-position: center right;
 }
@@ -84,7 +84,7 @@ div, ul, li {
 	font-size: 0.9em;
 	border: solid 1px silver;
 	.border-radius(0.2em);
-	background-image: url(../graphics/icons/search.svg);
+	background-image: url(graphics/icons/search.svg);
 	background-position: 0.5em 50%;
 	background-repeat: no-repeat;
 }
@@ -138,17 +138,17 @@ div, ul, li {
 #app-body-mask {
 	z-index: 100;
 	pointer-events: none;
-	background-image: url(../graphics/themes/green/glow-down.svg), url(../graphics/themes/green/glow-up.svg);
+	background-image: url(graphics/themes/green/glow-down.svg), url(graphics/themes/green/glow-up.svg);
 	background-repeat: repeat-x;
 	background-position: top left, bottom left;
 }
 
 #app-notes-icon {
-	background-image: url(../graphics/icons/notes.svg);
+	background-image: url(graphics/icons/notes.svg);
 }
 
 #app-talk-icon {
-	background-image: url(../graphics/icons/talk.svg);
+	background-image: url(graphics/icons/talk.svg);
 }
 
 .app-icon {

@@ -1,7 +1,7 @@
 var util = require( 'util' ),
 	events = require( 'events' ),
 	logger = require( '../logger' ).create( 'MediaProvider' ),
-	Squisher = require('../../shared/squisher').Squisher,
+	Squisher = require('../squisher').Squisher,
 	grout = require('../../shared/grout');
 
 /**

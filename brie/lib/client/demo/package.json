@@ -1,6 +1,6 @@
 {
-	"name" : "collabkit-demo",
+	"name" : "collabKit-demo",
 	"description" : "Demo of shared photo galleries.",
 	"author" : ["Brion Vibber <brionvibber@gmail.com >", "Trevor Parscal <trevorparscal@gmail.com>"],
-	"main" : "./main.js"
+	"main" : "./demo.js"
 }

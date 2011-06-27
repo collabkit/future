@@ -6,7 +6,7 @@ var util = require('util'),
 	gd = require('node-gd'),
 
 	// other shared modules
-	grout = require('../grout');
+	grout = require('../../shared/grout');
 
 
 /**
