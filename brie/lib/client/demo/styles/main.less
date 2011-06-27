@@ -7,51 +7,7 @@
 	overflow-x: hidden;
 	background-color: transparent;
 }
-#app-gallery.dragover {
-	background-color: rgba(204,255,204,0.25);
-}
 
-.photo-entry {
-	float: left;
-}
-.collabkit-photo,
-.collabkit-photo-loading {
-	min-width: 50px;
-	height: 150px;
-	padding: 10px;
-	text-align: center;
-	margin: 0.75em;
-	border: solid 1px silver;
-	background-color: white;
-	border-radius: 0.5em;
-	-webkit-box-shadow: 0px 3px 10px #dddddd;
-	-moz-box-shadow: 0px 3px 10px #dddddd;
-	box-shadow: 0px 3px 10px #dddddd;
-}
-.collabkit-photo-loading {
-	opacity: 0.25;
-	font-size: 0.8em;
-	background-image: url(images/loading.gif);
-	background-position: center center;
-	background-repeat: no-repeat;
-}
-.ui-sortable-helper {
-	cursor: move;
-}
-.ui-sortable
-.ui-sortable a {
-	cursor: default;
-}
-.ui-selected .collabkit-photo,
-.ui-selecting .collabkit-photo {
-	border: solid 1px #66cc66;
-	background-color: #eeffee;
-}
-.ui-sortable-helper .thumb {
-	-webkit-box-shadow: none;
-	-moz-box-shadow: none;
-	box-shadow: none;
-}
 #slideshow {
 	position: absolute;
 	top: 0;
@@ -61,6 +17,7 @@
 	background: black;
 	color: white;
 	text-align: center;
+	z-index: 1000;
 }
 #slideshow .controls {
 	position: absolute;

@@ -24,7 +24,7 @@ function GalleryApp() {
 				}
 			);
 		},
-		'ux-gridlist-moveItem': function() {
+		'ux-gridlist-moveItems': function() {
 			var items = app.gridList.sequence;
 			if (app.library.data.library.items.length != items.length) {
 				throw new Error('Sorting resulted in mismatched item list');
@@ -37,6 +37,9 @@ function GalleryApp() {
 					app.updateLibrary(result);
 				}
 			});
+		},
+		'ux-gridlist-select': function() {
+			app.updateToolbar();
 		},
 		'mousedown': function() {
 			$(this).focus();
@@ -98,7 +101,17 @@ function GalleryApp() {
 			 					},
 			 					'bind': {
 			 						'ux-toolbarButton-execute': function() {
-				 						// Move selection up
+			 							var sel = app.gridList.getSelection();
+			 							if (sel.length) {
+				 							var seq = app.gridList.sequence,
+				 							targetIndex = app.gridList.sequence.indexOf(sel[0]) - 1;
+				 							if (targetIndex > -1) {
+					 							app.gridList.moveItemsBefore(sel, seq[targetIndex]);
+				 							} else {
+					 							app.gridList.moveItemsBefore(sel);
+				 							}
+				 							app.gridList.flow();
+			 							}
 				 					}
 			 					}
 		 					}),
@@ -110,19 +123,31 @@ function GalleryApp() {
 			 					},
 			 					'bind': {
 			 						'ux-toolbarButton-execute': function() {
-				 						// Move selection down
+			 							var sel = app.gridList.getSelection();
+			 							if (sel.length) {
+				 							var seq = app.gridList.sequence,
+				 								targetIndex = app.gridList.sequence.indexOf(
+				 									sel[sel.length - 1]
+				 								) + 1;
+				 							if (targetIndex < seq.length - 1) {
+					 							app.gridList.moveItemsAfter(sel, seq[targetIndex]);
+				 							} else {
+					 							app.gridList.moveItemsAfter(sel);
+				 							}
+				 							app.gridList.flow();
+			 							}
 				 					}
 			 					}
 		 					}),
 		 					$('<div></div>').ux('toolbarButton', {
 		 						'set': {
-			 						'id': 'app-toolbar-delete',
-			 						'label': 'Delete',
-			 						'icon': 'delete',
+			 						'id': 'app-toolbar-remove',
+			 						'label': 'Remove',
+			 						'icon': 'remove',
 			 					},
 			 					'bind': {
 			 						'ux-toolbarButton-execute': function() {
-			 							// Delete selection
+			 							app.gridList.removeItems(app.gridList.getSelection());
 			 						}
 			 					}
 		 					})
@@ -140,22 +165,35 @@ function GalleryApp() {
 }
 
 GalleryApp.prototype.updateToolbar = function() {
-	// These buttons need something selected to operate on.
-	/*
-	var $operators = $('#app-toolbar-delete, #app-toolbar-moveup, #app-toolbar-movedown');
-	var $selected = $('#app-gallery > .ui-selected');
-	if ($selected.length > 0) {
-		$operators.ux('disabled', false);
-	} else {
-		$operators.ux('disabled', true);
+	var sel = this.gridList.getSelection();
+	var seq = this.gridList.sequence;
+	var tools = {
+			'moveup': !(sel.length && sel[0] === seq[0]),
+			'movedown': !(sel.length && sel[sel.length - 1] === seq[seq.length - 1]),
+			'remove': !!sel.length
+		}
+	if (sel.length > 1) {
+		if (!tools.moveup) {
+			for (var i = 1; i < sel.length; i++) {
+				if (sel[i] !== seq[i]) {
+					tools.moveup = true;
+					tools.movedown = true;
+					break;
+				}
+			}
+		} else if (!tools.movedown) {
+			for (var i = 2; i <= sel.length; i++) {
+				if (sel[sel.length - i] !== seq[seq.length - i]) {
+					tools.moveup = true;
+					tools.movedown = true;
+					break;
+				}
+			}
+		}
 	}
-	if ($('#app-gallery > div:not(.ui-sortable-placeholder):first').hasClass('ui-selected')) {
-		$('#app-toolbar-moveup').ux('disabled', true);
+	for (var tool in tools) {
+		this.$toolbar.find('#app-toolbar-' + tool).ux('set', 'disabled', !tools[tool]);
 	}
-	if ($('#app-gallery > div:not(.ui-sortable-placeholder):last').hasClass('ui-selected')) {
-		$('#app-toolbar-movedown').ux('disabled', true);
-	}
-	*/
 };
 
 /**
