@@ -494,10 +494,10 @@ GridList.prototype.onDragLeave = function(e) {
 GridList.prototype.onDrop = function(e) {
 	if (!this.drag.active) {
 		this.$.removeClass('ux-gridlist-draggingOver');
-	}
-	var dt = e.originalEvent.dataTransfer;
-	if (dt && typeof dt.files == 'object' && dt.files.length) {
-		this.$.trigger('ux-gridlist-dropFile', [dt]);
+		var dt = e.originalEvent.dataTransfer;
+		if (dt && typeof dt.files == 'object' && dt.files.length) {
+			this.$.trigger('ux-gridlist-dropFile', [dt]);
+		}
 	} else {
 		var offset = this.$grid.offset();
 		if (this.$grid.find('.ux-gridlist-dragging-over-left:first,'
