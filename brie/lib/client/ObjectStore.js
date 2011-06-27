@@ -4,14 +4,14 @@
  * @see http://code.google.com/p/chromium/issues/detail?id=35705
  * FIXME: Move this to a shim we load on non-firefox clients
  */
-if ( !XMLHttpRequest.prototype.sendAsBinary ) {
-	XMLHttpRequest.prototype.sendAsBinary = function( datastr ) {
-	    function byteValue( x ) {
-		   return x.charCodeAt( 0 ) & 0xff;
+if (!XMLHttpRequest.prototype.sendAsBinary) {
+	XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
+	    function byteValue(x) {
+		   return x.charCodeAt(0) & 0xff;
 	    }
-	    var ords = Array.prototype.map.call( datastr, byteValue );
-	    var ui8a = new Uint8Array( ords );
-	    this.send( ui8a.buffer );
+	    var ords = Array.prototype.map.call(datastr, byteValue);
+	    var ui8a = new Uint8Array(ords);
+	    this.send(ui8a.buffer);
 	};
 }
 
