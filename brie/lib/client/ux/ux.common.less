@@ -1,0 +1,45 @@
+// Commonly used less macros.
+
+.user-select(@mode: none) {
+	-moz-user-select: @mode;
+	-khtml-user-select: @mode;
+	-webkit-user-select: @mode;
+	user-select: @mode;
+}
+
+.border-radius(@radius: 1em) {
+    -webkit-border-radius: @radius;
+    -moz-border-radius: @radius;
+    border-radius: @radius;
+}
+
+.border-box() {
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+.drop-shadow(@x: 1px, @y: 1px, @size: 0px, @color: rgba(0,0,0,0.33)) {
+  -webkit-box-shadow: @x @y @size @color;
+  -moz-box-shadow: @x @y @size @color;
+  box-shadow: @x @y @size @color;
+}
+
+.inner-shadow(@x: 1px, @y: 1px, @size: 0px, @color: rgba(0,0,0,0.33)) {
+  -webkit-box-shadow: inset @x @y @size @color;
+  -moz-box-shadow: inset @x @y @size @color;
+  box-shadow: inset @x @y @size @color;
+}
+
+.vertical-gradient(@top: black, @bottom: white) {
+	// Safari 5.1+ and Chrome 10+
+	background-image: -webkit-linear-gradient(@top 0%, @bottom 100%);
+	// Safari 4+ and Chrome 1+
+	background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(@top), to(@bottom));
+	// Firefox 3.6+
+	background-image: -moz-linear-gradient(@top 0%, @bottom 100%);
+	// Opera 11.10+
+	background-image: -o-linear-gradient(@top 0%, @bottom 100%);
+	// Internet Explort 8+
+	-ms-filter: e('progid:DXImageTransform.Microsoft.gradient(gradientType=1, startColor=') @top e(', endColoStr=') @bottom e(')');
+}

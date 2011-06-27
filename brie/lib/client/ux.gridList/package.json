@@ -1,0 +1,6 @@
+{
+	"name" : "collabKit-ux-gridList",
+	"description" : "GridList control.",
+	"author" : "Trevor Parscal <trevorparscal@gmail.com>",
+	"main" : "./ux.gridList.js"
+}

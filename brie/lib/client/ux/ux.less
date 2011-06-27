@@ -1,0 +1,110 @@
+// Imports
+
+@import "ux.common.less";
+
+// Variables
+
+@baseColor: #4abaeb;
+
+// Rules
+
+.ux {
+	&-toolbarGroup {
+		.user-select(none);
+		float: left;
+		margin-left: 0.125em;
+		margin-right: 0.5em;
+		height: 2.75em;
+		&[ux-icon] .ux-toolbarGroup-label {
+			background-size: auto, 110% 110%;
+			background-position: 0.75em 47.5%, top left;
+			background-repeat: no-repeat;
+			padding-left: 2.5em;
+		}
+		&[ux-icon=block] .ux-toolbarGroup-label {
+			background-image: url(graphics/icons/block.svg), url(graphics/themes/green/button-up.svg);
+		}
+		&[ux-icon=gallery] .ux-toolbarGroup-label {
+			background-image: url(graphics/icons/gallery.svg), url(graphics/themes/green/button-up.svg);
+		}
+	}
+	&-toolbarGroup-label {
+		.border-box();
+		float: left;
+		height: 100%;
+		border: solid 1px #caf1bc;
+		border-right: none;
+		background-image: url(graphics/themes/green/button-up.svg);
+		background-size: 100% 100%;
+		.border-radius(1em);
+		cursor: default;
+		line-height: 1.25em;
+		padding: 0.75em;
+		padding-left: 0.75em;
+		padding-right: 2.25em;
+		margin-right: -1.5em;
+	}
+	&-toolbarGroup-contents {
+		.border-box();
+		float: left;
+		height: 100%;
+		border: solid 1px #caf1bc;
+		background-image: url(graphics/themes/green/group.svg);
+		background-size: 100% 100%;
+		.border-radius(1em);
+	}
+	&-toolbarButton {
+		.border-box();
+		float: left;
+		height: 100%;
+		cursor: pointer;
+		background-position: 0.75em 47.5%;
+		background-repeat: no-repeat;
+		overflow: hidden;
+		&:first-child {
+			margin-left: 0.5em;
+		}
+		&:last-child {
+			margin-right: 0.5em;
+		}
+		&:hover {
+			opacity: 0.75;
+		}
+		&[ux-disabled=disabled] {
+			opacity: 0.125;
+		}
+		&[ux-disabled=disabled] .ux-toolbarButton-label {
+			cursor: default;
+		}
+		&[ux-icon] .ux-toolbarButton-label {
+			padding-left: 2.5em;
+		}
+		&[ux-icon=up] {
+			background-image: url(graphics/icons/up.svg);
+		}
+		&[ux-icon=remove] {
+			background-image: url(graphics/icons/remove.svg);
+		}
+		&[ux-icon=down] {
+			background-image: url(graphics/icons/down.svg);
+		}
+		&[ux-icon=slideshow] {
+			background-image: url(graphics/icons/slideshow.svg);
+		}
+		&[ux-icon=folder] {
+			background-image: url(graphics/icons/folder.svg);
+		}
+		&-label {
+			display: block;
+			cursor: pointer;
+			line-height: 1.25em;
+			padding: 0.75em;
+		}
+		input[type=file] {
+			position: absolute;
+			top: -1000px;
+			width: 0;
+			height: 0;
+		}
+	}
+}
