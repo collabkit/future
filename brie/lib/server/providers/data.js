@@ -1,6 +1,6 @@
 var util = require( 'util' ),
 	events = require( 'events' ),
-	logger = require( '../logger' ).create( 'MediaProvider' );
+	logger = require( '../logger' ).create( 'DataProvider' );
 
 /**
  * URL patterns
