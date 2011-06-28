@@ -13,6 +13,15 @@
     border-radius: @radius;
 }
 
+.border-radius-all(@topleft: 1em, @topright: 1em, @bottomright: 1em, @bottomleft: 1em) {
+	-moz-border-radius-topleft: @topleft;
+	-moz-border-radius-topright: @topright;
+	-moz-border-radius-bottomright: @bottomright;
+	-moz-border-radius-bottomleft: @bottomleft;
+	-webkit-border-radius: @topleft @topright @bottomright @bottomleft;
+	border-radius: @topleft @topright @bottomright @bottomleft;
+}
+
 .border-box() {
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
