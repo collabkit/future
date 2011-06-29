@@ -364,7 +364,9 @@ $.ux.models.gridList.prototype.flow = function(now) {
 			left += item.width;
 		}
 	}
-	this.$grid.css('height', top + this.grid.rows[this.grid.rows.length - 1].height + pad);
+	this.$grid.css('height', Math.max(
+		top + this.grid.rows[this.grid.rows.length - 1].height + pad, this.$.height()
+	));
 	for (var row = 0; row < this.grid.rows.length; row++) {
 		for (var col = 0; col < this.grid.rows[row].items.length; col++) {
 			this.grid.rows[row].items[col].item.$.css({
