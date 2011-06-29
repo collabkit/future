@@ -84,6 +84,10 @@ $.ux.models.toolbar = function($this) {
 	this.$ = $this
 		.addClass('ux-toolbar')
 		.append('<div class="ux-toolbar-contents"></div>');
+	var toolbar = this;
+	$(window).resize(function() {
+		$groups = toolbar.$.find('.ux-toolbarGroup');
+	});
 };
 
 $.ux.models.toolbar.config = {
@@ -272,6 +276,54 @@ $.ux.models.toolbarUploadButton.config = {
 				this.$.find('input:file').attr('multiple', 'multiple');
 			} else {
 				this.$.removeAttr('multiple');
+			}
+		}
+	}
+};
+
+$.ux.models.dialog = function($this) {
+	this.$ = $this
+		.addClass('ux-dialog')
+		.append('<div class="ux-dialog-title"></div>')
+		.append('<div class="ux-dialog-contents"></div>');
+};
+
+$.ux.models.dialog.prototype.show = function() {
+	this.$.show();
+};
+
+$.ux.models.dialog.prototype.hide = function() {
+	this.$.hide();
+};
+
+$.ux.models.dialog.config = {
+	'get': {
+		'id': function() {
+			return this.$.attr('id');
+		},
+		'title': function() {
+			return this.$.find('.ux-dialog-title').text();
+		},
+		'contents': function() {
+			return this.$.find('.ux-dialog-contents');
+		}
+	},
+	'set': {
+		'id': function(val) {
+			this.$.attr('id', val);
+		},
+		'label': function(val) {
+			this.$.find('.ux-dialog-title').text(val);
+		},
+		'contents': function(val) {
+			var $contents = this.$.find('.ux-dialog-contents');
+			$contents.empty();
+			if ($.isArray(val)) {
+				for (var i = 0; i < val.length; i++) {
+					$contents.append( val[i] );
+				}
+			} else {
+				$contents.append(val);
 			}
 		}
 	}

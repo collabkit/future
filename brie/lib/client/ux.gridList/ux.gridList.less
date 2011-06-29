@@ -13,6 +13,7 @@
 	&-grid {
 		cursor: default;
 		overflow: hidden;
+		-webkit-transition: height 250ms ease-in-out;
 	}
 	
 	&-marquee {
@@ -28,9 +29,34 @@
 	}
 	&-item {
 		position: absolute;
+		top: 10px;
+		left: 10px;
 		display: block;
 		padding: 0.5em;
 		z-index: 1;
+		
+		&.ux-gridList-item-animated {
+			-webkit-transition:
+				top 250ms ease-in-out,
+				left 250ms ease-in-out,
+				margin-left 250ms ease-in-out;
+			-moz-transition:
+				top 250ms ease-in-out,
+				left 250ms ease-in-out,
+				margin-left 250ms ease-in-out;
+			-o-transition:
+				top 250ms ease-in-out,
+				left 250ms ease-in-out,
+				margin-left 250ms ease-in-out;
+			-ms-transition:
+				top 250ms ease-in-out,
+				left 250ms ease-in-out,
+				margin-left 250ms ease-in-out;
+			transition:
+				top 250ms ease-in-out,
+				left 250ms ease-in-out,
+				margin-left 250ms ease-in-out;
+		}
 		
 		.ux-gridList-mask {
 			// Block styling

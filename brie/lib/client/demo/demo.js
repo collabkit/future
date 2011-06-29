@@ -2,6 +2,7 @@ function GalleryApp() {
 	var app = this;
 	this.library = null;
 	this.store = new ObjectStore();
+	this.captureDialog = $('').appendTo()
 	this.gridList = $('#app-gallery')
 		.initialize('gridList')
 		.bind({
@@ -86,6 +87,18 @@ function GalleryApp() {
 			 	 						});
 			 	 					}
 			 					}),
+		  					$('<div></div>')
+			  					.initialize('toolbarButton')
+			  					.config({
+			  						'id': 'app-toolbar-capture',
+			  						'label': 'Capture',
+			  						'icon': 'webcam',
+			  					})
+			  					.bind({
+			  						'ux-toolbarButton-execute': function() {
+			  							// launch webcam dialog
+			 	 					}
+			  					}),
 		  					$('<div></div>')
 			  					.initialize('toolbarButton')
 			  					.config({
@@ -276,9 +289,10 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 		var newSequenceSortedHash = newSequenceCopy.join('|');
 		// Compare hashes
 		if (oldSequenceSortedHash === newSequenceSortedHash) {
+			var currentSequenceHash = this.gridList.sequence.join('|');
 			// Nothing new, just a meta update
-			if (oldSequenceHash !== newSequenceHash) {
-				// Same items, different order
+			if (oldSequenceHash !== newSequenceHash && newSequenceHash !== currentSequenceHash) {
+				// Same items, different order, and display is out of date
 				this.gridList.sequenceItems(newSequenceHash.split('|'));
 				// Update display
 				this.gridList.flow();
@@ -305,8 +319,8 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 			'type': 'GET',
 			'cache': false,
 			'success': function(data) {
-				var oldSequence = app.gridList.sequence;
-				if (!oldSequence.length) {
+				var currentSequence = app.gridList.sequence;
+				if (!currentSequence.length) {
 					app.gridList.addItems(data);
 				} else {
 					var newSequence = [],
@@ -315,27 +329,29 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 					for (var i = 0; i < data.length; i++) {
 						newSequence.push(data[i].id);
 						// Collect a list of new items
-						if (oldSequence.indexOf(data[i].id) === -1) {
+						if (currentSequence.indexOf(data[i].id) === -1) {
 							newItems.push(data[i]);
 						}
 					}
-					for (var i = 0; i < oldSequence.length; i++) {
-						// Collect a list of deleted items
-						if (newSequence.indexOf(oldSequence[i]) === -1) {
-							deletedItems.push(oldSequence[i]);
+					if (newSequence.join('|') !== currentSequence.join('|')) {
+						for (var i = 0; i < currentSequence.length; i++) {
+							// Collect a list of deleted items
+							if (newSequence.indexOf(currentSequence[i]) === -1) {
+								deletedItems.push(currentSequence[i]);
+							}
 						}
+						// Remove deleted items
+						app.gridList.removeItems(deletedItems);
+						// Add new items
+						app.gridList.addItems(newItems);
+						// Apply new sequence
+						app.gridList.sequenceItems(newSequence);
+						// Update display
+						app.gridList.flow();
+						// Keep toolbar in sync
+						app.updateToolbar();
 					}
-					// Remove deleted items
-					app.gridList.removeItems(deletedItems);
-					// Add new items
-					app.gridList.addItems(newItems);
-					// Apply new sequence
-					app.gridList.sequenceItems(newSequence);
 				}
-				// Update display
-				app.gridList.flow();
-				// Keep toolbar in sync
-				app.updateToolbar();
 			}
 		});
 	}
