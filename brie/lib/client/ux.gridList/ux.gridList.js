@@ -103,6 +103,18 @@ $.ux.models.gridList = function($this) {
 		},
 		'drop': function(e) {
 			return gridList.onDrop(e);
+		},
+		'touchstart': function(e) {
+			return gridList.onTouchStart(e);
+		},
+		'touchmove': function(e) {
+			return gridList.onTouchMove(e);
+		},
+		'touchend': function(e) {
+			return gridList.onTouchEnd(e);
+		},
+		'touchcancel': function(e) {
+			return gridList.onTouchCancel(e);
 		}
 	});
 };
@@ -394,6 +406,32 @@ $.ux.models.gridList.prototype.handleAutoScroll = function(top) {
 			});
 		}
 	}
+};
+
+$.ux.models.gridList.prototype.onTouchStart = function(e) {
+	var touch = e.originalEvent.targetTouches[0],
+		$target = $(touch.target);
+	if ($target.is('.ux-gridList-item img')) {
+		var $item = $target.closest('.ux-gridList-item');
+		$item.toggleClass('ux-gridList-selected');
+		this.$.trigger('ux-gridList-select', [this.getSelection()]);
+	} else {
+		this.$grid.find('.ux-gridList-item').removeClass('ux-gridList-selected');
+		this.$.trigger('ux-gridList-select', [[]]);
+	}
+	e.preventDefault();
+};
+
+$.ux.models.gridList.prototype.onTouchMove = function(e) {
+	//
+};
+
+$.ux.models.gridList.prototype.onTouchEnd = function(e) {
+	//
+};
+
+$.ux.models.gridList.prototype.onTouchCancel = function(e) {
+	//
 };
 
 $.ux.models.gridList.prototype.onDragOver = function(e) {
