@@ -103,7 +103,10 @@ $.ux.models.gridList = function($this) {
 		},
 		'drop': function(e) {
 			return gridList.onDrop(e);
-		},
+		}
+	});
+	
+	this.$grid.bind({
 		'touchstart': function(e) {
 			return gridList.onTouchStart(e);
 		},
@@ -409,14 +412,7 @@ $.ux.models.gridList.prototype.handleAutoScroll = function(top) {
 };
 
 $.ux.models.gridList.prototype.onTouchStart = function(e) {
-	var touch = e.originalEvent.targetTouches[0],
-		$target = $(touch.target);
-	this.$grid.find('.ux-gridList-item.ux-gridList-selected').removeClass('ux-gridList-selected');
-	if ($target.is('.ux-gridList-item img')) {
-		$target.closest('.ux-gridList-item').addClass('ux-gridList-selected');
-	}
-	this.$.trigger('ux-gridList-select', [this.getSelection()]);
-	e.preventDefault();
+	//
 };
 
 $.ux.models.gridList.prototype.onTouchMove = function(e) {
