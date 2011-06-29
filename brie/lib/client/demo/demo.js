@@ -198,6 +198,10 @@ function GalleryApp() {
 	$.get('/:data/collabkit-library', function(data, xhr) {
 		app.updateLibrary(data);
 	}, 'json');
+	
+	if (!$.browser.flash) {
+		this.toolbar.$.find('#app-toolbar-capture').remove();
+	}
 }
 
 GalleryApp.prototype.updateToolbar = function() {
