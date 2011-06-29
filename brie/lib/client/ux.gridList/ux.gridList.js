@@ -411,14 +411,11 @@ $.ux.models.gridList.prototype.handleAutoScroll = function(top) {
 $.ux.models.gridList.prototype.onTouchStart = function(e) {
 	var touch = e.originalEvent.targetTouches[0],
 		$target = $(touch.target);
+	this.$grid.find('.ux-gridList-item.ux-gridList-selected').removeClass('ux-gridList-selected');
 	if ($target.is('.ux-gridList-item img')) {
-		var $item = $target.closest('.ux-gridList-item');
-		$item.toggleClass('ux-gridList-selected');
-		this.$.trigger('ux-gridList-select', [this.getSelection()]);
-	} else {
-		this.$grid.find('.ux-gridList-item').removeClass('ux-gridList-selected');
-		this.$.trigger('ux-gridList-select', [[]]);
+		$target.closest('.ux-gridList-item').addClass('ux-gridList-selected');
 	}
+	this.$.trigger('ux-gridList-select', [this.getSelection()]);
 	e.preventDefault();
 };
 
