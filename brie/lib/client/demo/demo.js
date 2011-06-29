@@ -134,9 +134,13 @@ function GalleryApp() {
 	 			 							var seq = app.gridList.sequence,
 	 			 							targetIndex = app.gridList.sequence.indexOf(sel[0]) - 1;
 	 			 							if (targetIndex > -1) {
-	 				 							app.gridList.moveItemsBefore(sel, seq[targetIndex]);
+	 				 							app.gridList.moveItemsBefore(
+	 				 								sel, seq[targetIndex], 'user'
+	 				 							);
 	 			 							} else {
-	 				 							app.gridList.moveItemsBefore(sel);
+	 				 							app.gridList.moveItemsBefore(
+	 				 								sel, undefined, 'user'
+	 				 							);
 	 			 							}
 	 			 							app.gridList.flow();
 	 		 							}
@@ -158,9 +162,13 @@ function GalleryApp() {
 	 			 									sel[sel.length - 1]
 	 			 								) + 1;
 	 			 							if (targetIndex < seq.length - 1) {
-	 				 							app.gridList.moveItemsAfter(sel, seq[targetIndex]);
+	 				 							app.gridList.moveItemsAfter(
+	 				 								sel, seq[targetIndex], 'user'
+	 				 							);
 	 			 							} else {
-	 				 							app.gridList.moveItemsAfter(sel);
+	 				 							app.gridList.moveItemsAfter(
+	 				 								sel, undefined, 'user'
+	 				 							);
 	 			 							}
 	 			 							app.gridList.flow();
 	 		 							}
@@ -175,7 +183,9 @@ function GalleryApp() {
 		 	 					})
 		 	 					.bind({
 		 	 						'ux-toolbarButton-execute': function() {
-		 	 							app.gridList.removeItems(app.gridList.getSelection());
+		 	 							app.gridList.removeItems(
+		 	 								app.gridList.getSelection(), 'user'
+		 	 							);
 		 	 						}
 		 	 					})
 	 	 				]
