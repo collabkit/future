@@ -38,6 +38,7 @@ div, ul, li {
 	background-image: url(graphics/head.svg);
 	background-position: bottom left;
 	background-repeat: repeat-x;
+	background-size: 100% 2em;
 	top: 0;
 }
 
@@ -46,6 +47,7 @@ div, ul, li {
 	background-image: url(graphics/themes/green/bar.svg);
 	background-position: top left;
 	background-repeat: repeat-x;
+	background-size: cover;
 }
 
 #app-nav {
@@ -138,9 +140,12 @@ div, ul, li {
 #app-body-mask {
 	z-index: 100;
 	pointer-events: none;
-	background-image: url(graphics/themes/green/glow-down.svg), url(graphics/themes/green/glow-up.svg);
+	background-image:
+		url(graphics/themes/green/glow-down.svg),
+		url(graphics/themes/green/glow-up.svg);
 	background-repeat: repeat-x;
 	background-position: top left, bottom left;
+	background-size: 100% 3em, 100% 3em;
 }
 
 #app-notes-icon {
