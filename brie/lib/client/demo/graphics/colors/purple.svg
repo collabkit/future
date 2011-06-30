@@ -49,7 +49,7 @@
        x2="48"
        y2="24"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="scale(0.83333333,1)" />
+       gradientTransform="matrix(0.83550914,0,0,0.83333333,-2.7197565e-4,8)" />
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient3778"
@@ -107,7 +107,7 @@
        transform="scale(1,-1)" />
     <path
        style="opacity:0.23364485;fill:url(#linearGradient3776);fill-opacity:1;fill-rule:nonzero;stroke:none"
-       d="M 38.463542,0 C 22.240911,5.325416 7.1961848,23.199462 0.10416667,48 L 40,48 40,0 38.463542,0 z"
+       d="M 38.563697,8 C 22.298709,12.437847 7.2147018,27.332885 0.10416667,48 l 40.00000033,0 0,-40 -1.54047,0 z"
        id="path2995"
        inkscape:connector-curvature="0" />
   </g>

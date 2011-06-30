@@ -56,6 +56,11 @@
 			</div>
 		</div>
 		<div id="app-body-mask"></div>
+		<div id="app-captureDialog">
+			<h1>Webcam Capture</h1>
+			<div id="app-captureDialog-doneButton">Done</div>
+			<p><div id="app-captureDialog-video"></div></p>
+		</div>
 		<div id="app-userDialog">
 			<h1>Welcome to CollabKit</h1>
 			<div id="app-userDialog-doneButton" disabled="true">Done</div>
@@ -64,7 +69,7 @@
 				<br>
 				<p>Choose a color</p>
 				<div id="app-userDialog-colors">
-					<div class="app-userDialog-selected" style="background-image:url(/:resource/demo/graphics/colors/silver.svg)" rel="silver"></div>
+					<div style="background-image:url(/:resource/demo/graphics/colors/silver.svg)" rel="silver"></div>
 					<div style="background-image:url(/:resource/demo/graphics/colors/red.svg)" rel="red"></div>
 					<div style="background-image:url(/:resource/demo/graphics/colors/orange.svg)" rel="orange"></div>
 					<div style="background-image:url(/:resource/demo/graphics/colors/yellow.svg)" rel="yellow"></div>
@@ -77,7 +82,7 @@
 			<div id="app-userDialog-rightColumn">
 				<p>Choose a picture</p>
 				<div id="app-userDialog-avatars">
-					<div class="app-userDialog-selected" style="background-image:url(/:resource/demo/graphics/avatars/animals/butterfly.jpg)" rel="animals/butterfly"></div>
+					<div style="background-image:url(/:resource/demo/graphics/avatars/animals/butterfly.jpg)" rel="animals/butterfly"></div>
 					<div style="background-image:url(/:resource/demo/graphics/avatars/animals/cat.jpg)" rel="animals/cat"></div>
 					<div style="background-image:url(/:resource/demo/graphics/avatars/animals/dog.jpg)" rel="animals/dog"></div>
 					<div style="background-image:url(/:resource/demo/graphics/avatars/animals/dragonfly.jpg)" rel="animals/dragonfly"></div>
@@ -103,8 +108,10 @@
 		</div>
 		<script src="/:session.js"></script>
 		<script src="/:resource/jquery"></script>
+		<script src="/:resource/jquery.cookie"></script>
 		<script src="/:resource/jquery.plugin"></script>
 		<script src="/:resource/jquery.scrollTo"></script>
+		<script src="/:resource/jquery.webcam"></script>
 		<script src="/:resource/ux"></script>
 		<script src="/:resource/ux.gridList"></script>
 		<script src="/:resource/ObjectStore"></script>

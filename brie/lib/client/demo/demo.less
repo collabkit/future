@@ -13,13 +13,23 @@
 	overflow-x: hidden;
 }
 
+#app-captureDialog,
+#app-userDialog {
+	width: 35em;
+	height: 22em;
+	left: 50%;
+	margin-left: -17.5em;
+	top: 50%;
+	margin-top: -11em;
+}
+
 #app-userDialog-leftColumn {
 	float: left;
-	width: 45%;
+	width: 12em;
 }
 #app-userDialog-rightColumn {
 	float: right;
-	width: 50%;
+	width: 15em;
 }
 
 #app-user-avatar,
@@ -77,6 +87,7 @@
 	border-color: #cccccc !important;
 }
 
+#app-captureDialog-doneButton,
 #app-userDialog-doneButton {
 	display: inline-block;
 	position: absolute;
@@ -90,6 +101,7 @@
 	cursor: pointer;
 }
 
+#app-captureDialog-doneButton:hover,
 #app-userDialog-doneButton:hover {
 	color: #444444;
 }
@@ -100,12 +112,13 @@
 	cursor: default;
 }
 
+#app-captureDialog-doneButton:active,
 #app-userDialog-doneButton:active {
 	.vertical-gradient(#dddddd, #ffffff);
 }
 
 #app-userDialog-nameInput {
-	width: 12.5em;
+	width: 11em;
 }
 
 #slideshow {

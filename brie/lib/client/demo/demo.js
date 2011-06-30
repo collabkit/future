@@ -9,246 +9,287 @@ function GalleryApp() {
 	}
 	this.library = null;
 	this.store = new ObjectStore();
-	this.userDialog = $('#app-userDialog')
-		.initialize('dialog')
-			.find('#app-userDialog-nameInput')
-				.bind('keyup cut past click', function() {
-					$('#app-userDialog-doneButton')
-						.attr('disabled', $(this).val().length === 0 ? 'true' : 'false');
-				})
-				.keypress(function(e) {
-					if(e.keyCode==13) {
-						$('#app-userDialog-doneButton').click();
-			        }
-				})
-				.end()
-			.find('#app-userDialog-colors div,#app-userDialog-avatars  div')
-				.click(function() {
-					$(this)
-						.addClass('app-userDialog-selected')
-						.siblings()
-							.removeClass('app-userDialog-selected');
-				})
-				.end()
-			.find('#app-userDialog-doneButton')
-				.click(function() {
-					if ($(this).attr('disabled') === 'true') {
-						return false;
+	this.captureDialog = $('#app-captureDialog').initialize('dialog').ux();
+	$('#app-captureDialog-doneButton')
+		.click(function() {
+			app.captureDialog.hide();
+		});
+	$('#app-captureDialog-video')
+		.each(function() {
+			app.captureWebcam = $(this).webcam({
+				'width': 320,
+				'height': 240,
+				'mode': "callback",
+				'swffile': "/:resource/jquery.webcam/jscam_canvas_only.swf",
+				'onTick': function() {},
+				'onSave': function() {},
+				'onCapture': function() {
+					
+				},
+				'debug': function() {},
+				'onLoad': function() {}
+			});
+		});
+	this.gridList = $('#app-gallery').initialize('gridList').ux();
+	this.gridList.$.bind({
+		'ux-gridList-dropFile': function(e, dataTransfer) {
+			app.updateToolbar();
+			app.uploadFiles(dataTransfer.files, function(err) {
+				if (err) {
+					alert(err);
+				}
+			});
+		},
+		'ux-gridList-removeItems': function(e, items, origin) {
+			app.updateToolbar();
+			if (origin === 'user') {
+				app.library.data.library.items = app.gridList.sequence;
+				app.store.updateObjectRef(
+					'collabkit-library',
+					app.library.data,
+					function(result, err) {
+						if (err) {
+							alert(err);
+						} else {
+							app.updateLibrary(result);
+						}
 					}
-					var name = $('#app-userDialog-nameInput').val();
-					var color = $('#app-userDialog-colors .app-userDialog-selected').attr('rel');
-					var avatar = $('#app-userDialog-avatars .app-userDialog-selected').attr('rel');
-					$('#app-user-avatar').css(
-						'background-image',
-						'url(/:resource/demo/graphics/avatars/' + avatar + '.jpg)'
-					);
-					$('#app-user-name').text(name);
-					if (!isInitialDataLoaded) {
-						loadInitialData();
+				);
+			}
+		},
+		'ux-gridList-sequenceItems': function(e, sequence, origin) {
+			app.updateToolbar();
+			if (origin === 'user') {
+				if (app.library.data.library.items.length != sequence.length) {
+					throw 'Sorting resulted in mismatched item list';
+				}
+				app.library.data.library.items = sequence;
+				app.store.updateObjectRef(
+					'collabkit-library',
+					app.library.data,
+					function(result, err) {
+						if (err) {
+							alert(err);
+						} else {
+							app.updateLibrary(result);
+						}
 					}
-					app.userDialog.hide();
-				})
-				.end()
-		.ux();
+				);
+			}
+		},
+		'ux-gridList-select': function() {
+			app.updateToolbar();
+		},
+		'mousedown': function() {
+			$(this).focus();
+		}
+	});
+	this.toolbar = $('#app-toolbar').initialize('toolbar').ux();
+	this.toolbar.$.config({
+		'contents': [
+  			$('<div></div>')
+  				.initialize('toolbarGroup')
+  				.config({
+	  				'id': 'app-toolbar-gallery',
+	  				'label': 'Gallery',
+	  				'icon': 'gallery',
+	  				'contents': [
+	  					$('<div></div>')
+	  						.initialize('toolbarUploadButton')
+	  						.config({
+		  						'id':'app-toolbar-import',
+		  						'label': 'Import',
+		  						'icon': 'folder',
+		  						'multiple': true
+		 					})
+		 					.bind({
+		 						'ux-toolbarUploadButton-execute': function(e, input) {
+		 	 						app.uploadFiles(input.files, function(err) {
+		 	 							if (err) {
+		 	 								alert(err);
+		 	 							}
+		 	 						});
+		 	 					}
+		 					}),
+	  					$('<div></div>')
+		  					.initialize('toolbarButton')
+		  					.config({
+		  						'id': 'app-toolbar-capture',
+		  						'label': 'Capture',
+		  						'icon': 'webcam',
+		  					})
+		  					.bind({
+		  						'ux-toolbarButton-execute': function() {
+		  							app.captureDialog.show();
+		 	 					}
+		  					}),
+	  					$('<div></div>')
+		  					.initialize('toolbarButton')
+		  					.config({
+		  						'id': 'app-toolbar-slideshow',
+		  						'label': 'Slideshow',
+		  						'icon': 'slideshow',
+		  					})
+		  					.bind({
+		  						'ux-toolbarButton-execute': function() {
+		 	 						app.runSlideshow(app.gridList.sequence);
+		 	 					}
+		  					})
+	  				]
+  				}),
+  			$('<div></div>')
+  				.initialize('toolbarGroup')
+  				.config({
+ 	 				'id': 'app-toolbar-picture',
+ 	 				'label': 'Picture',
+ 	 				'icon': 'block',
+ 	 				'contents': [
+ 	 					$('<div></div>')
+ 	 						.initialize('toolbarButton')
+ 	 						.config({
+ 		 						'id': 'app-toolbar-moveup',
+ 		 						'label': 'Move up',
+ 		 						'icon': 'up',
+ 	 						})
+ 	 						.bind({
+ 		 						'ux-toolbarButton-execute': function() {
+ 		 							var sel = app.gridList.getSelection();
+ 		 							if (sel.length) {
+ 			 							var seq = app.gridList.sequence,
+ 			 							targetIndex = app.gridList.sequence.indexOf(sel[0]) - 1;
+ 			 							if (targetIndex > -1) {
+ 				 							app.gridList.moveItemsBefore(
+ 				 								sel, seq[targetIndex], 'user'
+ 				 							);
+ 			 							} else {
+ 				 							app.gridList.moveItemsBefore(
+ 				 								sel, undefined, 'user'
+ 				 							);
+ 			 							}
+ 			 							app.gridList.flow();
+ 		 							}
+ 			 					}
+ 		 					}),
+ 	 					$('<div></div>')
+ 	 						.initialize('toolbarButton')
+ 	 						.config({
+ 		 						'id': 'app-toolbar-movedown',
+ 		 						'label': 'Move down',
+ 		 						'icon': 'down'
+ 	 						})
+ 	 						.bind({
+ 	 							'ux-toolbarButton-execute': function() {
+ 		 							var sel = app.gridList.getSelection();
+ 		 							if (sel.length) {
+ 			 							var seq = app.gridList.sequence,
+ 			 								targetIndex = app.gridList.sequence.indexOf(
+ 			 									sel[sel.length - 1]
+ 			 								) + 1;
+ 			 							if (targetIndex < seq.length - 1) {
+ 				 							app.gridList.moveItemsAfter(
+ 				 								sel, seq[targetIndex], 'user'
+ 				 							);
+ 			 							} else {
+ 				 							app.gridList.moveItemsAfter(
+ 				 								sel, undefined, 'user'
+ 				 							);
+ 			 							}
+ 			 							app.gridList.flow();
+ 		 							}
+ 			 					}
+ 	 						}),
+ 	 					$('<div></div>')
+ 	 						.initialize('toolbarButton')
+ 	 						.config({
+	 	 						'id': 'app-toolbar-remove',
+	 	 						'label': 'Remove',
+	 	 						'icon': 'remove',
+	 	 					})
+	 	 					.bind({
+	 	 						'ux-toolbarButton-execute': function() {
+	 	 							app.gridList.removeItems(
+	 	 								app.gridList.getSelection(), 'user'
+	 	 							);
+	 	 						}
+	 	 					})
+ 	 				]
+	  			})
+  		]
+	});
+	this.updateToolbar();
+	this.userDialog = $('#app-userDialog').initialize('dialog').ux();
+	$('#app-userDialog-nameInput')
+		.bind('keyup cut past click', function() {
+			$('#app-userDialog-doneButton')
+				.attr('disabled', $(this).val().length === 0 ? 'true' : 'false');
+		})
+		.keypress(function(e) {
+			if(e.keyCode==13) {
+				$('#app-userDialog-doneButton').click();
+	        }
+		});
+	$('#app-userDialog-colors div,#app-userDialog-avatars  div')
+		.click(function() {
+			$(this)
+				.addClass('app-userDialog-selected')
+				.siblings()
+					.removeClass('app-userDialog-selected');
+		});
+	$('#app-userDialog-doneButton')
+		.click(function() {
+			if ($(this).attr('disabled') === 'true') {
+				return false;
+			}
+			var name = $('#app-userDialog-nameInput').val();
+			var color = $('#app-userDialog-colors .app-userDialog-selected').attr('rel');
+			var avatar = $('#app-userDialog-avatars .app-userDialog-selected').attr('rel');
+			var cookieOptions = {'expires': 7, 'path': '/'};
+			$.cookie('collabKit-user-name', name, cookieOptions);
+			$.cookie('collabKit-user-color', color, cookieOptions);
+			$.cookie('collabKit-user-avatar', avatar, cookieOptions);
+			$('#app-user-avatar').css(
+				'background-image',
+				'url(/:resource/demo/graphics/avatars/' + avatar + '.jpg)'
+			);
+			$('#app-user-name').text(name);
+			if (!isInitialDataLoaded) {
+				loadInitialData();
+			}
+			app.userDialog.hide();
+		});
+	
+	var name = $.cookie('collabKit-user-name');
+	var color = $.cookie('collabKit-user-color');
+	var avatar = $.cookie('collabKit-user-avatar');
+	if (color) {
+		$('#app-userDialog-colors div[rel="' + color + '"]')
+			.addClass('app-userDialog-selected');
+	} else {
+		$('#app-userDialog-colors div:first')
+			.addClass('app-userDialog-selected');
+	}
+	if (avatar) {
+		$('#app-userDialog-avatars div[rel="' + avatar + '"]')
+			.addClass('app-userDialog-selected');
+	} else {
+		$('#app-userDialog-avatars div:first')
+			.addClass('app-userDialog-selected');
+	}
+	if (name) {
+		$('#app-userDialog-nameInput').val(name);
+		$('#app-userDialog-doneButton').attr('disabled', 'false');
+		$('#app-userDialog-doneButton').click();
+	} else {
+		app.userDialog.show();
+	}
+	
 	$('#app-user').click(function() {
 		app.userDialog.show();
 	});
-	this.gridList = $('#app-gallery')
-		.initialize('gridList')
-		.bind({
-			'ux-gridList-dropFile': function(e, dataTransfer) {
-				app.updateToolbar();
-				app.uploadFiles(dataTransfer.files, function(err) {
-					if (err) {
-						alert(err);
-					}
-				});
-			},
-			'ux-gridList-removeItems': function(e, items, origin) {
-				app.updateToolbar();
-				if (origin === 'user') {
-					app.library.data.library.items = app.gridList.sequence;
-					app.store.updateObjectRef(
-						'collabkit-library',
-						app.library.data,
-						function(result, err) {
-							if (err) {
-								alert(err);
-							} else {
-								app.updateLibrary(result);
-							}
-						}
-					);
-				}
-			},
-			'ux-gridList-sequenceItems': function(e, sequence, origin) {
-				app.updateToolbar();
-				if (origin === 'user') {
-					if (app.library.data.library.items.length != sequence.length) {
-						throw 'Sorting resulted in mismatched item list';
-					}
-					app.library.data.library.items = sequence;
-					app.store.updateObjectRef(
-						'collabkit-library',
-						app.library.data,
-						function(result, err) {
-							if (err) {
-								alert(err);
-							} else {
-								app.updateLibrary(result);
-							}
-						}
-					);
-				}
-			},
-			'ux-gridList-select': function() {
-				app.updateToolbar();
-			},
-			'mousedown': function() {
-				$(this).focus();
-			}
-		})
-		.ux();
-	this.toolbar = $('#app-toolbar')
-		.initialize('toolbar')
-		.config({
-			'contents': [
-	  			$('<div></div>')
-	  				.initialize('toolbarGroup')
-	  				.config({
-		  				'id': 'app-toolbar-gallery',
-		  				'label': 'Gallery',
-		  				'icon': 'gallery',
-		  				'contents': [
-		  					$('<div></div>')
-		  						.initialize('toolbarUploadButton')
-		  						.config({
-			  						'id':'app-toolbar-import',
-			  						'label': 'Import',
-			  						'icon': 'folder',
-			  						'multiple': true
-			 					})
-			 					.bind({
-			 						'ux-toolbarUploadButton-execute': function(e, input) {
-			 	 						app.uploadFiles(input.files, function(err) {
-			 	 							if (err) {
-			 	 								alert(err);
-			 	 							}
-			 	 						});
-			 	 					}
-			 					}),
-		  					$('<div></div>')
-			  					.initialize('toolbarButton')
-			  					.config({
-			  						'id': 'app-toolbar-capture',
-			  						'label': 'Capture',
-			  						'icon': 'webcam',
-			  					})
-			  					.bind({
-			  						'ux-toolbarButton-execute': function() {
-			  							// launch webcam dialog
-			 	 					}
-			  					}),
-		  					$('<div></div>')
-			  					.initialize('toolbarButton')
-			  					.config({
-			  						'id': 'app-toolbar-slideshow',
-			  						'label': 'Slideshow',
-			  						'icon': 'slideshow',
-			  					})
-			  					.bind({
-			  						'ux-toolbarButton-execute': function() {
-			 	 						app.runSlideshow(app.gridList.sequence);
-			 	 					}
-			  					})
-		  				]
-	  				}),
-	  			$('<div></div>')
-	  				.initialize('toolbarGroup')
-	  				.config({
-	 	 				'id': 'app-toolbar-picture',
-	 	 				'label': 'Picture',
-	 	 				'icon': 'block',
-	 	 				'contents': [
-	 	 					$('<div></div>')
-	 	 						.initialize('toolbarButton')
-	 	 						.config({
-	 		 						'id': 'app-toolbar-moveup',
-	 		 						'label': 'Move up',
-	 		 						'icon': 'up',
-	 	 						})
-	 	 						.bind({
-	 		 						'ux-toolbarButton-execute': function() {
-	 		 							var sel = app.gridList.getSelection();
-	 		 							if (sel.length) {
-	 			 							var seq = app.gridList.sequence,
-	 			 							targetIndex = app.gridList.sequence.indexOf(sel[0]) - 1;
-	 			 							if (targetIndex > -1) {
-	 				 							app.gridList.moveItemsBefore(
-	 				 								sel, seq[targetIndex], 'user'
-	 				 							);
-	 			 							} else {
-	 				 							app.gridList.moveItemsBefore(
-	 				 								sel, undefined, 'user'
-	 				 							);
-	 			 							}
-	 			 							app.gridList.flow();
-	 		 							}
-	 			 					}
-	 		 					}),
-	 	 					$('<div></div>')
-	 	 						.initialize('toolbarButton')
-	 	 						.config({
-	 		 						'id': 'app-toolbar-movedown',
-	 		 						'label': 'Move down',
-	 		 						'icon': 'down'
-	 	 						})
-	 	 						.bind({
-	 	 							'ux-toolbarButton-execute': function() {
-	 		 							var sel = app.gridList.getSelection();
-	 		 							if (sel.length) {
-	 			 							var seq = app.gridList.sequence,
-	 			 								targetIndex = app.gridList.sequence.indexOf(
-	 			 									sel[sel.length - 1]
-	 			 								) + 1;
-	 			 							if (targetIndex < seq.length - 1) {
-	 				 							app.gridList.moveItemsAfter(
-	 				 								sel, seq[targetIndex], 'user'
-	 				 							);
-	 			 							} else {
-	 				 							app.gridList.moveItemsAfter(
-	 				 								sel, undefined, 'user'
-	 				 							);
-	 			 							}
-	 			 							app.gridList.flow();
-	 		 							}
-	 			 					}
-	 	 						}),
-	 	 					$('<div></div>')
-	 	 						.initialize('toolbarButton')
-	 	 						.config({
-		 	 						'id': 'app-toolbar-remove',
-		 	 						'label': 'Remove',
-		 	 						'icon': 'remove',
-		 	 					})
-		 	 					.bind({
-		 	 						'ux-toolbarButton-execute': function() {
-		 	 							app.gridList.removeItems(
-		 	 								app.gridList.getSelection(), 'user'
-		 	 							);
-		 	 						}
-		 	 					})
-	 	 				]
-		  			})
-	  		]
-		})
-		.ux();
 	
 	if (!$.browser.flash) {
 		this.toolbar.$.find('#app-toolbar-capture').remove();
 	}
-	
-	app.userDialog.show();
 }
 
 GalleryApp.prototype.updateToolbar = function() {
