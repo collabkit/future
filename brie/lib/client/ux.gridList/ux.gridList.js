@@ -17,6 +17,7 @@ $.ux.models.gridList = function($this) {
 		'autoScrollStep': 180
 	};
 	this.flowed = false;
+	this.useCssTransform = true;
 	this.items = {};
 	this.sequence = [];
 	this.grid = {
@@ -151,6 +152,7 @@ $.ux.models.gridList.prototype.addItems = function(items, origin) {
 	if (!items.length) {
 		return;
 	}
+	var cssTranform = true;
 	var gridList = this;
 	$.each(items, function(i, item) {
 		var $item = $.ux.models.gridList.$itemTemplate.clone().attr('ux-object-id', item.id);
@@ -187,6 +189,7 @@ $.ux.models.gridList.prototype.addItems = function(items, origin) {
 					var dt = e.originalEvent.dataTransfer;
 					dt.dropEffect = 'move';
 					dt.effectAllowed = 'move';
+					dt.setDragImage($item.find('img')[0], e.layerX, e.layerY);
 					$item.addClass( 'ux-gridList-dragging' );
 					gridList.$placeholder = $item;
 					gridList.drag.active = true;
@@ -220,15 +223,27 @@ $.ux.models.gridList.prototype.addItems = function(items, origin) {
 					
 					// Apply drop position so the drop feels more natural
 					var offset = gridList.$grid.offset();
-					$item
-						// Prevent animation
-						.removeClass('ux-gridList-item-animated')
-						// Move to drop position
-						.css({
+					// Prevent animation
+					$item.removeClass('ux-gridList-item-animated')
+					// Move to drop position
+					if (gridList.useCssTransform) {
+						var transform = 'translate('
+							+ (gridList.drag.offsetX - offset.left) + 'px,'
+							+ (gridList.drag.offsetY - offset.top) + 'px)';
+						$item.css({
+							'margin-left': 0,
+							'-webkit-transform': transform,
+							'-moz-transform': transform,
+							'-o-transform': transform,
+							'transform': transform
+						});
+					} else {
+						$item.css({
 							'margin-left': 0,
 							'left': gridList.drag.offsetX - offset.left,
 							'top': gridList.drag.offsetY - offset.top
 						});
+					}
 					// Give the browser a chance to apply the CSS before turning animation back on
 					// and flowing, not using a timeout causes the drop positioning to be ignored
 					setTimeout(function() {
@@ -369,11 +384,24 @@ $.ux.models.gridList.prototype.flow = function(now) {
 	));
 	for (var row = 0; row < this.grid.rows.length; row++) {
 		for (var col = 0; col < this.grid.rows[row].items.length; col++) {
-			this.grid.rows[row].items[col].item.$.css({
-				'margin-left': 0,
-				'left': this.grid.rows[row].items[col].left,
-				'top': this.grid.rows[row].top
-			});
+			if (this.useCssTransform) {
+				var transform = 'translate('
+					+ this.grid.rows[row].items[col].left + 'px,'
+					+ this.grid.rows[row].top + 'px)';
+				this.grid.rows[row].items[col].item.$.css({
+					'margin-left': 0,
+					'-webkit-transform': transform,
+					'-moz-transform': transform,
+					'-o-transform': transform,
+					'transform': transform
+				});
+			} else {
+				this.grid.rows[row].items[col].item.$.css({
+					'margin-left': 0,
+					'left': this.grid.rows[row].items[col].left,
+					'top': this.grid.rows[row].top
+				});
+			}
 		}
 	}
 	this.flowed = true;

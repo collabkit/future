@@ -29,33 +29,23 @@
 	}
 	&-item {
 		position: absolute;
-		top: 10px;
-		left: 10px;
 		display: block;
 		padding: 0.5em;
 		z-index: 1;
 		
 		&.ux-gridList-item-animated {
-			-webkit-transition:
-				top 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000),
-				left 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000),
-				margin-left 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000);
-			-moz-transition:
-				top 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000),
-				left 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000),
-				margin-left 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000);
-			-o-transition:
-				top 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000),
-				left 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000),
-				margin-left 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000);
-			-ms-transition:
-				top 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000),
-				left 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000),
-				margin-left 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000);
-			transition:
-				top 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000),
-				left 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000),
-				margin-left 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000);
+			-webkit-transition-property: top, left, margin-left, -webkit-transform;
+			-webkit-transition-duration: 300ms;
+			-webkit-transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
+			-moz-transition-property: top, left, margin-left, -moz-transform;
+			-moz-transition-duration: 300ms;
+			-moz-transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
+			-o-transition-property: top, left, margin-left, -o-transform;
+			-o-transition-duration: 300ms;
+			-o-transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
+			transition-property: top, left, margin-left, tranform;
+			transition-duration: 300ms;
+			transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
 		}
 		
 		.ux-gridList-mask {
