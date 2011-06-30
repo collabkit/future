@@ -248,12 +248,6 @@ function GalleryApp() {
 		this.toolbar.$.find('#app-toolbar-capture').remove();
 	}
 	
-	// Disable vertical scrolling in iOS
-	$(document).bind('touchmove', function(e) {
-		e.preventDefault();
-		return false;
-	});
-	
 	app.userDialog.show();
 }
 
