@@ -2,7 +2,47 @@ function GalleryApp() {
 	var app = this;
 	this.library = null;
 	this.store = new ObjectStore();
-	this.captureDialog = $('').appendTo()
+	this.userDialog = $('#app-userDialog')
+		.initialize('dialog')
+			.find('#app-userDialog-nameInput')
+				.bind('keyup cut past click', function() {
+					$('#app-userDialog-doneButton')
+						.attr('disabled', $(this).val().length === 0 ? 'true' : 'false');
+				})
+				.keypress(function(e) {
+					if(e.keyCode==13) {
+						$('#app-userDialog-doneButton').click();
+			        }
+				})
+				.end()
+			.find('#app-userDialog-colors div,#app-userDialog-avatars  div')
+				.click(function() {
+					$(this)
+						.addClass('app-userDialog-selected')
+						.siblings()
+							.removeClass('app-userDialog-selected');
+				})
+				.end()
+			.find('#app-userDialog-doneButton')
+				.click(function() {
+					if ($(this).attr('disabled') === 'true') {
+						return false;
+					}
+					var name = $('#app-userDialog-nameInput').val();
+					var color = $('#app-userDialog-colors .app-userDialog-selected').attr('rel');
+					var avatar = $('#app-userDialog-avatars .app-userDialog-selected').attr('rel');
+					$('#app-user-avatar').css(
+						'background-image',
+						'url(/:resource/demo/graphics/avatars/' + avatar + '.jpg)'
+					);
+					$('#app-user-name').text(name);
+					app.userDialog.hide();
+				})
+				.end()
+		.ux();
+	$('#app-user').click(function() {
+		app.userDialog.show();
+	});
 	this.gridList = $('#app-gallery')
 		.initialize('gridList')
 		.bind({
@@ -202,6 +242,7 @@ function GalleryApp() {
 	if (!$.browser.flash) {
 		this.toolbar.$.find('#app-toolbar-capture').remove();
 	}
+	app.userDialog.show();
 }
 
 GalleryApp.prototype.updateToolbar = function() {

@@ -9,6 +9,9 @@
 // Rules
 
 .ux {
+	&-toolbar {
+		overflow: hidden;
+	}
 	&-toolbarGroup {
 		.user-select(none);
 		float: left;
@@ -29,7 +32,7 @@
 		}
 	}
 	&-toolbarGroup-label {
-		.border-box();
+		.box-sizing(border-box);
 		float: left;
 		height: 100%;
 		border: solid 1px #caf1bc;
@@ -45,7 +48,7 @@
 		margin-right: -1.5em;
 	}
 	&-toolbarGroup-contents {
-		.border-box();
+		.box-sizing(border-box);
 		float: left;
 		height: 100%;
 		border: solid 1px #caf1bc;
@@ -54,7 +57,7 @@
 		.border-radius(1em);
 	}
 	&-toolbarButton {
-		.border-box();
+		.box-sizing(border-box);
 		float: left;
 		height: 100%;
 		cursor: pointer;
@@ -108,6 +111,51 @@
 			top: -1000px;
 			width: 0;
 			height: 0;
+		}
+	}
+	&-dialog {
+		display: none;
+		z-index: 2001;
+		background-color: rgba(255,255,255,0.98);
+		border: solid 1px #cccccc;
+		.border-radius(1em);
+		.drop-shadow(0, 0.125em, 1.5em, rgba(0,0,0,0.25));
+		position: absolute;
+		width: 40em;
+		height: 25em;
+		left: 50%;
+		margin-left: -20em;
+		top: 50%;
+		margin-top: -12.5em;
+		
+		&-mask {
+			display: none;
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 2000;
+			background-color: rgba(255,255,255,0.75);
+		}
+		
+		&-contents {
+			padding: 2em;
+			
+			h1 {
+				padding-top: 0;
+				margin-top: 0;
+			}
+			
+			input, textarea, select {
+				font-size: 100%;
+			}
+			
+			input[type=text] {
+				padding: 0.5em;
+				border: solid 1px silver;
+				.border-radius(0.125em);
+			}
 		}
 	}
 }

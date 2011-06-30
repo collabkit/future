@@ -1,3 +1,9 @@
+// Imports
+
+@import "../ux/ux.common.less";
+
+// Styles
+
 #app-gallery {
 	position: absolute;
 	top: 0;
@@ -5,6 +11,101 @@
 	right: 0;
 	bottom: 0;
 	overflow-x: hidden;
+}
+
+#app-userDialog-leftColumn {
+	float: left;
+	width: 45%;
+}
+#app-userDialog-rightColumn {
+	float: right;
+	width: 50%;
+}
+
+#app-user-avatar,
+#app-userDialog-colors div,
+#app-userDialog-avatars div {
+	width: 36px;
+	height: 36px;
+	display: inline-block;
+	cursor: pointer;
+	background-position: center center;
+	background-repeat: no-repeat;
+}
+
+#app-user {
+	.user-select(none);
+	cursor: pointer;
+}
+
+#app-user-name {
+	display: inline-block;
+	height: 3em;
+	line-height: 3em;
+	vertical-align: top;
+	margin-right: 0.125em;
+}
+
+#app-user-avatar {
+	display: inline-block;
+	margin: 0.25em;
+	border: solid 2px #eeeeee;
+	vertical-align: center;
+}
+
+#app-user:hover #app-user-name {
+	color: #666666;
+}
+
+#app-user:hover #app-user-avatar {
+	border-color: #cccccc;
+}
+
+#app-userDialog-colors div,
+#app-userDialog-avatars div {
+	margin-right: 0.5em;
+	margin-bottom: 0.5em;
+	border: solid 2px #ffffff;
+}
+
+#app-userDialog-colors div:hover,
+#app-userDialog-avatars div:hover {
+	border-color: #eeeeee;
+}
+
+.app-userDialog-selected {
+	border-color: #cccccc !important;
+}
+
+#app-userDialog-doneButton {
+	display: inline-block;
+	position: absolute;
+	top: 2em;
+	right: 2em;
+	padding: 0.4em 0.8em;
+	.vertical-gradient(#ffffff, #dddddd);
+	border: solid 1px silver;
+	.border-radius(0.75em);
+	.user-select(none);
+	cursor: pointer;
+}
+
+#app-userDialog-doneButton:hover {
+	color: #444444;
+}
+
+#app-userDialog-doneButton[disabled=true] {
+	color: #cccccc;
+	opacity: 0.25;
+	cursor: default;
+}
+
+#app-userDialog-doneButton:active {
+	.vertical-gradient(#dddddd, #ffffff);
+}
+
+#app-userDialog-nameInput {
+	width: 12.5em;
 }
 
 #slideshow {

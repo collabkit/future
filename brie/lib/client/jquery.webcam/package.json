@@ -1,0 +1,5 @@
+{
+	"name" : "jquery-webcam",
+	"description" : "jQuery webcam plug-in.",
+	"main" : "./jquery.webcam.js"
+}

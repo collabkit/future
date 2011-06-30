@@ -84,10 +84,6 @@ $.ux.models.toolbar = function($this) {
 	this.$ = $this
 		.addClass('ux-toolbar')
 		.append('<div class="ux-toolbar-contents"></div>');
-	var toolbar = this;
-	$(window).resize(function() {
-		$groups = toolbar.$.find('.ux-toolbarGroup');
-	});
 };
 
 $.ux.models.toolbar.config = {
@@ -282,18 +278,23 @@ $.ux.models.toolbarUploadButton.config = {
 };
 
 $.ux.models.dialog = function($this) {
+	this.$mask = $('<div class="ux-dialog-mask"></div>');
 	this.$ = $this
 		.addClass('ux-dialog')
-		.append('<div class="ux-dialog-title"></div>')
-		.append('<div class="ux-dialog-contents"></div>');
+		.children()
+			.wrapAll('<div class="ux-dialog-contents"></div>')
+			.end()
+		.before(this.$mask);
 };
 
 $.ux.models.dialog.prototype.show = function() {
-	this.$.show();
+	this.$.fadeIn('fast');
+	this.$mask.fadeIn('fast');
 };
 
 $.ux.models.dialog.prototype.hide = function() {
-	this.$.hide();
+	this.$.fadeOut('fast');
+	this.$mask.fadeOut('fast');
 };
 
 $.ux.models.dialog.config = {
