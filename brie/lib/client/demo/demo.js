@@ -1,5 +1,12 @@
 function GalleryApp() {
 	var app = this;
+	var isInitialDataLoaded = false;
+	function loadInitialData() {
+		// Load the initial library data
+		$.get('/:data/collabkit-library', function(data, xhr) {
+			app.updateLibrary(data);
+		}, 'json');
+	}
 	this.library = null;
 	this.store = new ObjectStore();
 	this.userDialog = $('#app-userDialog')
@@ -36,6 +43,9 @@ function GalleryApp() {
 						'url(/:resource/demo/graphics/avatars/' + avatar + '.jpg)'
 					);
 					$('#app-user-name').text(name);
+					if (!isInitialDataLoaded) {
+						loadInitialData();
+					}
 					app.userDialog.hide();
 				})
 				.end()
@@ -234,14 +244,16 @@ function GalleryApp() {
 		})
 		.ux();
 	
-	// Load the initial library data
-	$.get('/:data/collabkit-library', function(data, xhr) {
-		app.updateLibrary(data);
-	}, 'json');
-	
 	if (!$.browser.flash) {
 		this.toolbar.$.find('#app-toolbar-capture').remove();
 	}
+	
+	// Disable vertical scrolling in iOS
+	$(document).bind('touchmove', function(e) {
+		e.preventDefault();
+		return false;
+	});
+	
 	app.userDialog.show();
 }
 
