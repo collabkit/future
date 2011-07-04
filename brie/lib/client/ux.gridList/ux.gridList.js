@@ -127,7 +127,6 @@ $.ux.models.gridList = function($this) {
 		'autoScrollStep': 180
 	};
 	this.flowed = false;
-	this.useCssTransform = true;
 	this.items = {};
 	this.sequence = [];
 	this.grid = {
@@ -385,16 +384,24 @@ $.ux.models.gridList.prototype.positionItem = function(item, transform, direct, 
 	if (direct) {
 		item.$.removeClass('ux-gridListItem-animated');
 	}
-	if (this.useCssTransform) {
+	if (Modernizr.csstransforms) {
 		var translate,
 			top,
 			left;
 		if (transform) {
-			translate = 'translate(' + item.left + 'px,' + item.top + 'px)';
+			if (Modernizr.csstransforms3d) {
+				translate = 'translate3d(' + item.left + 'px,' + item.top + 'px,0)';
+			} else {
+				translate = 'translate(' + item.left + 'px,' + item.top + 'px)';
+			}
 			left = 0;
 			top = 0;
 		} else {
-			translate = 'translate(0,0)';
+			if (Modernizr.csstransforms3d) {
+				translate = 'translate3d(0,0,0)';
+			} else {
+				translate = 'translate(0,0)';
+			}
 			left = item.left;
 			top = item.top;
 		}
