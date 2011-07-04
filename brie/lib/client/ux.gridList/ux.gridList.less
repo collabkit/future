@@ -24,61 +24,62 @@
 		opacity: 0.5;
 		z-index: 3;
 	}
-	&.ux-gridList-draggingOver {
+	&-draggingOver {
 		background-color: #f9f9f9;
 	}
-	&-item {
+}
+
+.ux-gridListItem {
+	position: absolute;
+	display: block;
+	padding: 0.5em;
+	z-index: 1;
+	
+	&-animated {
+		-webkit-transition-property: top, left, margin-left, -webkit-transform;
+		-webkit-transition-duration: 300ms;
+		-webkit-transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
+		-moz-transition-property: top, left, margin-left, -moz-transform;
+		-moz-transition-duration: 300ms;
+		-moz-transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
+		-o-transition-property: top, left, margin-left, -o-transform;
+		-o-transition-duration: 300ms;
+		-o-transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
+		transition-property: top, left, margin-left, tranform;
+		transition-duration: 300ms;
+		transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
+	}
+	
+	&-mask {
+		.border-radius(0.5em);
+		pointer-events: none;
 		position: absolute;
-		display: block;
+		top: 0.5em;
+		left: 0.5em;
+		right: 0.5em;
+		bottom: 0.5em;
+		background-color: white;
+	}
+	
+	&-frame {
+		.border-radius(0.5em);
 		padding: 0.5em;
-		z-index: 1;
-		
-		&.ux-gridList-item-animated {
-			-webkit-transition-property: top, left, margin-left, -webkit-transform;
-			-webkit-transition-duration: 300ms;
-			-webkit-transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
-			-moz-transition-property: top, left, margin-left, -moz-transform;
-			-moz-transition-duration: 300ms;
-			-moz-transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
-			-o-transition-property: top, left, margin-left, -o-transform;
-			-o-transition-duration: 300ms;
-			-o-transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
-			transition-property: top, left, margin-left, tranform;
-			transition-duration: 300ms;
-			transition-timing-function: cubic-bezier(0.860, 0.000, 0.070, 1.000);
-		}
-		
-		.ux-gridList-mask {
-			.border-radius(0.5em);
-			pointer-events: none;
-			position: absolute;
-			top: 0.5em;
-			left: 0.5em;
-			right: 0.5em;
-			bottom: 0.5em;
-			background-color: white;
-		}
-		
-		&-frame {
-			.border-radius(0.5em);
-			padding: 0.5em;
-			background-color: #ffffff;
-			border: solid 0.1em #cccccc;
-		}
-		
-		&-frame img {
-			display: block;
-			margin: -1.1em;
-			padding: 1.1em;
-		}
-		
-		&.ux-gridList-selected {
-			z-index: 2;
-		}
-		
-		&.ux-gridList-selected .ux-gridList-item-frame {
-			border-color: #99cc99;
-			background-color: #eeffee;
-		}
+		background-color: #ffffff;
+		border: solid 0.1em #cccccc;
+	}
+	
+	&-frame img {
+		display: block;
+		margin: -1.1em;
+		padding: 1.1em;
+	}
+	
+	&-selected {
+		z-index: 2;
+	}
+	
+	&-selected .ux-gridListItem-frame {
+		border-color: #99cc99;
+		background-color: #eeffee;
 	}
 }
