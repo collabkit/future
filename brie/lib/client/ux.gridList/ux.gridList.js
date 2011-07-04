@@ -178,41 +178,38 @@ $.ux.models.gridList.prototype.addItems = function(items, origin) {
 					e.stopPropagation();
 				},
 				'dragstart': function(e) {
-					$item.prepend(
-						$('<div class="ux-gridList-mask"></div>')
-							.fadeTo(
-								gridList.options.animationSpeed,
-								0.75,
-								gridList.options.animationEasing
-							)
-					);
+					$item
+						.addClass( 'ux-gridList-dragging' )
+						.prepend($('<div class="ux-gridList-mask"></div>').fadeTo(0.75));
 					var dt = e.originalEvent.dataTransfer;
 					dt.dropEffect = 'move';
 					dt.effectAllowed = 'move';
-					dt.setDragImage($item.find('img')[0], e.layerX, e.layerY);
-					$item.addClass( 'ux-gridList-dragging' );
 					gridList.$placeholder = $item;
 					gridList.drag.active = true;
 					gridList.drag.width = gridList.$placeholder.width();
 					gridList.drag.height = gridList.$placeholder.height();
-					var offset = gridList.$placeholder.offset();
-					gridList.drag.offsetX = e.pageX - offset.left;
-					gridList.drag.offsetY = e.pageY - offset.top;
+					gridList.positionItem(gridList.items[item.id], false, true, function() {
+						var offset = gridList.$placeholder.offset();
+						gridList.drag.offsetX = e.pageX - offset.left;
+						gridList.drag.offsetY = e.pageY - offset.top;
+					});
 					return true;
 				},
 				'dragend': function(e) {
-					$item.find('.ux-gridList-mask').remove();
-					gridList.$placeholder.removeClass( 'ux-gridList-dragging' );
-					var id = gridList.$placeholder.attr('ux-object-id');
+					$item
+						.removeClass( 'ux-gridList-dragging' )
+						.find('.ux-gridList-mask')
+							.remove();
+					// Choose drop target and move item to be adjacent to it
 					$right = gridList.$.find('.ux-gridList-rightOfDrag.ux-gridList-dropTarget');
 					if ($right.length) {
 						var target = $right.attr('ux-object-id');
-						gridList.moveItemsBefore([id], target, 'user');
+						gridList.moveItemsBefore([item.id], target, 'user');
 					} else {
 						$left = gridList.$.find('.ux-gridList-leftOfDrag.ux-gridList-dropTarget');
 						if ($left.length) {
 							var target = $left.attr('ux-object-id');
-							gridList.moveItemsAfter([id], target, 'user');
+							gridList.moveItemsAfter([item.id], target, 'user');
 						}
 					}
 					gridList.drag.active = false;
@@ -223,34 +220,12 @@ $.ux.models.gridList.prototype.addItems = function(items, origin) {
 					
 					// Apply drop position so the drop feels more natural
 					var offset = gridList.$grid.offset();
-					// Prevent animation
-					$item.removeClass('ux-gridList-item-animated')
-					// Move to drop position
-					if (gridList.useCssTransform) {
-						var transform = 'translate('
-							+ (gridList.drag.offsetX - offset.left) + 'px,'
-							+ (gridList.drag.offsetY - offset.top) + 'px)';
-						$item.css({
-							'margin-left': 0,
-							'-webkit-transform': transform,
-							'-moz-transform': transform,
-							'-o-transform': transform,
-							'transform': transform
-						});
-					} else {
-						$item.css({
-							'margin-left': 0,
-							'left': gridList.drag.offsetX - offset.left,
-							'top': gridList.drag.offsetY - offset.top
-						});
-					}
-					// Give the browser a chance to apply the CSS before turning animation back on
-					// and flowing, not using a timeout causes the drop positioning to be ignored
-					setTimeout(function() {
-						$item.addClass('ux-gridList-item-animated');
+					gridList.items[item.id].left = gridList.drag.offsetX - offset.left;
+					gridList.items[item.id].top = gridList.drag.offsetY - offset.top;
+					gridList.items[item.id].$.css('margin-left', 0);
+					gridList.positionItem(gridList.items[item.id], true, true, function() {
 						gridList.flow();
-					}, 0);
-					
+					});
 					return false;
 				}
 			});
@@ -258,7 +233,9 @@ $.ux.models.gridList.prototype.addItems = function(items, origin) {
 		gridList.items[item.id] = {
 			'$': $item,
 			'width': $item.outerWidth(),
-			'height': $item.outerHeight()
+			'height': $item.outerHeight(),
+			'left': 0,
+			'top': 0
 		};
 		gridList.sequence.push(item.id);
 	});
@@ -349,62 +326,69 @@ $.ux.models.gridList.prototype.flow = function(now) {
 	var pad = 10,
 		left = pad,
 		top = pad,
-		row = 0;
-	this.grid.rows = [{
-		'items': [],
-		'top': top,
-		'height': 0
-	}];
+		height = 0,
+		row;
+	this.grid.rows = [row = {'items': [], 'top': top, 'height': 0}];
 	for (var i = 0; i < this.sequence.length; i++) {
 		var item = this.items[this.sequence[i]];
-		if (left + item.width + pad <= this.grid.width) {
-			this.grid.rows[row].height = Math.max(this.grid.rows[row].height, item.height);
-			this.grid.rows[row].items.push({
-				'item': item,
-				'left': left
-			});
-			left += item.width;
-		} else {
-			row++;
+		if (left + item.width + pad > this.grid.width) {
 			left = pad;
-			top += item.height;
-			this.grid.rows[row] = {
-				'items':[{
-					'item': item,
-					'left': left
-				}],
-				'top': top,
-				'height': item.height,
-			};
-			left += item.width;
+			top += row.height;
+			this.grid.rows.push(row = {'items': [], 'top': top, 'height': 0});
 		}
+		item.left = left;
+		item.top = top;
+		this.positionItem(item, true);
+		item.$.css('margin-left', 0);
+		row.height = height = Math.max(row.height, item.height);
+		row.items.push(item);
+		left += item.width;
 	}
-	this.$grid.css('height', Math.max(
-		top + this.grid.rows[this.grid.rows.length - 1].height + pad, this.$.height()
-	));
-	for (var row = 0; row < this.grid.rows.length; row++) {
-		for (var col = 0; col < this.grid.rows[row].items.length; col++) {
-			if (this.useCssTransform) {
-				var transform = 'translate('
-					+ this.grid.rows[row].items[col].left + 'px,'
-					+ this.grid.rows[row].top + 'px)';
-				this.grid.rows[row].items[col].item.$.css({
-					'margin-left': 0,
-					'-webkit-transform': transform,
-					'-moz-transform': transform,
-					'-o-transform': transform,
-					'transform': transform
-				});
-			} else {
-				this.grid.rows[row].items[col].item.$.css({
-					'margin-left': 0,
-					'left': this.grid.rows[row].items[col].left,
-					'top': this.grid.rows[row].top
-				});
-			}
-		}
+	if (row.items.length) {
+		this.grid.rows.push(row);
 	}
+	
+	this.$grid.css('height', Math.max(top + height + pad, this.$.height()));
 	this.flowed = true;
+};
+
+$.ux.models.gridList.prototype.positionItem = function(item, transform, direct, callback) {
+	if (direct) {
+		item.$.removeClass('ux-gridList-item-animated');
+	}
+	if (this.useCssTransform) {
+		var translate,
+			top,
+			left;
+		if (transform) {
+			translate = 'translate(' + item.left + 'px,' + item.top + 'px)';
+			left = 0;
+			top = 0;
+		} else {
+			translate = 'translate(0,0)';
+			left = item.left;
+			top = item.top;
+		}
+		item.$.css({
+			'left': left,
+			'top': top,
+			'-webkit-transform': translate,
+			'-moz-transform': translate,
+			'-o-transform': translate,
+			'transform': translate
+		});
+	} else {
+		item.$.css({
+			'left': item.left,
+			'top': item.top
+		});
+	}
+	if (callback) {
+		setTimeout(function() {
+			item.$.addClass('ux-gridList-item-animated');
+			callback();
+		}, 0);
+	}
 };
 
 $.ux.models.gridList.prototype.handleAutoScroll = function(top) {
@@ -475,43 +459,47 @@ $.ux.models.gridList.prototype.onDragOver = function(e) {
 	}
 	
 	this.drag.position = {'left': left, 'top': top};
-	var $left = $([]),
+	var rows = this.grid.rows,
+		row,
+		item,
+		leftElement,
+		rightElement,
+		bottom,
+		$left = $([]),
 		$right = $([]),
-		$outside = $([]),
-		leftEdge,
-		rightEdge;
-	for (var row = 0; row < this.grid.rows.length; row++) {
-		if ((row === 0 && top < this.grid.rows[row].top + this.grid.rows[row].height )
-				|| (top > this.grid.rows[row].top
-						&& (row === this.grid.rows.length - 1
-								|| top < this.grid.rows[row].top + this.grid.rows[row].height))) {
-			for (var col = 0; col < this.grid.rows[row].items.length; col++) {
-				var halfWidth = this.grid.rows[row].items[col].item.width / 2;
-				if (left < this.grid.rows[row].items[col].left + halfWidth) {
-					$right = $right.add(this.grid.rows[row].items[col].item.$);
-					if (!rightEdge) {
-						rightEdge = this.grid.rows[row].items[col].item.$[0];
+		$outside = $([]);
+	
+	for (var r = 0; r < rows.length; r++) {
+		row = rows[r];
+		if (top > row.top && top < row.top + row.height) {
+			for (var i = 0; i < row.items.length; i++) {
+				item = row.items[i];
+				if (left < item.left + (item.width / 2)) {
+					$right = $right.add(item.$);
+					if (!rightElement) {
+						rightElement = item.$[0];
 					}
 				} else {
-					$left = $left.add(this.grid.rows[row].items[col].item.$);
-					leftEdge = this.grid.rows[row].items[col].item.$[0];
+					$left = $left.add(item.$);
+					leftElement = item.$[0];
 				}
 			}
 		} else {
-			for (var col = 0; col < this.grid.rows[row].items.length; col++) {
-				$outside = $outside.add(this.grid.rows[row].items[col].item.$);
+			for (var i = 0; i < row.items.length; i++) {
+				$outside = $outside.add(row.items[i].$);
 			}
 		}
 	}
-	if (this.$placeholder && (leftEdge === this.$placeholder[0]
-			|| rightEdge === this.$placeholder[0])) {
+	
+	if (this.$placeholder && (leftElement === this.$placeholder[0]
+			|| rightElement === this.$placeholder[0])) {
 		$outside = $outside.add($right).add($left);
 	} else {
 		$outside.add($right).add($left).removeClass('ux-gridList-dropTarget');
-		if (leftEdge) {
-			$(leftEdge).addClass('ux-gridList-dropTarget');
-		} else if (rightEdge) {
-			$(rightEdge).addClass('ux-gridList-dropTarget');
+		if (leftElement) {
+			$(leftElement).addClass('ux-gridList-dropTarget');
+		} else if (rightElement) {
+			$(rightElement).addClass('ux-gridList-dropTarget');
 		}
 		$right.filter(':not(.ux-gridList-rightOfDrag)')
 			.removeClass('ux-gridList-leftOfDrag')
@@ -548,6 +536,7 @@ $.ux.models.gridList.prototype.onDrop = function(e) {
 	}
 	this.drag.offsetX = e.pageX - this.drag.offsetX;
 	this.drag.offsetY = e.pageY - this.drag.offsetY;
+	console.log(e.pageX, e.pageY);
 	e.preventDefault();
 	return false;
 };
