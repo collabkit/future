@@ -249,7 +249,7 @@ function GalleryApp() {
 			$.cookie('collabKit-user-avatar', avatar, cookieOptions);
 			$('#app-user-avatar').css(
 				'background-image',
-				'url(/:resource/demo/graphics/avatars/' + avatar + '.jpg)'
+				'url(/:resource/demo/graphics/avatars/32/' + avatar + '.jpg)'
 			);
 			$('#app-user-name').text(name);
 			if (!isInitialDataLoaded) {
