@@ -287,8 +287,16 @@ function GalleryApp() {
 		app.userDialog.show();
 	});
 	
+	// Use jquery.plugin to detect flash support
 	if (!$.browser.flash) {
+		// Capture requires flash support, so let's hide it
 		this.toolbar.$.find('#app-toolbar-capture').remove();
+	}
+	
+	// Hacky way to detect file input support; at least works on iOS
+	if (this.toolbar.$.find('#app-toolbar-import input:file:disabled').length) {
+		// Import requires file input support, so let's hide it
+		this.toolbar.$.find('#app-toolbar-import').remove();
 	}
 }
 
