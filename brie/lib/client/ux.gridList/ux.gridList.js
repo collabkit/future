@@ -565,7 +565,6 @@ $.ux.models.gridList.prototype.onDrop = function(e) {
 	}
 	this.drag.offsetX = e.pageX - this.drag.offsetX;
 	this.drag.offsetY = e.pageY - this.drag.offsetY;
-	console.log(e.pageX, e.pageY);
 	e.preventDefault();
 	return false;
 };
