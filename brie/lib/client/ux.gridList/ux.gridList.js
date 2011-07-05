@@ -40,11 +40,12 @@ $.ux.models.gridListItem = function(gridList, options) {
 
 $.ux.models.gridListItem.$template = $(
 	'<div draggable="true" class="ux-gridListItem ux-gridListItem-animated">'
-		+ '<div class="ux-gridListItem-frame"><img></div></div>');
+		+ '<div class="ux-gridListItem-frame"><img class="ux-gridListItem-loading"></div></div>');
 
 /* Methods */
 
 $.ux.models.gridListItem.prototype.onLoad = function(e) {
+	this.$img.removeClass('ux-gridListItem-loading');
 	this.width = this.$img.outerWidth();
 	this.height = this.$img.outerHeight();
 	this.gridList.flow(true);

@@ -35,6 +35,17 @@
 	padding: 0.5em;
 	z-index: 1;
 	
+	&-loading {
+		background-image: url(graphics/loading.gif);
+		background-position: center center;
+		background-repeat: no-repeat;
+	}
+	
+	&-loading img {
+		width: 32px;
+		height: 32px;
+	}
+	
 	&-animated {
 		-webkit-transition-property: top, left, margin-left, -webkit-transform;
 		-webkit-transition-duration: 300ms;
