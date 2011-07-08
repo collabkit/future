@@ -19,10 +19,10 @@
    enable-background="new 0 0 32 32"
    xml:space="preserve"
    inkscape:version="0.48.0 r9654"
-   sodipodi:docname="glow-down.svg"><metadata
+   sodipodi:docname="button-up.svg"><metadata
    id="metadata3037"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
    id="defs3035" /><sodipodi:namedview
    pagecolor="#ffffff"
    bordercolor="#666666"
@@ -32,15 +32,15 @@
    guidetolerance="10"
    inkscape:pageopacity="0"
    inkscape:pageshadow="2"
-   inkscape:window-width="976"
-   inkscape:window-height="655"
+   inkscape:window-width="1440"
+   inkscape:window-height="765"
    id="namedview3033"
    showgrid="false"
    inkscape:zoom="9.125"
-   inkscape:cx="16.365841"
+   inkscape:cx="-3.0314193"
    inkscape:cy="16"
-   inkscape:window-x="224"
-   inkscape:window-y="61"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
    inkscape:window-maximized="0"
    inkscape:current-layer="Layer_1" />
 <linearGradient
@@ -53,16 +53,16 @@
    gradientTransform="matrix(-1,0,0,-1,32,31.999001)">
 	<stop
    offset="0"
-   style="stop-color:#47a800;stop-opacity:1;"
+   style="stop-color:#63a800;stop-opacity:1;"
    id="stop3010" /><stop
    id="stop3811"
-   style="stop-color:#47a800;stop-opacity:0.56896549;"
+   style="stop-color:#63a800;stop-opacity:0.56896549;"
    offset="0.04634452" /><stop
    offset="0.27806711"
-   style="stop-color:#47a800;stop-opacity:0.18965517;"
+   style="stop-color:#63a800;stop-opacity:0.18965517;"
    id="stop3813" /><stop
    id="stop3809"
-   style="stop-color:#47a800;stop-opacity:0;"
+   style="stop-color:#63a800;stop-opacity:0;"
    offset="1" />
 	
 	

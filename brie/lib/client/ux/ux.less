@@ -2,16 +2,13 @@
 
 @import "ux.common.less";
 
-// Variables
-
-@baseColor: #4abaeb;
-
 // Rules
 
 .ux {
 	&-toolbar {
 		overflow: hidden;
 	}
+	
 	&-toolbarGroup {
 		.user-select(none);
 		float: left;
@@ -24,20 +21,13 @@
 			background-repeat: no-repeat;
 			padding-left: 2.5em;
 		}
-		&[ux-icon=block] .ux-toolbarGroup-label {
-			background-image: url(graphics/icons/block.svg), url(graphics/themes/green/button-up.svg);
-		}
-		&[ux-icon=gallery] .ux-toolbarGroup-label {
-			background-image: url(graphics/icons/gallery.svg), url(graphics/themes/green/button-up.svg);
-		}
 	}
+	
 	&-toolbarGroup-label {
 		.box-sizing(border-box);
 		float: left;
 		height: 100%;
-		border: solid 1px #caf1bc;
 		border-right: none;
-		background-image: url(graphics/themes/green/button-up.svg);
 		background-size: 100% 100%;
 		.border-radius(1em);
 		cursor: default;
@@ -47,12 +37,11 @@
 		padding-right: 2.25em;
 		margin-right: -1.5em;
 	}
+	
 	&-toolbarGroup-contents {
 		.box-sizing(border-box);
 		float: left;
 		height: 100%;
-		border: solid 1px #caf1bc;
-		background-image: url(graphics/themes/green/group.svg);
 		background-size: 100% 100%;
 		.border-radius(1em);
 	}
@@ -83,22 +72,22 @@
 			padding-left: 2.5em;
 		}
 		&[ux-icon=up] {
-			background-image: url(graphics/icons/up.svg);
+			background-image: url("graphics/icons/up.svg");
 		}
 		&[ux-icon=remove] {
-			background-image: url(graphics/icons/remove.svg);
+			background-image: url("graphics/icons/remove.svg");
 		}
 		&[ux-icon=down] {
-			background-image: url(graphics/icons/down.svg);
+			background-image: url("graphics/icons/down.svg");
 		}
 		&[ux-icon=slideshow] {
-			background-image: url(graphics/icons/slideshow.svg);
+			background-image: url("graphics/icons/slideshow.svg");
 		}
 		&[ux-icon=folder] {
-			background-image: url(graphics/icons/folder.svg);
+			background-image: url("graphics/icons/folder.svg");
 		}
 		&[ux-icon=webcam] {
-			background-image: url(graphics/icons/webcam.svg);
+			background-image: url("graphics/icons/webcam.svg");
 		}
 		&-label {
 			display: block;
@@ -152,4 +141,68 @@
 			}
 		}
 	}
+}
+
+.theme(@theme, @color) {
+	.ux {
+		&-toolbarGroup {
+			&[ux-icon=block] .ux-toolbarGroup-label {
+				background-image:
+					url("graphics/icons/block.svg"),
+					url("graphics/themes/@{theme}/button-up.svg");
+			}
+			&[ux-icon=gallery] .ux-toolbarGroup-label {
+				background-image:
+					url("graphics/icons/gallery.svg"),
+					url("graphics/themes/@{theme}/button-up.svg");
+			}
+		}
+		&-toolbarGroup-label {
+			border: solid 1px @color;
+			background-image: url("graphics/themes/@{theme}/button-up.svg");
+		}
+		&-toolbarGroup-contents {
+			border: solid 1px @color;
+			background-image: url("graphics/themes/@{theme}/group.svg");
+		}
+	}
+}
+
+.ux-theme-silver {
+	.theme(silver, #dddddd);
+}
+
+.ux-theme-red {
+	// Hue = 10
+	.theme(red, #f1cbbc);
+}
+
+.ux-theme-orange {
+	// Hue = 30
+	.theme(orange, #f1dfbc);
+}
+
+.ux-theme-yellow {
+	// Hue = 40
+	.theme(yellow, #f1edbc);
+}
+
+.ux-theme-green {
+	// Hue = 60
+	.theme(green, #caf1bc);
+}
+
+.ux-theme-blue {
+	// Hue = 140
+	.theme(blue, #bcdff1);
+}
+
+.ux-theme-purple {
+	// Hue = 190
+	.theme(purple, #dbbcf1);
+}
+
+.ux-theme-pink {
+	// Hue = 210
+	.theme(pink, #efbcf1);
 }

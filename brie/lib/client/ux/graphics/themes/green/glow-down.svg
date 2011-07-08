@@ -37,11 +37,11 @@
    id="namedview3033"
    showgrid="false"
    inkscape:zoom="9.125"
-   inkscape:cx="-3.0314193"
+   inkscape:cx="-22.42868"
    inkscape:cy="16"
    inkscape:window-x="0"
    inkscape:window-y="0"
-   inkscape:window-maximized="0"
+   inkscape:window-maximized="1"
    inkscape:current-layer="Layer_1" />
 <linearGradient
    id="Bottom_Shade_2_"
@@ -53,19 +53,19 @@
    gradientTransform="scale(-1,-1)">
 	<stop
    offset="0"
-   style="stop-color:#47a800;stop-opacity:1;"
+   style="stop-color:#63a800;stop-opacity:1;"
    id="stop3010" /><stop
    id="stop3811"
-   style="stop-color:#47a800;stop-opacity:0.56896549;"
+   style="stop-color:#63a800;stop-opacity:0.56896549;"
    offset="0.08425112" /><stop
    offset="0.21779783"
-   style="stop-color:#47a800;stop-opacity:0.18965517;"
+   style="stop-color:#63a800;stop-opacity:0.18965517;"
    id="stop3813" /><stop
    id="stop3765"
-   style="stop-color:#47a800;stop-opacity:0.03;"
+   style="stop-color:#63a800;stop-opacity:0.03;"
    offset="0.34816486" /><stop
    id="stop3809"
-   style="stop-color:#47a800;stop-opacity:0;"
+   style="stop-color:#63a800;stop-opacity:0;"
    offset="1" />
 	
 	

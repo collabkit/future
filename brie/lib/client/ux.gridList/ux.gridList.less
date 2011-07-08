@@ -19,9 +19,6 @@
 	&-marquee {
 		position: absolute;
 		display: none;
-		border: solid 1px #99cc99;
-		background-color: #eeffee;
-		opacity: 0.5;
 		z-index: 3;
 	}
 	&-draggingOver {
@@ -88,9 +85,58 @@
 	&-selected {
 		z-index: 2;
 	}
-	
-	&-selected .ux-gridListItem-frame {
-		border-color: #99cc99;
-		background-color: #eeffee;
+}
+
+.theme(@theme, @color) {
+	.ux-gridList {
+		&-marquee {
+			border: solid 1px fadeout(@color, 25%);
+			background-color: fadeout(lighten(@color, 15%), 50%);
+		}
 	}
+	.ux-gridListItem {
+		&-selected .ux-gridListItem-frame {
+			border-color: @color;
+			background-color: lighten(@color, 15%);
+		}
+	}
+}
+
+.ux-theme-silver {
+	.theme(silver, #dddddd);
+}
+
+.ux-theme-red {
+	// Hue = 10
+	.theme(red, #f1cbbc);
+}
+
+.ux-theme-orange {
+	// Hue = 30
+	.theme(orange, #f1dfbc);
+}
+
+.ux-theme-yellow {
+	// Hue = 40
+	.theme(yellow, #f1edbc);
+}
+
+.ux-theme-green {
+	// Hue = 60
+	.theme(green, #caf1bc);
+}
+
+.ux-theme-blue {
+	// Hue = 140
+	.theme(blue, #bcdff1);
+}
+
+.ux-theme-purple {
+	// Hue = 190
+	.theme(purple, #dbbcf1);
+}
+
+.ux-theme-pink {
+	// Hue = 210
+	.theme(pink, #efbcf1);
 }

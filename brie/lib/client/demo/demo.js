@@ -252,6 +252,9 @@ function GalleryApp() {
 				'url(/:resource/demo/graphics/avatars/32/' + avatar + '.jpg)'
 			);
 			$('#app-user-name').text(name);
+			$('body').attr(
+				'class', $('body').attr('class').replace(/ux\-theme\-[a-z]+/, 'ux-theme-' + color)
+			);
 			if (!isInitialDataLoaded) {
 				loadInitialData();
 			}

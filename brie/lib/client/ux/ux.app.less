@@ -4,11 +4,7 @@
 @import "ux.general.less";
 @import "ux.fonts.less";
 
-// Variables
-
-@baseColor: #4abaeb;
-
-// Rules
+// Elements
 
 body {
 	width: 100%;
@@ -25,137 +21,7 @@ div, ul, li {
 	font-size: 100%;
 }
 
-#app-head,
-#app-nav,
-#app-dock {
-	height: 3em;
-	position: absolute;
-	left: 0;
-	right: 0;
-	overflow: hidden;
-}
-
-#app-head {
-	background-image: url(graphics/head.svg);
-	background-position: bottom left;
-	background-repeat: repeat-x;
-	background-size: 100% 2em;
-	top: 0;
-}
-
-#app-nav,
-#app-dock {
-	background-image: url(graphics/themes/green/bar.svg);
-	background-position: top left;
-	background-repeat: repeat-x;
-	background-size: cover;
-}
-
-#app-nav {
-	top: 3em;
-}
-
-#app-toolbar {
-	padding: 0.5em;
-	font-size: 0.8em;
-}
-
-#app-dock {
-	bottom: 0;
-}
-
-#app-logo {
-	float: left;
-	width: 9em;
-	height: 2.5em;
-	background-image: url(graphics/logo.svg);
-	background-repeat: no-repeat;
-	background-position: center right;
-}
-
-#app-search {
-	float: left;
-	width: 12em;
-	height: 3em;
-}
-
-#app-search-input {
-	width: 8em;
-	height: 2.125em;
-	margin: 0.5em 1em;
-	padding: 0 2em;
-	font-size: 0.9em;
-	border: solid 1px silver;
-	.border-radius(0.2em);
-	background-image: url(graphics/icons/search.svg);
-	background-position: 0.5em 50%;
-	background-repeat: no-repeat;
-}
-
-#app-places {
-	float: left;
-}
-
-#app-places-list {
-	margin: 0.6em;
-}
-
-#app-people {
-	float: right;
-}
-
-#app-foot {
-	bottom: 0;
-	border-top: solid 1px lighten(@baseColor, 20%);
-}
-
-#app-personalTasks {
-	width: 50%;
-	height: 3.2em;
-	float: left;
-}
-
-#app-groupTasks {
-	width: 50%;
-	height: 3.2em;
-	float: right;
-}
-
-#app-controls {
-	position: absolute;
-	left: 50%;
-	width: 3em;
-	margin-left: -1.5em;
-}
-
-#app-body,
-#app-body-mask {
-	position: absolute;
-	top: 6em;
-	left: 0;
-	right: 0;
-	bottom: 3em;
-	overflow: hidden;
-}
-
-#app-body-mask {
-	z-index: 100;
-	pointer-events: none;
-	background-image:
-		url(graphics/themes/green/glow-down.svg),
-		url(graphics/themes/green/glow-up.svg);
-	background-repeat: repeat-x;
-	background-position: top left, bottom left;
-	background-size: 100% 3em, 100% 3em;
-}
-
-#app-notes-icon {
-	background-image: url(graphics/icons/notes.svg);
-}
-
-#app-talk-icon {
-	background-image: url(graphics/icons/talk.svg);
-}
+// Classes
 
 .app-icon {
 	display: block;
@@ -179,4 +45,182 @@ div, ul, li {
 .app-icon-list-item {
 	display: inline-block;
 	margin-right: 0.5em;
+}
+
+// IDs
+
+#app {
+	&-head,
+	&-nav,
+	&-dock {
+		height: 3em;
+		position: absolute;
+		left: 0;
+		right: 0;
+		overflow: hidden;
+	}
+	
+	&-head {
+		background-image: url("graphics/head.svg");
+		background-position: bottom left;
+		background-repeat: repeat-x;
+		background-size: 100% 2em;
+		top: 0;
+	}
+	
+	&-nav,
+	&-dock {
+		background-position: top left;
+		background-repeat: repeat-x;
+		background-size: cover;
+	}
+	
+	&-nav {
+		top: 3em;
+	}
+	
+	&-toolbar {
+		padding: 0.5em;
+		font-size: 0.8em;
+	}
+	
+	&-dock {
+		bottom: 0;
+	}
+	
+	&-logo {
+		float: left;
+		width: 9em;
+		height: 2.5em;
+		background-image: url("graphics/logo.svg");
+		background-repeat: no-repeat;
+		background-position: center right;
+	}
+	
+	&-search {
+		float: left;
+		width: 12em;
+		height: 3em;
+	}
+	
+	&-search-input {
+		width: 8em;
+		height: 2.125em;
+		margin: 0.5em 1em;
+		padding: 0 2em;
+		font-size: 0.9em;
+		border: solid 1px silver;
+		.border-radius(0.2em);
+		background-image: url("graphics/icons/search.svg");
+		background-position: 0.5em 50%;
+		background-repeat: no-repeat;
+	}
+	
+	&-places {
+		float: left;
+	}
+	
+	&-places-list {
+		margin: 0.6em;
+	}
+	
+	&-people {
+		float: right;
+	}
+	
+	&-foot {
+		bottom: 0;
+	}
+	
+	&-personalTasks {
+		width: 50%;
+		height: 3.2em;
+		float: left;
+	}
+	
+	&-groupTasks {
+		width: 50%;
+		height: 3.2em;
+		float: right;
+	}
+	
+	&-controls {
+		position: absolute;
+		left: 50%;
+		width: 3em;
+		margin-left: -1.5em;
+	}
+	
+	&-body,
+	&-body-mask {
+		position: absolute;
+		top: 6em;
+		left: 0;
+		right: 0;
+		bottom: 3em;
+		overflow: hidden;
+	}
+	
+	&-body-mask {
+		z-index: 100;
+		pointer-events: none;
+		background-repeat: repeat-x;
+		background-position: top left, bottom left;
+		background-size: 100% 3em, 100% 3em;
+	}
+	
+	&-notes-icon {
+		background-image: url("graphics/icons/notes.svg");
+	}
+	
+	&-talk-icon {
+		background-image: url("graphics/icons/talk.svg");
+	}
+}
+
+.theme(@color) {
+	#app {
+		&-nav,
+		&-dock {
+			background-image: url("graphics/themes/@{color}/bar.svg");
+		}
+		
+		&-body-mask {
+			background-image:
+				url("graphics/themes/@{color}/glow-down.svg"),
+				url("graphics/themes/@{color}/glow-up.svg");
+		}
+	}
+}
+
+.ux-theme-silver {
+	.theme(silver);
+}
+
+.ux-theme-red {
+	.theme(red);
+}
+
+.ux-theme-orange {
+	.theme(orange);
+}
+
+.ux-theme-yellow {
+	.theme(yellow);
+}
+
+.ux-theme-green {
+	.theme(green);
+}
+
+.ux-theme-blue {
+	.theme(blue);
+}
+
+.ux-theme-purple {
+	.theme(purple);
+}
+
+.ux-theme-pink {
+	.theme(pink);
 }
