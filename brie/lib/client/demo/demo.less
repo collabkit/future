@@ -52,12 +52,31 @@
 #app-talk-log {
 	font-size: 90%;
 }
-#app-talk-log .chat-avatar {
+.chat-avatar {
 	vertical-align: middle;
 }
-#app-talk-log .chat-name {
+.chat-name {
 	font-weight: bold;
 	padding-right: 8px;
+}
+
+#app-notify {
+	position: absolute;
+	top: 64px;
+	right: 16px;
+	width: 300px;
+	/* We then toss other things in here! */
+	z-index: 100000;
+}
+
+#app-notify .app-notification {
+	border: solid 2px #ccc;
+	border-radius: 8px;
+	box-shadow: 2px 2px 4px black;
+
+	background: white;
+	padding-left: 8px;
+	margin-bottom: 16px;
 }
 
 #app-captureDialog,

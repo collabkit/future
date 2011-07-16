@@ -86,7 +86,11 @@ function GalleryApp() {
 	});
 	$('#app-talk-icon')
 		.click(function() {
-			app.showTalk();
+			if (app.talkVisible()) {
+				app.hideTalk();
+			} else {
+				app.showTalk();
+			}
 		});
 	$('#app-talk-sidebar form').submit(function() {
 		var $input = $('#app-talk-input'),
@@ -612,8 +616,19 @@ GalleryApp.prototype.runSlideshow = function(items) {
 	update();
 };
 
+GalleryApp.prototype.talkVisible = function() {
+	return $('#app-body').hasClass('chat');
+};
+
 GalleryApp.prototype.showTalk = function() {
-	$('#app-body').toggleClass('chat');
+	$('#app-body').addClass('chat');
+	$(window).resize(); // Trigger reflow of the body area
+	$('#app-talk-log').scrollTop(9999999);
+	$('#app-talk-input').focus();
+};
+
+GalleryApp.prototype.hideTalk = function() {
+	$('#app-body').removeClass('chat');
 	$(window).resize(); // Trigger reflow of the body area
 };
 
@@ -623,6 +638,7 @@ GalleryApp.prototype.onChat = function(message) {
 };
 
 GalleryApp.prototype.appendChatLog = function(text, user) {
+	var app = this;
 	var $line = $('<p>');
 	var $user = $('<span>')
 		.attr('class', 'chat-name')
@@ -640,7 +656,13 @@ GalleryApp.prototype.appendChatLog = function(text, user) {
 	$log
 		.append($line)
 		.scrollTop(9999999);
-	// @fixme scroll it too
+
+	// If the chat window is closed, show it in the notification area too
+	if (!app.talkVisible()) {
+		this.showNotification($line.clone(), function() {
+			app.showTalk();
+		});
+	}
 }
 
 GalleryApp.prototype.onChat = function(message) {
@@ -718,6 +740,40 @@ GalleryApp.prototype.connect = function(session) {
 		}
 	});
 	app.chatJoin();
+};
+
+/**
+ * @param {jQuery} $content
+ * @param {function} callback to call if the notification gets clicked
+ */
+GalleryApp.prototype.showNotification = function($content, callback) {
+	var $notifyArea = $('#app-notify');
+	var $notify = $('<div>')
+		.attr('class', 'app-notification')
+		.css('display', 'none')
+		.append($content)
+		.appendTo($notifyArea)
+		.fadeIn(500, function() {
+			var close = function() {
+				$notify.fadeTo(500, 0, function() {
+					$notify.slideUp(500, function() {
+						$notify.remove();
+					});
+				});
+			}
+			var timeout = setTimeout(function() {
+				$notify.unbind('click', onclick);
+				close();
+			}, 5000);
+			var onclick = function() {
+				clearTimeout(timeout);
+				close();
+				if (callback) {
+					callback();
+				}
+			};
+			$notify.click(onclick);
+		});
 };
 
 // Create user interfaces
