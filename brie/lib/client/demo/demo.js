@@ -88,6 +88,14 @@ function GalleryApp() {
 		.click(function() {
 			app.showTalk();
 		});
+	$('#app-talk-sidebar form').submit(function() {
+		var $input = $('#app-talk-input'),
+			msg = $input.val();
+		$input.val('');
+		if (msg != '') {
+			app.chatSendText(msg);
+		}
+	});
 	this.toolbar = $('#app-toolbar').initialize('toolbar').ux();
 	this.toolbar.$.config({
 		'contents': [
@@ -254,7 +262,7 @@ function GalleryApp() {
 			$.cookie('collabKit-user-avatar', user.avatar, cookieOptions);
 			$('#app-user-avatar').css(
 				'background-image',
-				'url(/:resource/demo/graphics/avatars/32/' + user.avatar + '.jpg)'
+				'url(' + app.avatar(user.avatar, 32) + ')'
 			);
 			$('#app-user-name').text(user.name);
 			$('body').attr(
@@ -308,6 +316,27 @@ function GalleryApp() {
 		// Import requires file input support, so let's hide it
 		this.toolbar.$.find('#app-toolbar-import').remove();
 	}
+}
+
+/**
+ * Fetch URL for a predefined avatar with given name/size
+ *
+ * @param {string} avatar
+ * @param {int} size defaults to 32
+ * @return string
+ */
+GalleryApp.prototype.avatar = function(avatar, size) {
+	if (!/^[a-z0-9]+\/[a-z0-9]+$/.exec(avatar)) {
+		throw new Error('Invalid avatar name ' + avatar);
+	}
+	if (size === undefined) {
+		size = 32;
+	}
+	var sizes = [32, 48, 64, 128];
+	if ($.inArray(size, sizes) == -1) {
+		throw new Error('Invalid avatar size ' + size);
+	}
+	return '/:resource/demo/graphics/avatars/' + size + '/' + avatar + '.jpg';
 }
 
 GalleryApp.prototype.updateToolbar = function() {
@@ -593,44 +622,62 @@ GalleryApp.prototype.onChat = function(message) {
 	$(window).resize(); // Trigger reflow of the body area
 };
 
-GalleryApp.prototype.appendChatLog = function($line) {
+GalleryApp.prototype.appendChatLog = function(text, user) {
+	var $line = $('<p>');
+	var $user = $('<span>')
+		.attr('class', 'chat-name')
+		.text(user.name + '\u00a0')
+		.appendTo($line);
+	var $avatar = $('<img>')
+		.attr('class', 'chat-avatar')
+		.attr('src', this.avatar(user.avatar))
+		.prependTo($user);
+	$('<span>')
+		.attr('class', 'chat-text')
+		.text(text)
+		.appendTo($line);
 	var $log = $('#app-talk-log');
-	$line.appendTo($log);
+	$log
+		.append($line)
+		.scrollTop(9999999);
 	// @fixme scroll it too
 }
 
 GalleryApp.prototype.onChat = function(message) {
-	var $line = $('<p>').text(JSON.stringify(message));
-	this.appendChatLog($line);
+	this.appendChatLog(message.text, message.user);
 };
 
 GalleryApp.prototype.onChatPresence = function(message) {
 	// @fixme proper disambig :)
-	if (message.name !== this.user.name) {
-		var $line = $('<p>').text(JSON.stringify(message));
-		this.appendChatLog($line);
+	if (message.user.name !== this.user.name) {
+		this.appendChatLog('is present', message.user);
 	}
 };
 
 GalleryApp.prototype.onChatJoin = function(message) {
 	// @fixme proper disambig :)
-	if (message.name !== this.user.name) {
-		var $line = $('<p>').text(JSON.stringify(message));
-		this.appendChatLog($line);
+	if (message.user.name !== this.user.name) {
+		this.appendChatLog('joined the session', message.user);
 		// Also go ahead and make sure the new guy knows who we are!
 		this.chatPresence();
 	}
 };
 
+GalleryApp.prototype.chatUserInfo = function() {
+	return {
+		id: this.user.name, // @fixme use a session hash or something
+		name: this.user.name,
+		avatar: this.user.avatar,
+		color: this.user.color
+	};
+}
 /**
  * Announce we've joined and ask other connected clients for presence info
  */
 GalleryApp.prototype.chatJoin = function() {
 	this.session.publish('/chat', {
 		event: 'join',
-		name: this.user.name,
-		avatar: this.user.avatar,
-		color: this.user.color
+		user: this.chatUserInfo()
 	});
 };
 
@@ -640,9 +687,18 @@ GalleryApp.prototype.chatJoin = function() {
 GalleryApp.prototype.chatPresence = function() {
 	this.session.publish('/chat', {
 		event: 'presence',
-		name: this.user.name,
-		avatar: this.user.avatar,
-		color: this.user.color
+		user: this.chatUserInfo()
+	});
+};
+
+/**
+ * Send a basic chat message to the other clients.
+ */
+GalleryApp.prototype.chatSendText = function(text) {
+	this.session.publish('/chat', {
+		event: 'chat',
+		text: text,
+		user: this.chatUserInfo()
 	});
 };
 
@@ -653,7 +709,6 @@ GalleryApp.prototype.connect = function(session) {
 		app.updateLibrary(message);
 	});
 	session.subscribe('/chat', function(message) {
-		console.log('chat', message);
 		if (message.event == 'join') {
 			app.onChatJoin(message);
 		} else if (message.event == 'presence') {

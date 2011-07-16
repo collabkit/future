@@ -30,6 +30,8 @@
 	left: 0;
 	right: 0;
 	bottom: 32px;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 #app-talk-controls {
 	position: absolute;
@@ -45,6 +47,17 @@
 
 #app-body.chat #app-talk-sidebar {
 	display: block;
+}
+
+#app-talk-log {
+	font-size: 90%;
+}
+#app-talk-log .chat-avatar {
+	vertical-align: middle;
+}
+#app-talk-log .chat-name {
+	font-weight: bold;
+	padding-right: 8px;
 }
 
 #app-captureDialog,
