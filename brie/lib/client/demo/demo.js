@@ -85,14 +85,16 @@ function GalleryApp() {
 		}
 	});
 	$('#app-talk-icon')
-		.click(function() {
+		.click(function(event) {
+			event.preventDefault();
 			if (app.talkVisible()) {
 				app.hideTalk();
 			} else {
 				app.showTalk();
 			}
 		});
-	$('#app-talk-sidebar form').submit(function() {
+	$('#app-talk-sidebar form').submit(function(event) {
+		event.preventDefault();
 		var $input = $('#app-talk-input'),
 			msg = $input.val();
 		$input.val('');
