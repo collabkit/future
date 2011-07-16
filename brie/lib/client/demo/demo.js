@@ -244,20 +244,21 @@ function GalleryApp() {
 			if ($(this).attr('disabled') === 'true') {
 				return false;
 			}
-			var name = $('#app-userDialog-nameInput').val();
-			var color = $('#app-userDialog-colors .app-userDialog-selected').attr('rel');
-			var avatar = $('#app-userDialog-avatars .app-userDialog-selected').attr('rel');
+			var user = app.user;
+			user.name = $('#app-userDialog-nameInput').val();
+			user.color = $('#app-userDialog-colors .app-userDialog-selected').attr('rel');
+			user.avatar = $('#app-userDialog-avatars .app-userDialog-selected').attr('rel');
 			var cookieOptions = {'expires': 7, 'path': '/'};
-			$.cookie('collabKit-user-name', name, cookieOptions);
-			$.cookie('collabKit-user-color', color, cookieOptions);
-			$.cookie('collabKit-user-avatar', avatar, cookieOptions);
+			$.cookie('collabKit-user-name', user.name, cookieOptions);
+			$.cookie('collabKit-user-color', user.color, cookieOptions);
+			$.cookie('collabKit-user-avatar', user.avatar, cookieOptions);
 			$('#app-user-avatar').css(
 				'background-image',
-				'url(/:resource/demo/graphics/avatars/32/' + avatar + '.jpg)'
+				'url(/:resource/demo/graphics/avatars/32/' + user.avatar + '.jpg)'
 			);
-			$('#app-user-name').text(name);
+			$('#app-user-name').text(user.name);
 			$('body').attr(
-				'class', $('body').attr('class').replace(/ux\-theme\-[a-z]+/, 'ux-theme-' + color)
+				'class', $('body').attr('class').replace(/ux\-theme\-[a-z]+/, 'ux-theme-' + user.color)
 			);
 			if (!isInitialDataLoaded) {
 				loadInitialData();
@@ -265,25 +266,27 @@ function GalleryApp() {
 			app.userDialog.hide();
 		});
 	
-	var name = $.cookie('collabKit-user-name');
-	var color = $.cookie('collabKit-user-color');
-	var avatar = $.cookie('collabKit-user-avatar');
-	if (color) {
-		$('#app-userDialog-colors div[rel="' + color + '"]')
+	var user = this.user = {
+		name: $.cookie('collabKit-user-name'),
+		color: $.cookie('collabKit-user-color'),
+		avatar: $.cookie('collabKit-user-avatar')
+	};
+	if (user.color) {
+		$('#app-userDialog-colors div[rel="' + user.color + '"]')
 			.addClass('app-userDialog-selected');
 	} else {
 		$('#app-userDialog-colors div:first')
 			.addClass('app-userDialog-selected');
 	}
-	if (avatar) {
-		$('#app-userDialog-avatars div[rel="' + avatar + '"]')
+	if (user.avatar) {
+		$('#app-userDialog-avatars div[rel="' + user.avatar + '"]')
 			.addClass('app-userDialog-selected');
 	} else {
 		$('#app-userDialog-avatars div:first')
 			.addClass('app-userDialog-selected');
 	}
-	if (name) {
-		$('#app-userDialog-nameInput').val(name);
+	if (user.name) {
+		$('#app-userDialog-nameInput').val(user.name);
 		$('#app-userDialog-doneButton').attr('disabled', 'false');
 		$('#app-userDialog-doneButton').click();
 	} else {
@@ -585,11 +588,86 @@ GalleryApp.prototype.showTalk = function() {
 	$(window).resize(); // Trigger reflow of the body area
 };
 
+GalleryApp.prototype.onChat = function(message) {
+	$('#app-body').toggleClass('chat');
+	$(window).resize(); // Trigger reflow of the body area
+};
+
+GalleryApp.prototype.appendChatLog = function($line) {
+	var $log = $('#app-talk-log');
+	$line.appendTo($log);
+	// @fixme scroll it too
+}
+
+GalleryApp.prototype.onChat = function(message) {
+	var $line = $('<p>').text(JSON.stringify(message));
+	this.appendChatLog($line);
+};
+
+GalleryApp.prototype.onChatPresence = function(message) {
+	// @fixme proper disambig :)
+	if (message.name !== this.user.name) {
+		var $line = $('<p>').text(JSON.stringify(message));
+		this.appendChatLog($line);
+	}
+};
+
+GalleryApp.prototype.onChatJoin = function(message) {
+	// @fixme proper disambig :)
+	if (message.name !== this.user.name) {
+		var $line = $('<p>').text(JSON.stringify(message));
+		this.appendChatLog($line);
+		// Also go ahead and make sure the new guy knows who we are!
+		this.chatPresence();
+	}
+};
+
+/**
+ * Announce we've joined and ask other connected clients for presence info
+ */
+GalleryApp.prototype.chatJoin = function() {
+	this.session.publish('/chat', {
+		event: 'join',
+		name: this.user.name,
+		avatar: this.user.avatar,
+		color: this.user.color
+	});
+};
+
+/**
+ * Ask other connected clients for presence info
+ */
+GalleryApp.prototype.chatPresence = function() {
+	this.session.publish('/chat', {
+		event: 'presence',
+		name: this.user.name,
+		avatar: this.user.avatar,
+		color: this.user.color
+	});
+};
+
+GalleryApp.prototype.connect = function(session) {
+	var app = this;
+	this.session = session;
+	session.subscribe('/commits', function(message) {
+		app.updateLibrary(message);
+	});
+	session.subscribe('/chat', function(message) {
+		console.log('chat', message);
+		if (message.event == 'join') {
+			app.onChatJoin(message);
+		} else if (message.event == 'presence') {
+			app.onChatPresence(message);
+		} else if (message.event == 'chat') {
+			app.onChat(message);
+		}
+	});
+	app.chatJoin();
+};
+
 // Create user interfaces
 var galleryApp = new GalleryApp();
 
 // Connect a session so we can get updates on inter-client state...
 var session = new Faye.Client('/:session/');
-session.subscribe('/commits', function(message) {
-	galleryApp.updateLibrary(message);
-});
+galleryApp.connect(session);
