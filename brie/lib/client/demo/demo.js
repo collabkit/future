@@ -1,6 +1,7 @@
 function GalleryApp(session) {
 	var app = this;
 	var isInitialDataLoaded = false;
+	this.sessionId = Math.random().toString() + Math.random().toString();
 	function loadInitialData() {
 		// Load the initial library data
 		$.get('/:data/collabkit-library', function(data, xhr) {
@@ -282,6 +283,7 @@ function GalleryApp(session) {
 		});
 	
 	var user = this.user = {
+		id: this.sessionId,
 		name: $.cookie('collabKit-user-name'),
 		color: $.cookie('collabKit-user-color'),
 		avatar: $.cookie('collabKit-user-avatar')
@@ -673,24 +675,28 @@ GalleryApp.prototype.onChat = function(message) {
 };
 
 GalleryApp.prototype.onChatPresence = function(message) {
-	// @fixme proper disambig :)
-	if (message.user.name !== this.user.name) {
+	if (message.dest == this.sessionId) {
 		this.appendChatLog('is present', message.user);
 	}
 };
 
 GalleryApp.prototype.onChatJoin = function(message) {
-	// @fixme proper disambig :)
-	if (message.user.name !== this.user.name) {
-		this.appendChatLog('joined the session', message.user);
+	if (message.user.id !== this.sessionId) {
+		this.appendChatLog('joined the session.', message.user);
 		// Also go ahead and make sure the new guy knows who we are!
-		this.chatPresence();
+		this.chatPresence(message.user.id);
+	}
+};
+
+GalleryApp.prototype.onChatLeave = function(message) {
+	if (message.user.id !== this.sessionId) {
+		this.appendChatLog('left the session.', message.user);
 	}
 };
 
 GalleryApp.prototype.chatUserInfo = function() {
 	return {
-		id: this.user.name, // @fixme use a session hash or something
+		id: this.sessionId,
 		name: this.user.name,
 		avatar: this.user.avatar,
 		color: this.user.color
@@ -707,12 +713,23 @@ GalleryApp.prototype.chatJoin = function() {
 };
 
 /**
+ * Announce we're leaving to other connected clients. (Advisory.)
+ */
+GalleryApp.prototype.chatLeave = function() {
+	this.session.publish('/chat', {
+		event: 'leave',
+		user: this.chatUserInfo()
+	});
+};
+
+/**
  * Ask other connected clients for presence info
  */
-GalleryApp.prototype.chatPresence = function() {
+GalleryApp.prototype.chatPresence = function(destId) {
 	this.session.publish('/chat', {
 		event: 'presence',
-		user: this.chatUserInfo()
+		user: this.chatUserInfo(),
+		dest: destId
 	});
 };
 
@@ -736,6 +753,8 @@ GalleryApp.prototype.connect = function(session) {
 	session.subscribe('/chat', function(message) {
 		if (message.event == 'join') {
 			app.onChatJoin(message);
+		} else if (message.event == 'leave') {
+			app.onChatLeave(message);
 		} else if (message.event == 'presence') {
 			app.onChatPresence(message);
 		} else if (message.event == 'chat') {
