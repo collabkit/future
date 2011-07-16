@@ -5,6 +5,7 @@ function GalleryApp(session) {
 	function loadInitialData() {
 		// Load the initial library data
 		$.get('/:data/collabkit-library', function(data, xhr) {
+			isInitialDataLoaded = true;
 			app.updateLibrary(data);
 			app.connect(session);
 		}, 'json');
@@ -647,6 +648,7 @@ GalleryApp.prototype.appendChatLog = function(text, user) {
 	var $line = $('<p>');
 	var $user = $('<span>')
 		.attr('class', 'chat-name')
+		.css('color', user.color)
 		.text(user.name + '\u00a0')
 		.appendTo($line);
 	var $avatar = $('<img>')
