@@ -478,6 +478,17 @@ GalleryApp.prototype.runSlideshow = function(items) {
 							'<button class="close">Close</button>' +
 							'</div>' + 
 						'</div>');
+
+	// Style hack; max-width: 100%; max-height: 100% should do
+	// but in practice is unreliable so far
+	var hackPhotoResize = function() {
+		var $photos = $('.slideshow-photo');
+		$photos
+			.css('max-width', $slideshow.width())
+			.css('max-height', $slideshow.height())
+	};
+	$(window).bind('resize', hackPhotoResize);
+
 	/**
 	 * Load up the photo into an <img> and call us back when done.
 	 */
@@ -498,6 +509,7 @@ GalleryApp.prototype.runSlideshow = function(items) {
 	var update = function() {
 		buildPhoto(photos[index], function(img) {
 			$slideshow.find('.area').empty().append(img);
+			hackPhotoResize(); // ping the size fixes
 		});
 	};
 	var advance = function(n) {
@@ -552,6 +564,7 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		// Clean up & close the slideshow.
 		window.clearInterval(timer);
 		$(document).unbind('keydown', escapeCheck);
+		$(window).unbind('resize', hackPhotoResize);
 		$slideshow.remove();
 	};
 	$slideshow.find('.close').click(function() {
