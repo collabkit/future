@@ -1,10 +1,11 @@
-function GalleryApp() {
+function GalleryApp(session) {
 	var app = this;
 	var isInitialDataLoaded = false;
 	function loadInitialData() {
 		// Load the initial library data
 		$.get('/:data/collabkit-library', function(data, xhr) {
 			app.updateLibrary(data);
+			app.connect(session);
 		}, 'json');
 	}
 	this.library = null;
@@ -778,9 +779,8 @@ GalleryApp.prototype.showNotification = function($content, callback) {
 		});
 };
 
-// Create user interfaces
-var galleryApp = new GalleryApp();
-
 // Connect a session so we can get updates on inter-client state...
 var session = new Faye.Client('/:session/');
-galleryApp.connect(session);
+
+// Create user interfaces
+var galleryApp = new GalleryApp(session);
