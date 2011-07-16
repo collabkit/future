@@ -13,6 +13,40 @@
 	overflow-x: hidden;
 }
 
+#app-talk-sidebar {
+	display: none; /* toggled back with 'chat' class on parent */
+	position: absolute;
+	top: 0;
+	width: 320px;
+	right: 0;
+	bottom: 0;
+	overflow-x: hidden;
+	border-left: solid 1px #ccc;
+}
+
+#app-talk-log {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 32px;
+}
+#app-talk-controls {
+	position: absolute;
+	height: 32px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+#app-body.chat #app-gallery {
+	right: 320px;
+}
+
+#app-body.chat #app-talk-sidebar {
+	display: block;
+}
+
 #app-captureDialog,
 #app-userDialog {
 	width: 35em;

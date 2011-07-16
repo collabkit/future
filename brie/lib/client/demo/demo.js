@@ -84,6 +84,10 @@ function GalleryApp() {
 			$(this).focus();
 		}
 	});
+	$('#app-talk-icon')
+		.click(function() {
+			app.showTalk();
+		});
 	this.toolbar = $('#app-toolbar').initialize('toolbar').ux();
 	this.toolbar.$.config({
 		'contents': [
@@ -574,6 +578,11 @@ GalleryApp.prototype.runSlideshow = function(items) {
 	$(document).bind('keydown', escapeCheck);
 	$slideshow.appendTo('body');
 	update();
+};
+
+GalleryApp.prototype.showTalk = function() {
+	$('#app-body').toggleClass('chat');
+	$(window).resize(); // Trigger reflow of the body area
 };
 
 // Create user interfaces
