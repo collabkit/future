@@ -88,6 +88,7 @@ MediaProvider.prototype.handleGet = function(req, res, id, params) {
 	store.getObject( id, function( obj, err ) {
 		if ( err ) {
 			fail( err );
+			return;
 		}
 		var mode = params[0] || 'list';
 		if (mode == 'list') {
@@ -180,11 +181,15 @@ MediaProvider.prototype.renderList = function(obj, params, callback) {
  * @param {function(blobId, contentType, err)} callback
  */
 MediaProvider.prototype.renderPhoto = function( obj, params, callback ) {
-	if ( obj.data.type == 'application/x-collabkit-photo' ) {
+	if ( obj && 'data' in obj && 'type' in obj.data && obj.data.type == 'application/x-collabkit-photo' ) {
 		var display = this.selectThumb( obj, params[1] );
-		obj.findFile(display.src, function(blobId, err) {
-			callback( blobId, display.type, err );
-		}, 'stream');
+		try {
+			obj.findFile(display.src, function(blobId, err) {
+				callback( blobId, display.type, err );
+			}, 'stream');
+		} catch( e ) {
+			callback(null, null, e);
+		}
 	} else {
 		callback(null, null, 'Cannot load photo of non-photo object');
 	}
