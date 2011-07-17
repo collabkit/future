@@ -586,8 +586,12 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		manualAdvance(-1);
 	}
 
-	$slideshow.click(function() {
+	$slideshow.click(function(event) {
 		manualAdvance();
+		event.preventDefault();
+	}).mousedown(function(event) {
+		// Avoid selection etc
+		event.preventDefault();
 	});
 
 	var escapeCheck, closeOut;
