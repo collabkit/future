@@ -215,9 +215,10 @@ $.ux.models.toolbarButton.config = {
 
 $.ux.models.toolbarUploadButton = function($this) {
 	var id = 'ux-toolbarUploadButton-' + $('.ux-toolbarButton input:file').length;
+	var $label;
 	this.$ = $this
 		.addClass('ux-toolbarButton')
-		.append($('<label class="ux-toolbarButton-label"></label>').attr('for', id))
+		.append($label = $('<label class="ux-toolbarButton-label"></label>').attr('for', id))
 		.append($('<input type="file">').attr('id', id))
 		.change(function() {
 			if ($this.is(':not([ux-disabled])')) {
@@ -226,6 +227,14 @@ $.ux.models.toolbarUploadButton = function($this) {
 				);
 			}
 		});
+	$label.click(function(event) {
+		// In Firefox 4/5, clicking on the label doesn't trigger the input,
+		// but we can still trigger it explicitly from here.
+		$('#' + id).click();
+		
+		// Chrome 12 will still trigger the input if we don't cancel!
+		event.preventDefault();
+	})
 };
 
 $.ux.models.toolbarUploadButton.config = {
