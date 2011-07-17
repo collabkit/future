@@ -406,11 +406,13 @@ GalleryApp.prototype.uploadFiles = function(files, callback) {
 		}
 		app.store.createObject(files[i], function(result, err) {
 			if (result) {
+				var photo = result.data.photo;
+				var thumb = ('thumb' in photo.thumbs) ? photo.thumbs.thumb : photo;
 				app.gridList.addItems([{
 					'id': result.id,
 					'src': '/:media/' + result.id + '/photo/thumb',
-					'width': result.data.photo.thumbs.thumb.width,
-					'height': result.data.photo.thumbs.thumb.height
+					'width': thumb.width,
+					'height': thumb.height
 				}]);
 				app.gridList.flow(true);
 				if ( i === files.length - 1 ) {
