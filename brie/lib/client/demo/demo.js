@@ -647,8 +647,7 @@ GalleryApp.prototype.appendChatLog = function(text, user) {
 	var app = this;
 	var $line = $('<p>');
 	var $user = $('<span>')
-		.attr('class', 'chat-name')
-		.css('color', user.color)
+		.addClass('chat-name user-color-' + user.color)
 		.text(user.name + '\u00a0')
 		.appendTo($line);
 	var $avatar = $('<img>')

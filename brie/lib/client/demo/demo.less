@@ -17,7 +17,7 @@
 	display: none; /* toggled back with 'chat' class on parent */
 	position: absolute;
 	top: 0;
-	width: 320px;
+	width: 18em;
 	right: 0;
 	bottom: 0;
 	overflow-x: hidden;
@@ -29,20 +29,30 @@
 	top: 0;
 	left: 0;
 	right: 0;
-	bottom: 32px;
+	bottom: 2.5em;
 	overflow-x: hidden;
 	overflow-y: auto;
+	padding-left: 1em;
 }
 #app-talk-controls {
 	position: absolute;
-	height: 32px;
+	height: 2.5em;
 	bottom: 0;
 	left: 0;
 	right: 0;
+	padding-left: 1em;
+}
+
+#app-talk-controls input {
+	width: 14.5em;
+	padding: 0.25em;
+	font-size: 1em;
+	border: solid 1px silver;
+	.border-radius(0.125em);
 }
 
 #app-body.chat #app-gallery {
-	right: 320px;
+	right: 18em;
 }
 
 #app-body.chat #app-talk-sidebar {
@@ -57,10 +67,35 @@
 }
 .chat-avatar {
 	vertical-align: middle;
+	margin-right: 0.5em;
 }
 .chat-name {
 	font-weight: bold;
-	padding-right: 8px;
+	padding-right: 0.125em;
+	&.user-color-silver {
+		color: darken(#dddddd, 20%);
+	}
+	&.user-color-red {
+		color: darken(#f1cbbc, 20%);
+	}
+	&.user-color-orange {
+		color: darken(#f1dfbc, 20%);
+	}
+	&.user-color-yellow {
+		color: darken(#f1dfbc, 20%);
+	}
+	&.user-color-green {
+		color: darken(#caf1bc, 20%);
+	}
+	&.user-color-blue {
+		color: darken(#bcdff1, 20%);
+	}
+	&.user-color-purple {
+		color: darken(#dbbcf1, 20%);
+	}
+	&.user-color-pink {
+		color: darken(#efbcf1, 20%);
+	}
 }
 
 #app-notify {
@@ -73,14 +108,9 @@
 }
 
 #app-notify .app-notification {
+	.border-radius(0.5em);
+	.drop-shadow(0.25em, 0.25em, 0.5em, rgba(0,0,0,0.25));
 	border: solid 2px #ccc;
-	border-radius: 8px;
-	box-shadow: 2px 2px 4px black;
-	-moz-box-shadow: 2px 2px 4px black;
-	-webkit-box-shadow: 2px 2px 4px black;
-	-o-box-shadow: 2px 2px 4px black;
-	-ms-box-shadow: 2px 2px 4px black;
-
 	background: white;
 	padding-left: 8px;
 	margin-bottom: 16px;
