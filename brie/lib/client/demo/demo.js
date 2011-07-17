@@ -553,7 +553,7 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		return $photo[0];
 	};
 	
-	var interval = 10;
+	var interval = 5;
 	var index = 0;
 	
 	var update = function() {
@@ -573,19 +573,41 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		update();
 	};
 
-	var timer = window.setInterval(advance, interval * 1000);
+	var running = false;
+	var timer;
 	var manualAdvance = function(n) {
 		// Reset the timer...
-		window.clearInterval(timer);
-		timer = window.setInterval(advance, interval * 1000);
+		if (running) {
+			window.clearInterval(timer);
+			timer = window.setInterval(advance, interval * 1000);
+		}
 
 		advance(n || 1);
 	};
 	var manualRewind = function() {
 		manualAdvance(-1);
 	}
+	var pause = function() {
+		$('#slideshow-pause').hide();
+		$('#slideshow-play').show();
 
-	$slideshow.click(function(event) {
+		if (running) {
+			running = false;
+			window.clearInterval(timer);
+			timer = null;
+		}
+	}
+	var play = function() {
+		$('#slideshow-pause').show();
+		$('#slideshow-play').hide();
+
+		if (!running) {
+			running = true;
+			timer = window.setInterval(advance, interval * 1000);
+		}
+	}
+
+	$slideshow.find('.area').click(function(event) {
 		manualAdvance();
 		event.preventDefault();
 	}).mousedown(function(event) {
@@ -621,12 +643,30 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		$(window).unbind('resize', hackPhotoResize);
 		$slideshow.fadeOut();
 	};
-	$slideshow.find('.close').click(function() {
+	$('#slideshow-prev').click(function(event) {
+		manualRewind();
+		event.preventDefault();
+	});
+	$('#slideshow-next').click(function(event) {
+		manualAdvance();
+		event.preventDefault();
+	});
+	$('#slideshow-close').click(function(event) {
 		closeOut();
+		event.preventDefault();
 	})
+	$('#slideshow-pause').click(function(event) {
+		pause();
+		event.preventDefault();
+	});
+	$('#slideshow-play').click(function(event) {
+		play();
+		event.preventDefault();
+	});
 	// Bind global key checkers for simplicity :D
 	$(document).bind('keydown', escapeCheck);
 	$slideshow.appendTo('body');
+	pause();
 	update();
 };
 
