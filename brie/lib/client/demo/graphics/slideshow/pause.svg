@@ -14,7 +14,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.0 r9654"
-   sodipodi:docname="play.svg">
+   sodipodi:docname="pause.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -34,7 +34,7 @@
      inkscape:window-height="752"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="0" />
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -43,7 +43,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -53,16 +53,16 @@
      id="layer1"
      transform="translate(0,-924.36218)">
     <g
-       id="g3874">
+       id="g3946">
       <rect
          y="939.86218"
          x="32.5"
          height="97"
          width="20"
          id="rect3864"
-         style="opacity:0.5;fill:#cccccc;fill-opacity:1;stroke:none" />
+         style="opacity:1;fill:#cccccc;fill-opacity:1;stroke:none" />
       <rect
-         style="opacity:0.5;fill:#cccccc;fill-opacity:1;stroke:none"
+         style="opacity:1;fill:#cccccc;fill-opacity:1;stroke:none"
          id="rect3866"
          width="20"
          height="97"

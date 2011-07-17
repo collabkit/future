@@ -34,7 +34,7 @@
      inkscape:window-height="752"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="0" />
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -53,7 +53,7 @@
      id="layer1"
      transform="translate(0,-924.36218)">
     <path
-       style="opacity:0.5;fill:#cccccc;fill-opacity:1;stroke:none"
+       style="opacity:1;fill:#cccccc;fill-opacity:1;stroke:none"
        d="m 81.126866,958.86217 0,19.175 25.373134,0 0,19.47002 -25.373134,0 0,20.35501 L 21.5,987.77219 81.126866,958.86217 z"
        id="rect3903"
        inkscape:connector-curvature="0" />
