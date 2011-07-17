@@ -1,10 +1,13 @@
-function GalleryApp() {
+function GalleryApp(session) {
 	var app = this;
 	var isInitialDataLoaded = false;
+	this.sessionId = Math.random().toString() + Math.random().toString();
 	function loadInitialData() {
 		// Load the initial library data
 		$.get('/:data/collabkit-library', function(data, xhr) {
+			isInitialDataLoaded = true;
 			app.updateLibrary(data);
+			app.connect(session);
 		}, 'json');
 	}
 	this.library = null;
@@ -82,6 +85,24 @@ function GalleryApp() {
 		},
 		'mousedown': function() {
 			$(this).focus();
+		}
+	});
+	$('#app-talk-icon')
+		.click(function(event) {
+			event.preventDefault();
+			if (app.talkVisible()) {
+				app.hideTalk();
+			} else {
+				app.showTalk();
+			}
+		});
+	$('#app-talk-sidebar form').submit(function(event) {
+		event.preventDefault();
+		var $input = $('#app-talk-input'),
+			msg = $input.val();
+		$input.val('');
+		if (msg != '') {
+			app.chatSendText(msg);
 		}
 	});
 	this.toolbar = $('#app-toolbar').initialize('toolbar').ux();
@@ -240,20 +261,21 @@ function GalleryApp() {
 			if ($(this).attr('disabled') === 'true') {
 				return false;
 			}
-			var name = $('#app-userDialog-nameInput').val();
-			var color = $('#app-userDialog-colors .app-userDialog-selected').attr('rel');
-			var avatar = $('#app-userDialog-avatars .app-userDialog-selected').attr('rel');
+			var user = app.user;
+			user.name = $('#app-userDialog-nameInput').val();
+			user.color = $('#app-userDialog-colors .app-userDialog-selected').attr('rel');
+			user.avatar = $('#app-userDialog-avatars .app-userDialog-selected').attr('rel');
 			var cookieOptions = {'expires': 7, 'path': '/'};
-			$.cookie('collabKit-user-name', name, cookieOptions);
-			$.cookie('collabKit-user-color', color, cookieOptions);
-			$.cookie('collabKit-user-avatar', avatar, cookieOptions);
+			$.cookie('collabKit-user-name', user.name, cookieOptions);
+			$.cookie('collabKit-user-color', user.color, cookieOptions);
+			$.cookie('collabKit-user-avatar', user.avatar, cookieOptions);
 			$('#app-user-avatar').css(
 				'background-image',
-				'url(/:resource/demo/graphics/avatars/32/' + avatar + '.jpg)'
+				'url(' + app.avatar(user.avatar, 32) + ')'
 			);
-			$('#app-user-name').text(name);
+			$('#app-user-name').text(user.name);
 			$('body').attr(
-				'class', $('body').attr('class').replace(/ux\-theme\-[a-z]+/, 'ux-theme-' + color)
+				'class', $('body').attr('class').replace(/ux\-theme\-[a-z]+/, 'ux-theme-' + user.color)
 			);
 			if (!isInitialDataLoaded) {
 				loadInitialData();
@@ -261,25 +283,28 @@ function GalleryApp() {
 			app.userDialog.hide();
 		});
 	
-	var name = $.cookie('collabKit-user-name');
-	var color = $.cookie('collabKit-user-color');
-	var avatar = $.cookie('collabKit-user-avatar');
-	if (color) {
-		$('#app-userDialog-colors div[rel="' + color + '"]')
+	var user = this.user = {
+		id: this.sessionId,
+		name: $.cookie('collabKit-user-name'),
+		color: $.cookie('collabKit-user-color'),
+		avatar: $.cookie('collabKit-user-avatar')
+	};
+	if (user.color) {
+		$('#app-userDialog-colors div[rel="' + user.color + '"]')
 			.addClass('app-userDialog-selected');
 	} else {
 		$('#app-userDialog-colors div:first')
 			.addClass('app-userDialog-selected');
 	}
-	if (avatar) {
-		$('#app-userDialog-avatars div[rel="' + avatar + '"]')
+	if (user.avatar) {
+		$('#app-userDialog-avatars div[rel="' + user.avatar + '"]')
 			.addClass('app-userDialog-selected');
 	} else {
 		$('#app-userDialog-avatars div:first')
 			.addClass('app-userDialog-selected');
 	}
-	if (name) {
-		$('#app-userDialog-nameInput').val(name);
+	if (user.name) {
+		$('#app-userDialog-nameInput').val(user.name);
 		$('#app-userDialog-doneButton').attr('disabled', 'false');
 		$('#app-userDialog-doneButton').click();
 	} else {
@@ -301,6 +326,27 @@ function GalleryApp() {
 		// Import requires file input support, so let's hide it
 		this.toolbar.$.find('#app-toolbar-import').remove();
 	}
+}
+
+/**
+ * Fetch URL for a predefined avatar with given name/size
+ *
+ * @param {string} avatar
+ * @param {int} size defaults to 32
+ * @return string
+ */
+GalleryApp.prototype.avatar = function(avatar, size) {
+	if (!/^[a-z0-9]+\/[a-z0-9]+$/.exec(avatar)) {
+		throw new Error('Invalid avatar name ' + avatar);
+	}
+	if (size === undefined) {
+		size = 32;
+	}
+	var sizes = [32, 48, 64, 128];
+	if ($.inArray(size, sizes) == -1) {
+		throw new Error('Invalid avatar size ' + size);
+	}
+	return '/:resource/demo/graphics/avatars/' + size + '/' + avatar + '.jpg';
 }
 
 GalleryApp.prototype.updateToolbar = function() {
@@ -478,6 +524,17 @@ GalleryApp.prototype.runSlideshow = function(items) {
 							'<button class="close">Close</button>' +
 							'</div>' + 
 						'</div>');
+
+	// Style hack; max-width: 100%; max-height: 100% should do
+	// but in practice is unreliable so far
+	var hackPhotoResize = function() {
+		var $photos = $('.slideshow-photo');
+		$photos
+			.css('max-width', $slideshow.width())
+			.css('max-height', $slideshow.height())
+	};
+	$(window).bind('resize', hackPhotoResize);
+
 	/**
 	 * Load up the photo into an <img> and call us back when done.
 	 */
@@ -498,6 +555,7 @@ GalleryApp.prototype.runSlideshow = function(items) {
 	var update = function() {
 		buildPhoto(photos[index], function(img) {
 			$slideshow.find('.area').empty().append(img);
+			hackPhotoResize(); // ping the size fixes
 		});
 	};
 	var advance = function(n) {
@@ -552,6 +610,7 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		// Clean up & close the slideshow.
 		window.clearInterval(timer);
 		$(document).unbind('keydown', escapeCheck);
+		$(window).unbind('resize', hackPhotoResize);
 		$slideshow.remove();
 	};
 	$slideshow.find('.close').click(function() {
@@ -563,11 +622,186 @@ GalleryApp.prototype.runSlideshow = function(items) {
 	update();
 };
 
-// Create user interfaces
-var galleryApp = new GalleryApp();
+GalleryApp.prototype.talkVisible = function() {
+	return $('#app-body').hasClass('chat');
+};
+
+GalleryApp.prototype.showTalk = function() {
+	$('#app-body').addClass('chat');
+	$(window).resize(); // Trigger reflow of the body area
+	$('#app-talk-log').scrollTop(9999999);
+	$('#app-talk-input').focus();
+};
+
+GalleryApp.prototype.hideTalk = function() {
+	$('#app-body').removeClass('chat');
+	$(window).resize(); // Trigger reflow of the body area
+};
+
+GalleryApp.prototype.onChat = function(message) {
+	$('#app-body').toggleClass('chat');
+	$(window).resize(); // Trigger reflow of the body area
+};
+
+GalleryApp.prototype.appendChatLog = function(text, user) {
+	var app = this;
+	var $line = $('<p>');
+	var $user = $('<span>')
+		.attr('class', 'chat-name')
+		.css('color', user.color)
+		.text(user.name + '\u00a0')
+		.appendTo($line);
+	var $avatar = $('<img>')
+		.attr('class', 'chat-avatar')
+		.attr('src', this.avatar(user.avatar))
+		.prependTo($user);
+	$('<span>')
+		.attr('class', 'chat-text')
+		.text(text)
+		.appendTo($line);
+	var $log = $('#app-talk-log');
+	$log
+		.append($line)
+		.scrollTop(9999999);
+
+	// If the chat window is closed, show it in the notification area too
+	if (!app.talkVisible()) {
+		this.showNotification($line.clone(), function() {
+			app.showTalk();
+		});
+	}
+}
+
+GalleryApp.prototype.onChat = function(message) {
+	this.appendChatLog(message.text, message.user);
+};
+
+GalleryApp.prototype.onChatPresence = function(message) {
+	if (message.dest == this.sessionId) {
+		this.appendChatLog('is present', message.user);
+	}
+};
+
+GalleryApp.prototype.onChatJoin = function(message) {
+	if (message.user.id !== this.sessionId) {
+		this.appendChatLog('joined the session.', message.user);
+		// Also go ahead and make sure the new guy knows who we are!
+		this.chatPresence(message.user.id);
+	}
+};
+
+GalleryApp.prototype.onChatLeave = function(message) {
+	if (message.user.id !== this.sessionId) {
+		this.appendChatLog('left the session.', message.user);
+	}
+};
+
+GalleryApp.prototype.chatUserInfo = function() {
+	return {
+		id: this.sessionId,
+		name: this.user.name,
+		avatar: this.user.avatar,
+		color: this.user.color
+	};
+}
+/**
+ * Announce we've joined and ask other connected clients for presence info
+ */
+GalleryApp.prototype.chatJoin = function() {
+	this.session.publish('/chat', {
+		event: 'join',
+		user: this.chatUserInfo()
+	});
+};
+
+/**
+ * Announce we're leaving to other connected clients. (Advisory.)
+ */
+GalleryApp.prototype.chatLeave = function() {
+	this.session.publish('/chat', {
+		event: 'leave',
+		user: this.chatUserInfo()
+	});
+};
+
+/**
+ * Ask other connected clients for presence info
+ */
+GalleryApp.prototype.chatPresence = function(destId) {
+	this.session.publish('/chat', {
+		event: 'presence',
+		user: this.chatUserInfo(),
+		dest: destId
+	});
+};
+
+/**
+ * Send a basic chat message to the other clients.
+ */
+GalleryApp.prototype.chatSendText = function(text) {
+	this.session.publish('/chat', {
+		event: 'chat',
+		text: text,
+		user: this.chatUserInfo()
+	});
+};
+
+GalleryApp.prototype.connect = function(session) {
+	var app = this;
+	this.session = session;
+	session.subscribe('/commits', function(message) {
+		app.updateLibrary(message);
+	});
+	session.subscribe('/chat', function(message) {
+		if (message.event == 'join') {
+			app.onChatJoin(message);
+		} else if (message.event == 'leave') {
+			app.onChatLeave(message);
+		} else if (message.event == 'presence') {
+			app.onChatPresence(message);
+		} else if (message.event == 'chat') {
+			app.onChat(message);
+		}
+	});
+	app.chatJoin();
+};
+
+/**
+ * @param {jQuery} $content
+ * @param {function} callback to call if the notification gets clicked
+ */
+GalleryApp.prototype.showNotification = function($content, callback) {
+	var $notifyArea = $('#app-notify');
+	var $notify = $('<div>')
+		.attr('class', 'app-notification')
+		.css('display', 'none')
+		.append($content)
+		.appendTo($notifyArea)
+		.fadeIn(500, function() {
+			var close = function() {
+				$notify.fadeTo(500, 0, function() {
+					$notify.slideUp(500, function() {
+						$notify.remove();
+					});
+				});
+			}
+			var timeout = setTimeout(function() {
+				$notify.unbind('click', onclick);
+				close();
+			}, 5000);
+			var onclick = function() {
+				clearTimeout(timeout);
+				close();
+				if (callback) {
+					callback();
+				}
+			};
+			$notify.click(onclick);
+		});
+};
 
 // Connect a session so we can get updates on inter-client state...
 var session = new Faye.Client('/:session/');
-session.subscribe('/commits', function(message) {
-	galleryApp.updateLibrary(message);
-});
+
+// Create user interfaces
+var galleryApp = new GalleryApp(session);
