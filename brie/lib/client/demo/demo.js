@@ -87,6 +87,11 @@ function GalleryApp(session) {
 			$(this).focus();
 		}
 	});
+	$('#app-notes-icon')
+		.bind('mousedown click', function(event) {
+			event.preventDefault();
+			return false;
+		});
 	$('#app-talk-icon')
 		.click(function(event) {
 			event.preventDefault();
@@ -658,7 +663,7 @@ GalleryApp.prototype.appendChatLog = function(text, user) {
 		.attr('class', 'chat-text')
 		.text(text)
 		.appendTo($line);
-	var $log = $('#app-talk-log');
+	var $log = $('#app-talk-log-content');
 	$log
 		.append($line)
 		.scrollTop(9999999);
