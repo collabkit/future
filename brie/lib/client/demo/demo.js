@@ -525,12 +525,9 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 
 GalleryApp.prototype.runSlideshow = function(items) {
 	var photos = items.slice();
-	var $slideshow = $('<div id="slideshow">' +
-						'<div class="area"></div>' +
-						'<div class="controls">' +
-							'<button class="close">Close</button>' +
-							'</div>' + 
-						'</div>');
+	var $slideshow = $('#app-slideshow');
+	$slideshow.find('.area').empty();
+	$slideshow.fadeIn();
 
 	// Style hack; max-width: 100%; max-height: 100% should do
 	// but in practice is unreliable so far
@@ -622,7 +619,7 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		window.clearInterval(timer);
 		$(document).unbind('keydown', escapeCheck);
 		$(window).unbind('resize', hackPhotoResize);
-		$slideshow.remove();
+		$slideshow.fadeOut();
 	};
 	$slideshow.find('.close').click(function() {
 		closeOut();
