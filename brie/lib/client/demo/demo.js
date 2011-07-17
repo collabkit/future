@@ -525,7 +525,18 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 
 GalleryApp.prototype.runSlideshow = function(items) {
 	var photos = items.slice();
-	var $slideshow = $('#app-slideshow');
+	var $slideshow = $('<div id="app-slideshow" style="display: none">\
+			<div class="area"></div>\
+			<div class="controls">\
+				<div class="control-wrapper">\
+					<img id="slideshow-prev" src="/:resource/demo/graphics/slideshow/left.svg" title="Prev">\
+					<img id="slideshow-pause" src="/:resource/demo/graphics/slideshow/pause.svg" title="Pause">\
+					<img id="slideshow-play" src="/:resource/demo/graphics/slideshow/play.svg" title="Play">\
+					<img id="slideshow-next" src="/:resource/demo/graphics/slideshow/right.svg" title="Next">\
+					<img id="slideshow-close" src="/:resource/demo/graphics/slideshow/close.svg" title="Close">\
+				</div>\
+			</div>\
+		</div>').appendTo('body');
 	$slideshow.find('.area').empty();
 	$slideshow.fadeIn();
 
@@ -638,7 +649,9 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		window.clearInterval(timer);
 		$(document).unbind('keydown', escapeCheck);
 		$(window).unbind('resize', hackPhotoResize);
-		$slideshow.fadeOut();
+		$slideshow.fadeOut(function() {
+			$slideshow.remove();
+		});
 	};
 	$('#slideshow-prev').click(function(event) {
 		manualRewind();
