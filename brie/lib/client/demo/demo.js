@@ -607,10 +607,7 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		}
 	}
 
-	$slideshow.find('.area').click(function(event) {
-		manualAdvance();
-		event.preventDefault();
-	}).mousedown(function(event) {
+	$slideshow.find('.area').mousedown(function(event) {
 		// Avoid selection etc
 		event.preventDefault();
 	});
@@ -673,22 +670,30 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		var visible = true;
 		var $controls = $slideshow.find('.controls');
 		var autohideDelay = 2 * 1000;
-		var timer;
+		var hideTimer;
 		var wait = function() {
-			if (timer) {
-				clearTimeout(timer);
+			if (hideTimer) {
+				clearTimeout(hideTimer);
 			}
-			timer = setTimeout(function() {
+			hideTimer = setTimeout(function() {
 				visible = false;
 				$controls.fadeOut();
 			}, autohideDelay);
 		}
-		$slideshow.mousemove(function() {
+		var ping = function() {
 			if (!visible) {
 				visible = true;
 				$controls.fadeIn('fast');
 			}
 			wait();
+		}
+		$slideshow.mousemove(function() {
+			ping();
+		});
+		$slideshow.find('.area').mousedown(function() {
+			ping();
+		}).bind('touchstart', function() {
+			ping();
 		});
 		wait();
 	})();
