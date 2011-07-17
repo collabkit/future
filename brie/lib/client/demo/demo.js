@@ -668,6 +668,30 @@ GalleryApp.prototype.runSlideshow = function(items) {
 	$slideshow.appendTo('body');
 	pause();
 	update();
+
+	(function () {
+		var visible = true;
+		var $controls = $slideshow.find('.controls');
+		var autohideDelay = 2 * 1000;
+		var timer;
+		var wait = function() {
+			if (timer) {
+				clearTimeout(timer);
+			}
+			timer = setTimeout(function() {
+				visible = false;
+				$controls.fadeOut();
+			}, autohideDelay);
+		}
+		$slideshow.mousemove(function() {
+			if (!visible) {
+				visible = true;
+				$controls.fadeIn('fast');
+			}
+			wait();
+		});
+		wait();
+	})();
 };
 
 GalleryApp.prototype.talkVisible = function() {
