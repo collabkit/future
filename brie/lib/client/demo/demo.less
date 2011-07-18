@@ -233,7 +233,7 @@
 	width: 11em;
 }
 
-#slideshow {
+#app-slideshow {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -244,14 +244,29 @@
 	text-align: center;
 	z-index: 1000;
 }
-#slideshow .controls {
+#app-slideshow .controls {
 	position: absolute;
 	text-align: center;
 	left: 0;
 	right: 0;
 	bottom: 0;
 }
-#slideshow .slideshow-photo {
+#app-slideshow .control-wrapper {
+	width: 680px;
+	margin-left: auto;
+	margin-right: auto;
+	border: solid 2px white;
+	.border-radius(1em);
+	background: rgba(0,0,0,0.5);
+}
+#app-slideshow .control-wrapper img {
+	cursor: pointer;
+	opacity: 0.5;
+}
+#app-slideshow .control-wrapper img:hover {
+	opacity: 1;
+}
+#app-slideshow .slideshow-photo {
 	max-width: 100%;
 	max-height: 100%;
 	vertical-align: middle;

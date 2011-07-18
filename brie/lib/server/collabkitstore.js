@@ -38,15 +38,19 @@ CollabKitStore.prototype.getObject = function(id, callback) {
 				return;
 			}
 			// @fixme cache that tree, we'll probably need it later?
-			tree.getBlob('data.json', function(data, err) {
-				if ( err ) {
-					callback( null, err );
-					return;
-				}
-				var cko = new CollabKitObject(store, commit.id, data, commit.parents);
-				cko._dirty = false;
-				callback(cko);
-			}, 'json');
+			try {
+				tree.getBlob('data.json', function(data, err) {
+					if ( err ) {
+						callback( null, err );
+						return;
+					}
+					var cko = new CollabKitObject(store, commit.id, data, commit.parents);
+					cko._dirty = false;
+					callback(cko);
+				}, 'json');
+			} catch (e) {
+				callback(null, e);
+			}
 		});
 	});
 };

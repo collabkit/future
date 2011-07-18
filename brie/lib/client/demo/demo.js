@@ -525,12 +525,20 @@ GalleryApp.prototype.updateLibrary = function(commit) {
 
 GalleryApp.prototype.runSlideshow = function(items) {
 	var photos = items.slice();
-	var $slideshow = $('<div id="slideshow">' +
-						'<div class="area"></div>' +
-						'<div class="controls">' +
-							'<button class="close">Close</button>' +
-							'</div>' + 
-						'</div>');
+	var $slideshow = $('<div id="app-slideshow" style="display: none">\
+			<div class="area"></div>\
+			<div class="controls">\
+				<div class="control-wrapper">\
+					<img id="slideshow-prev" src="/:resource/demo/graphics/slideshow/left.svg" title="Prev">\
+					<img id="slideshow-pause" src="/:resource/demo/graphics/slideshow/pause.svg" title="Pause">\
+					<img id="slideshow-play" src="/:resource/demo/graphics/slideshow/play.svg" title="Play">\
+					<img id="slideshow-next" src="/:resource/demo/graphics/slideshow/right.svg" title="Next">\
+					<img id="slideshow-close" src="/:resource/demo/graphics/slideshow/close.svg" title="Close">\
+				</div>\
+			</div>\
+		</div>').appendTo('body');
+	$slideshow.find('.area').empty();
+	$slideshow.fadeIn();
 
 	// Style hack; max-width: 100%; max-height: 100% should do
 	// but in practice is unreliable so far
@@ -556,7 +564,7 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		return $photo[0];
 	};
 	
-	var interval = 10;
+	var interval = 5;
 	var index = 0;
 	
 	var update = function() {
@@ -576,22 +584,41 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		update();
 	};
 
-	var timer = window.setInterval(advance, interval * 1000);
+	var running = false;
+	var timer;
 	var manualAdvance = function(n) {
 		// Reset the timer...
-		window.clearInterval(timer);
-		timer = window.setInterval(advance, interval * 1000);
+		if (running) {
+			window.clearInterval(timer);
+			timer = window.setInterval(advance, interval * 1000);
+		}
 
 		advance(n || 1);
 	};
 	var manualRewind = function() {
 		manualAdvance(-1);
 	}
+	var pause = function() {
+		$('#slideshow-pause').hide();
+		$('#slideshow-play').show();
 
-	$slideshow.click(function(event) {
-		manualAdvance();
-		event.preventDefault();
-	}).mousedown(function(event) {
+		if (running) {
+			running = false;
+			window.clearInterval(timer);
+			timer = null;
+		}
+	}
+	var play = function() {
+		$('#slideshow-pause').show();
+		$('#slideshow-play').hide();
+
+		if (!running) {
+			running = true;
+			timer = window.setInterval(advance, interval * 1000);
+		}
+	}
+
+	$slideshow.find('.area').mousedown(function(event) {
 		// Avoid selection etc
 		event.preventDefault();
 	});
@@ -622,15 +649,67 @@ GalleryApp.prototype.runSlideshow = function(items) {
 		window.clearInterval(timer);
 		$(document).unbind('keydown', escapeCheck);
 		$(window).unbind('resize', hackPhotoResize);
-		$slideshow.remove();
+		$slideshow.fadeOut(function() {
+			$slideshow.remove();
+		});
 	};
-	$slideshow.find('.close').click(function() {
+	$('#slideshow-prev').click(function(event) {
+		manualRewind();
+		event.preventDefault();
+	});
+	$('#slideshow-next').click(function(event) {
+		manualAdvance();
+		event.preventDefault();
+	});
+	$('#slideshow-close').click(function(event) {
 		closeOut();
+		event.preventDefault();
 	})
+	$('#slideshow-pause').click(function(event) {
+		pause();
+		event.preventDefault();
+	});
+	$('#slideshow-play').click(function(event) {
+		play();
+		event.preventDefault();
+	});
 	// Bind global key checkers for simplicity :D
 	$(document).bind('keydown', escapeCheck);
 	$slideshow.appendTo('body');
+	pause();
 	update();
+
+	(function () {
+		var visible = true;
+		var $controls = $slideshow.find('.controls');
+		var autohideDelay = 2 * 1000;
+		var hideTimer;
+		var wait = function() {
+			if (hideTimer) {
+				clearTimeout(hideTimer);
+			}
+			hideTimer = setTimeout(function() {
+				visible = false;
+				$controls.fadeOut();
+			}, autohideDelay);
+		}
+		var ping = function() {
+			if (!visible) {
+				visible = true;
+				$controls.fadeIn('fast');
+			}
+			wait();
+		}
+		$slideshow.mousemove(function() {
+			ping();
+		});
+		$slideshow.find('.area').mousedown(function() {
+			ping();
+		}).bind('touchstart', function() {
+			ping();
+		});
+		wait();
+	})();
 };
 
 GalleryApp.prototype.talkVisible = function() {
