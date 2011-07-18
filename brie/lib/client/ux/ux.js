@@ -227,14 +227,19 @@ $.ux.models.toolbarUploadButton = function($this) {
 				);
 			}
 		});
-	$label.click(function(event) {
-		// In Firefox 4/5, clicking on the label doesn't trigger the input,
-		// but we can still trigger it explicitly from here.
-		$('#' + id).click();
-		
-		// Chrome 12 will still trigger the input if we don't cancel!
-		event.preventDefault();
-	})
+
+	// quick crappy hack!
+	if (navigator.userAgent.toLowerCase().search('firefox') !== -1) {
+		$label.click(function(event) {
+			// In Firefox 4/5, clicking on the label doesn't trigger the input,
+			// but we can still trigger it explicitly from here.
+			// don't use on android honeycomb, since it stops the change notification
+			$('#' + id).click();
+
+			// Chrome 12 will still trigger the input if we don't cancel!
+			event.preventDefault();
+		})
+	}
 };
 
 $.ux.models.toolbarUploadButton.config = {
