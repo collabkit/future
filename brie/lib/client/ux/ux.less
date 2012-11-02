@@ -16,9 +16,9 @@
 		margin-right: 0.5em;
 		height: 2.75em;
 		&[ux-icon] .ux-toolbarGroup-label {
-			background-size: auto, 110% 110%;
-			background-position: 0.75em 47.5%, top left;
-			background-repeat: no-repeat;
+			//background-size: auto, 110% 110%;
+			background-position: 0.75em 47.5%, bottom left;
+			background-repeat: no-repeat, repeat-x;
 			padding-left: 2.5em;
 		}
 	}
@@ -28,7 +28,7 @@
 		float: left;
 		height: 100%;
 		border-right: none;
-		background-size: 100% 100%;
+		//background-size: 100% 100%;
 		.border-radius(1em);
 		cursor: default;
 		line-height: 1.25em;
@@ -42,7 +42,8 @@
 		.box-sizing(border-box);
 		float: left;
 		height: 100%;
-		background-size: 100% 100%;
+		background-repeat: repeat-x;
+		background-color: #fffffe;
 		.border-radius(1em);
 	}
 	&-toolbarButton {
