@@ -33,11 +33,15 @@ function ObjectStore() {
 ObjectStore.prototype.createObject = function(blob, callback) {
 	// Start an upload!
 	var url = '/:media/new';
-	var reader = new FileReader();
-	reader.onload = function(e) {
+	//var reader = new FileReader();
+	//reader.onload = function(e) {
+	try {
+		// @fixme Android browser mysteriously lacks the file type :(
+		// we'll probably need to do server-side sniffing detection. sigh.
+		var fileType = blob.type || 'image/jpeg';
 		var xhr = new XMLHttpRequest();
 		xhr.open('PUT', url);
-		xhr.setRequestHeader('Content-Type', blob.type);
+		xhr.setRequestHeader('Content-Type', fileType);
 		// Chrome seems to think this is "unsafe"
 		//xhr.setRequestHeader('Content-Length', blob.length);
 		xhr.onreadystatechange = function(e) {
@@ -52,9 +56,13 @@ ObjectStore.prototype.createObject = function(blob, callback) {
 				}
 			}
 		};
-		xhr.sendAsBinary(reader.result);
-	};
-	reader.readAsBinaryString(blob);
+		xhr.send(blob);
+		//xhr.sendAsBinary(reader.result);
+	//};
+	//reader.readAsBinaryString(blob);
+	} catch (e) {
+		alert(e);
+	}
 };
 
 /**
